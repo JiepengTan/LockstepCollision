@@ -1,8 +1,12 @@
 ﻿using System;
+using LockStepMath;
 
-public struct VLine
+namespace LockStepMath
 {
-	public VInt2 point;
+	public struct VLine
+	{
+		public LVector2D point;
 
-	public VInt2 direction;
+		public LVector2D direction;
+	}
 }
