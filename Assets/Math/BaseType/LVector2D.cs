@@ -260,5 +260,31 @@ namespace LockStepMath
         {
             return new LVector2D(o._x, o._z);
         }
+        
+        public LFloat this[int index]
+
+        {
+
+            get
+            {
+                switch (index)
+                {
+                    case 0: return x;
+                    case 1: return y;
+                    default: throw new IndexOutOfRangeException("vector idx invalid" + index);
+                }
+            }
+
+            set
+            {
+                switch (index)
+                {
+                    case 0: _x = value._val; break;
+                    case 1: _y = value._val;break;
+                    default: throw new IndexOutOfRangeException("vector idx invalid" + index);
+                }
+            }
+
+        }
     }
 }

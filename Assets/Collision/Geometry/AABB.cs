@@ -1,32 +1,59 @@
+using System.Numerics;
+using System.Runtime.CompilerServices;
 using LockStepMath;
-
 using static LockStepMath.LMath;
 using Point = LockStepMath.LVector;
 using Point2D = LockStepMath.LVector2D;
 
 namespace LockStepCollision
 {
-    public struct AABB {
-        /// <summary>
-        /// // center point of AABB
-        /// </summary>
-        public Point c; 
-        /// <summary>
-        /// radius or halfwidth extents (rx, ry, rz)
-        /// </summary>
-        public LVector r;
+    public struct AABB
+    {
+        public Point min;
+        public Point max;
 
-        public void Update(LFloat[,] m, LFloat[] t)
+        /// <summary>
+        /// center point of AABB
+        /// </summary>
+        public Point c
         {
-            for (int i = 0; i < 3; i++) {
-                c[i] = t[i];
-                r[i] = LFloat.zero;
-                for (int j = 0; j < 3; j++) {
-                    c[i] += m[i,j] * c[j];
-                    r[i] += Abs(m[i,j]) * r[j];
+            get { return (max + min) * LFloat.half; }
+        }
+
+        /// <summary>
+        /// radius or halfwidth extents
+        /// </summary>
+        public LVector r
+        {
+            get { return (max - min) * LFloat.half; }
+        }
+
+        // Transform AABB a by the matrix m and translation t,
+        // find maximum extents, and store result into AABB b.
+        public  void UpdateAABB(Matrix33 m, LVector t)
+        {
+            Point _c = c + t;
+            LVector _r = r;
+            min = max = _c;
+            // For all three axes
+            for (int i = 0; i < 3; i++)
+            {
+                // Form extent by summing smaller and larger terms respectively
+                for (int j = 0; j < 3; j++)
+                {
+                    LFloat e = m[i,j] * _r[j];
+                    if (e < LFloat.zero)
+                    {
+                        min[i] += e;
+                        max[i] -= e;
+                    }
+                    else
+                    {
+                        min[i] -= e;
+                        max[i] += e;
+                    }
                 }
             }
         }
-
-    };
+    }
 }

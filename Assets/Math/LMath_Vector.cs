@@ -28,7 +28,11 @@ namespace LockStepMath
             return new LFloat(val / LFloat.Precision);
             ;
         }
-
+        public static LFloat Cross2D(LVector2D u, LVector2D v)
+        {
+            return u.y * v.x - u.x * v.y;
+        }
+        
         public static LVector Cross(ref LVector lhs, ref LVector rhs)
         {
             return new LVector(

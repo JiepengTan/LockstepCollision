@@ -128,7 +128,6 @@ namespace LockStepMath
 
             return (int) LMath.Sqrt32((uint) a);
         }
-
         public static int Sqrt(long a)
         {
             if (a <= 0L)
@@ -144,6 +143,15 @@ namespace LockStepMath
             return (int) LMath.Sqrt64((ulong) a);
         }
 
+        public static LFloat Sqrt(LFloat a)
+        {
+            if (a._val <= 0)
+            {
+                return LFloat.zero;
+            }
+
+            return new LFloat(Sqrt((long)a._val * LFloat.Precision));
+        }
         public static long Clamp(long a, long min, long max)
         {
             if (a < min)
@@ -157,6 +165,26 @@ namespace LockStepMath
             }
 
             return a;
+        }
+        public static LFloat Clamp(LFloat a, LFloat min, LFloat max)
+        {
+            if (a < min)
+            {
+                return min;
+            }
+
+            if (a > max)
+            {
+                return max;
+            }
+
+            return a;
+        }
+
+
+        public static bool SameSign(LFloat a, LFloat b)
+        {
+            return (long)a._val * b._val > 0L;
         }
 
         public static int Abs(int val)

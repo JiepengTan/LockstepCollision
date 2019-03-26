@@ -1,8 +1,8 @@
 ﻿using System;
 using LockStepMath;
+
 namespace LockStepMath
 {
-
     [Serializable]
     public struct LFloat : IEquatable<LFloat>, IComparable<LFloat>
     {
@@ -13,9 +13,11 @@ namespace LockStepMath
 
         public static readonly LFloat zero = new LFloat(0);
         public static readonly LFloat one = new LFloat(LFloat.Precision);
+        public static readonly LFloat half = new LFloat(LFloat.Precision / 2);
         public static readonly LFloat FLT_MAX = new LFloat(int.MaxValue);
         public static readonly LFloat FLT_MIN = new LFloat(int.MinValue);
         public static readonly LFloat EPSILON = new LFloat(1);
+        public static readonly LFloat INTERVAL_EPSI_LON = new LFloat(1);
 
         /// <summary>
         /// 传入的是正常数放大1000 的数值
@@ -86,6 +88,16 @@ namespace LockStepMath
         {
             long val = (long) (a._val) * b._val;
             return new LFloat((int) (val / 1000));
+        }
+
+        public static LFloat operator *(LFloat a, int b)
+        {
+            return new LFloat((a._val * b));
+        }
+
+        public static LFloat operator *(int b, LFloat a)
+        {
+            return new LFloat((a._val * b));
         }
 
         public static LFloat operator /(LFloat a, LFloat b)

@@ -28,13 +28,14 @@ namespace LockStepMath
 
         public static readonly LVector zero = new LVector(0, 0, 0);
         public static readonly LVector one = new LVector(LFloat.Precision, LFloat.Precision, LFloat.Precision);
-
-        public static readonly LVector half = new LVector(LFloat.Precision / 2, LFloat.Precision / 2,
-            LFloat.Precision / 2);
-
+        public static readonly LVector half = new LVector(LFloat.Precision / 2, LFloat.Precision / 2,LFloat.Precision / 2);
+        
         public static readonly LVector forward = new LVector(0, 0, LFloat.Precision);
         public static readonly LVector up = new LVector(0, LFloat.Precision, 0);
         public static readonly LVector right = new LVector(LFloat.Precision, 0, 0);
+        public static readonly LVector back = new LVector(0, 0, -LFloat.Precision);
+        public static readonly LVector down = new LVector(0, -LFloat.Precision, 0);
+        public static readonly LVector left = new LVector(-LFloat.Precision, 0, 0);
 
         public LVector(int _x, int _y, int _z)
         {
@@ -200,6 +201,14 @@ namespace LockStepMath
             lhs._x = (int) (((long) lhs._x * LFloat.Precision) / rhs._val);
             lhs._y = (int) (((long) lhs._y * LFloat.Precision) / rhs._val);
             lhs._z = (int) (((long) lhs._z * LFloat.Precision) / rhs._val);
+            return lhs;
+        }
+        
+        public static LVector operator *(LFloat rhs,LVector lhs)
+        {
+            lhs._x = (int) (((long) (lhs._x * rhs._val)) / LFloat.Precision);
+            lhs._y = (int) (((long) (lhs._y * rhs._val)) / LFloat.Precision);
+            lhs._z = (int) (((long) (lhs._z * rhs._val)) / LFloat.Precision);
             return lhs;
         }
 

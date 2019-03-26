@@ -43,7 +43,7 @@ namespace LockStepCollision
         }
 
         // Return index i of point p[i] farthest from the edge ab, to the left of the edge
-        public static   int PointFarthestFromEdge(Point2D a, Point2D b, Point2D[] p, int n)
+        public static int PointFarthestFromEdge(Point2D a, Point2D b, Point2D[] p, int n)
         {
             // Create edge LVector and LVector (counterclockwise) perpendicular to it
             LVector2D e = b - a, eperp = new LVector2D(-e.y, e.x);
@@ -53,21 +53,28 @@ namespace LockStepCollision
             LFloat maxVal = LFloat.FLT_MIN, rightMostVal = LFloat.FLT_MIN;
 
             // Test all points to find the one farthest from edge ab on the left side
-            for (int i = 1; i < n; i++) {
+            for (int i = 1; i < n; i++)
+            {
                 LFloat d = Dot2D(p[i] - a, eperp); // d is proportional to distance along eperp
-                LFloat r = Dot2D(p[i] - a, e);     // r is proportional to distance along e
-                if (d > maxVal || (d == maxVal && r > rightMostVal)) {
+                LFloat r = Dot2D(p[i] - a, e); // r is proportional to distance along e
+                if (d > maxVal || (d == maxVal && r > rightMostVal))
+                {
                     bestIndex = i;
                     maxVal = d;
                     rightMostVal = r;
                 }
             }
+
             return bestIndex;
         }
-
+        
+        //TODO 校验 Scalar的正负性
+        public static LFloat ScalarTriple(LVector a, LVector b, LVector c)
+        {
+            return Dot(b, Cross(c, a));
+        }
     }
-    
-    
+
 
     #region 备选方案
 
