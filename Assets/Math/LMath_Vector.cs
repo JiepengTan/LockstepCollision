@@ -9,7 +9,13 @@ namespace LockStepMath
         {
             return new LFloat(((long) u._x * v._x + (long) u._y * v._y) / LFloat.Precision);
         }
+        public static LFloat Dot2D(LVector2D u, LVector2D v)
+        {
+            return new LFloat(((long) u._x * v._x + (long) u._y * v._y) / LFloat.Precision);
+        }
 
+        
+        
         public static LFloat Dot(ref LVector lhs, ref LVector rhs)
         {
             var val = ((long) lhs._x) * rhs._x + ((long) lhs._y) * rhs._y + ((long) lhs._z) * rhs._z;

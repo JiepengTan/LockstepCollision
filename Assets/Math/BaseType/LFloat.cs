@@ -13,6 +13,9 @@ namespace LockStepMath
 
         public static readonly LFloat zero = new LFloat(0);
         public static readonly LFloat one = new LFloat(LFloat.Precision);
+        public static readonly LFloat FLT_MAX = new LFloat(int.MaxValue);
+        public static readonly LFloat FLT_MIN = new LFloat(int.MinValue);
+        public static readonly LFloat EPSILON = new LFloat(1);
 
         /// <summary>
         /// 传入的是正常数放大1000 的数值

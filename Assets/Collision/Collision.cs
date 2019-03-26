@@ -9,7 +9,8 @@ namespace LockStepCollision
     {
         // Compute barycentric coordinates (u, v, w) for 
         // point p with respect to triangle (a, b, c)
-        public static void Barycentric(Point a, Point b, Point c, Point p, ref LFloat u, ref LFloat v, ref LFloat w)
+        // 使用克莱姆法则
+        public static void Barycentric(Point a, Point b, Point c, Point p, out LFloat u, out LFloat v, out LFloat w)
         {
             LVector v0 = b - a, v1 = c - a, v2 = p - a;
             LFloat d00 = Dot(v0, v0);
@@ -23,12 +24,50 @@ namespace LockStepCollision
             u = LFloat.one - v - w;
         }
 
-
+        //
         public static LFloat TriArea2D(LFloat x1, LFloat y1, LFloat x2, LFloat y2, LFloat x3, LFloat y3)
         {
             return (x1 - x2) * (y2 - y3) - (x2 - x3) * (y1 - y2);
         }
+
+        public static bool IsConvexQuad(Point a, Point b, Point c, Point d)
+        {
+            // Quad is nonconvex if Dot(Cross(bd, ba), Cross(bd, bc)) >= 0
+            LVector bda = Cross(d - b, a - b);
+            LVector bdc = Cross(d - b, c - b);
+            if (Dot(bda, bdc) >= LFloat.zero) return false;
+            // Quad is now convex iff Dot(Cross(ac, ad), Cross(ac, ab)) < 0
+            LVector acd = Cross(c - a, d - a);
+            LVector acb = Cross(c - a, b - a);
+            return Dot(acd, acb) < LFloat.zero;
+        }
+
+        // Return index i of point p[i] farthest from the edge ab, to the left of the edge
+        public static   int PointFarthestFromEdge(Point2D a, Point2D b, Point2D[] p, int n)
+        {
+            // Create edge LVector and LVector (counterclockwise) perpendicular to it
+            LVector2D e = b - a, eperp = new LVector2D(-e.y, e.x);
+
+            // Track index, ‘distance’ and ‘rightmostness’ of currently best point
+            int bestIndex = -1;
+            LFloat maxVal = LFloat.FLT_MIN, rightMostVal = LFloat.FLT_MIN;
+
+            // Test all points to find the one farthest from edge ab on the left side
+            for (int i = 1; i < n; i++) {
+                LFloat d = Dot2D(p[i] - a, eperp); // d is proportional to distance along eperp
+                LFloat r = Dot2D(p[i] - a, e);     // r is proportional to distance along e
+                if (d > maxVal || (d == maxVal && r > rightMostVal)) {
+                    bestIndex = i;
+                    maxVal = d;
+                    rightMostVal = r;
+                }
+            }
+            return bestIndex;
+        }
+
     }
+    
+    
 
     #region 备选方案
 
@@ -36,7 +75,8 @@ namespace LockStepCollision
     {
         // Compute barycentric coordinates (u, v, w) for 
         // point p with respect to triangle (a, b, c)
-        public static void Barycentric2(Point a, Point b, Point c, Point p, ref LFloat u, ref LFloat v, ref LFloat w)
+        // 三角形面积 之比
+        public static void Barycentric2(Point a, Point b, Point c, Point p, out LFloat u, out LFloat v, out LFloat w)
         {
             // Unnormalized triangle normal
             LVector m = Cross(b - a, c - a);
