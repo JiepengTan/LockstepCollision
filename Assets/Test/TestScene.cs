@@ -22,6 +22,6 @@ public class TestScene : MonoBehaviour
     {
         var col = GameObject.CreatePrimitive(type);
         col.transform.position = pos;
-        col.AddComponent<DebugColliderProxy>().AddCollider(col,type);
+        col.AddComponent<DebugColliderProxy>().AddTestCollider(col,type);
     }
 }

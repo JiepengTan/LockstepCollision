@@ -58,6 +58,7 @@ namespace LockStepMath
             this._z = z._val;
         }
 
+
         public LFloat magnitude
         {
             get

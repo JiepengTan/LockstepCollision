@@ -56,5 +56,10 @@ namespace LockStepCollision
                 }
             }
         }
+        
+        public override Sphere GetBoundSphere()
+        {
+            return new Sphere(c,(max - min).magnitude * LFloat.half);
+        }
     }
 }

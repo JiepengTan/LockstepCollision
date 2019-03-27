@@ -31,5 +31,9 @@ namespace LockStepCollision
         public Sphere()
         {
         }
+        public override Sphere GetBoundSphere()
+        {
+            return this;
+        }
     };
 }

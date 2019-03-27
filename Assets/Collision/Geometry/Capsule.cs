@@ -22,5 +22,10 @@ namespace LockStepCollision
         /// Radius
         /// </summary>
         public LFloat r;
+        
+        public override Sphere GetBoundSphere()
+        {
+            return new Sphere((a+b)*LFloat.half,(b-a).magnitude*LFloat.half + r);
+        }
     };
 }

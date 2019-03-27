@@ -31,5 +31,10 @@ namespace LockStepCollision
         /// Positive halfwidth extents of OBB along each axis
         /// </summary>
         public LVector e;
+        
+        public override Sphere GetBoundSphere()
+        {
+            return new Sphere(c,e.magnitude);
+        }
     };
 }
