@@ -10,6 +10,11 @@ namespace LockStepCollision
     /// </summary>
     public static partial class Collision
     {
+        //TODO 实现碰撞检测 派发
+        public static bool TestShapeShape(BaseShape a, BaseShape b)
+        {
+            return false;
+        }
         // Test if point p is contained in triangle (a, b, c)
         public static bool PointInTriangle(Point p, Point a, Point b, Point c)
         {

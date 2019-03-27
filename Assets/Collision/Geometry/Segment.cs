@@ -2,8 +2,13 @@ using LockStepMath;
 
 namespace LockStepCollision
 {
-    public struct Segment
-    {
+    public partial class Segment:BaseShape
+    {  
+        /// <summary>
+        /// Collision Type
+        /// </summary>
+        public override EColType ColType{get { return EColType.Segment;}}
+
         public LVector b;
         public LVector e;
 

@@ -73,6 +73,8 @@ namespace LockStepCollision
         {
             return Dot(b, Cross(c, a));
         }
+        
+    
     }
 
 

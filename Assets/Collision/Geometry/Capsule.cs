@@ -5,8 +5,9 @@ using Point2D = LockStepMath.LVector2D;
 
 namespace LockStepCollision
 {
-    public struct Capsule
-    {
+    public partial class Capsule:BaseShape
+    {   
+        public override EColType ColType{get { return EColType.Capsule;}}
         /// <summary>
         /// Medial line segment start point
         /// </summary>

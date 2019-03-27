@@ -12,7 +12,7 @@ namespace LockStepCollision
         public static bool TestMovingSphereSphere(Sphere s0, LVector d, LFloat t0, LFloat t1, Sphere s1, out LFloat t)
         {
             // Compute sphere bounding motion of s0 during time interval from t0 to t1
-            Sphere b;
+            Sphere b = new Sphere();//TODO 移除掉new
             LFloat mid = (t0 + t1) * LFloat.half;
             b.c = s0.c + d * mid;
             b.r = (mid - t0) * d.magnitude + s0.r;

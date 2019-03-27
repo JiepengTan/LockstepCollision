@@ -25,7 +25,7 @@ namespace LockStepMath
         /// <param name="rawVal"></param>
         public LFloat(int rawVal)
         {
-            this._val = rawVal * Precision;
+            this._val = rawVal;
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace LockStepMath
         /// <param name="rawVal"></param>
         public LFloat(long rawVal)
         {
-            this._val = (int) (rawVal * Precision);
+            this._val = (int) (rawVal );
         }
 
         public LFloat(LFloat rhs)
@@ -201,12 +201,12 @@ namespace LockStepMath
 
         public float ToFloat
         {
-            get { return _val / 0.001f; }
+            get { return _val * 0.001f; }
         }
 
         public double ToDouble
         {
-            get { return _val / 0.001; }
+            get { return _val * 0.001; }
         }
 
         public LFloat Floor

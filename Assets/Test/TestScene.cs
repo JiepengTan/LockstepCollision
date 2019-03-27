@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using LockStepCollision;
+using Test;
 using UnityEngine;
 
 public class TestScene : MonoBehaviour
@@ -10,18 +12,16 @@ public class TestScene : MonoBehaviour
     {
         for (int i = 0; i < count; i++)
         {
-            var obb = GameObject.CreatePrimitive((PrimitiveType.Cube));
-            obb.transform.position = new Vector3(2, i * 2,0);
-            var capsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            capsule.transform.position = new Vector3(4, i * 2,0);
-            var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            sphere.transform.position = new Vector3(6, i * 2,0);
+            CreateCollider(PrimitiveType.Cube, new Vector3(2, i * 2, 0));
+            CreateCollider(PrimitiveType.Capsule, new Vector3(4, i * 2, 0));
+            CreateCollider(PrimitiveType.Sphere, new Vector3(6, i * 2, 0));
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    void CreateCollider(PrimitiveType type,Vector3 pos)
     {
-        
+        var col = GameObject.CreatePrimitive(type);
+        col.transform.position = pos;
+        col.AddComponent<DebugColliderProxy>().AddCollider(col,type);
     }
 }

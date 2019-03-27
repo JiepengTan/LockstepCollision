@@ -31,7 +31,7 @@ namespace LockStepCollision
         public static bool IntersectSegmentPlane(Point a, Point b, Point d, Point e, Point f,
             out LFloat t, out Point q)
         {
-            Plane p;
+            Plane p = new Plane();//TODO
             p.n = Cross(e - d, f - d);
             p.d = Dot(p.n, d);
             return IntersectSegmentPlane(a, b, p, out t, out q);

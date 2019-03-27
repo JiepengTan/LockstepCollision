@@ -7,8 +7,13 @@ using Point2D = LockStepMath.LVector2D;
 
 namespace LockStepCollision
 {
-    public struct Rect
-    {
+    public partial class Rect:BaseShape
+    {       
+        /// <summary>
+        /// Collision Type
+        /// </summary>
+        public override EColType ColType{get { return EColType.Rect;}}
+
         /// <summary>
         /// // center point of rectangle
         /// </summary>

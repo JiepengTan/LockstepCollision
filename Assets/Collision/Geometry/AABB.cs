@@ -7,8 +7,9 @@ using Point2D = LockStepMath.LVector2D;
 
 namespace LockStepCollision
 {
-    public struct AABB
+    public partial class AABB:BaseShape
     {
+        public override EColType ColType{get { return EColType.AABB;}}
         public Point min;
         public Point max;
 

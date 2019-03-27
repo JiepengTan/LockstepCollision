@@ -6,8 +6,13 @@ using Point2D = LockStepMath.LVector2D;
 
 namespace LockStepCollision
 {
-    public struct Plane
-    {
+    public partial class Plane :BaseShape
+    {        
+        /// <summary>
+        /// Collision Type
+        /// </summary>
+        public override EColType ColType{get { return EColType.Plane;}}
+        
         /// <summary>
         /// Plane normal. Points x on the plane satisfy Dot(n,x) = d
         /// </summary>
@@ -17,6 +22,10 @@ namespace LockStepCollision
         /// d = dot(n,p) for a given point p on the plane
         /// </summary>
         public LFloat d;
+
+        public Plane()
+        {
+        }
 
         public Plane(LVector n, LFloat d)
         {
