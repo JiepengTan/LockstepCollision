@@ -19,12 +19,12 @@ namespace LockStepMath
 
         static LUTAtan2()
         {
-            LUTAtan2.BITS = 7;
-            LUTAtan2.BITS2 = LUTAtan2.BITS << 1;
-            LUTAtan2.MASK = ~(-1 << LUTAtan2.BITS2);
-            LUTAtan2.COUNT = LUTAtan2.MASK + 1;
-            LUTAtan2.DIM = LMath.Sqrt((long) LUTAtan2.COUNT);
-            LUTAtan2.table = new int[]
+            BITS = 7;
+            BITS2 = BITS << 1;
+            MASK = ~(-1 << BITS2);
+            COUNT = MASK + 1;
+            DIM = LMath.Sqrt((long) COUNT);
+            table = new int[]
             {
                 0,
                 0,
@@ -16411,7 +16411,6 @@ namespace LockStepMath
                 7894,
                 7854
             };
-/*		DebugHelper.Assert(Atan2LookupTable.table.Length == Atan2LookupTable.COUNT);*/
         }
     }
 }

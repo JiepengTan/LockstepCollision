@@ -21,12 +21,12 @@ namespace LockStepMath
 
         static LUTSinCos()
         {
-            LUTSinCos.BITS = 12;
-            LUTSinCos.MASK = ~(-1 << LUTSinCos.BITS);
-            LUTSinCos.COUNT = LUTSinCos.MASK + 1;
-            LUTSinCos.FACTOR = 10000;
-            LUTSinCos.NOM_MUL = LUTSinCos.FACTOR * LUTSinCos.COUNT;
-            LUTSinCos.sin_table = new int[]
+            BITS = 12;
+            MASK = ~(-1 << BITS);
+            COUNT = MASK + 1;
+            FACTOR = 10000;
+            NOM_MUL = FACTOR * COUNT;
+            sin_table = new int[]
             {
                 0,
                 15,
@@ -4125,7 +4125,7 @@ namespace LockStepMath
                 -31,
                 -15
             };
-            LUTSinCos.cos_table = new int[]
+            cos_table = new int[]
             {
                 10000,
                 10000,
@@ -8224,8 +8224,6 @@ namespace LockStepMath
                 10000,
                 10000
             };
-// 		DebugHelper.Assert(SinCosLookupTable.sin_table.Length == SinCosLookupTable.COUNT);
-// 		DebugHelper.Assert(SinCosLookupTable.cos_table.Length == SinCosLookupTable.COUNT);
         }
 
         public static int getIndex(long nom, long den)

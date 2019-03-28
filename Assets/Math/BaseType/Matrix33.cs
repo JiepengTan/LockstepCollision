@@ -4,7 +4,7 @@ using Point = LockStepMath.LVector;
 using Point2D = LockStepMath.LVector2D;
 using System;
 
-namespace LockStepCollision
+namespace LockStepMath
 {
     public struct Matrix33 : IEquatable<Matrix33>
     {

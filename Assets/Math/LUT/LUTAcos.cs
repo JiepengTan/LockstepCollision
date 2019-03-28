@@ -14,9 +14,9 @@ namespace LockStepMath
 
 		static LUTAcos()
 		{
-			LUTAcos.COUNT = 1024;
-			LUTAcos.HALF_COUNT = LUTAcos.COUNT >> 1;
-			LUTAcos.table = new int[]
+			COUNT = 1024;
+			HALF_COUNT = COUNT >> 1;
+			table = new int[]
 			{
 				31416,
 				30791,
@@ -1044,6 +1044,7 @@ namespace LockStepMath
 				625,
 				0
 			};
+			
 /*		DebugHelper.Assert(AcosLookupTable.table.Length == AcosLookupTable.COUNT + 1);*/
 		}
 	}

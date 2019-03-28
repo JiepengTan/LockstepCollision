@@ -6,7 +6,13 @@ namespace LockStepMath
 {
     public static partial class LMath
     {
-        public static readonly  LFloat PI = new LFloat(3142);
+        public static readonly LFloat PI = new LFloat(3142);
+
+        public static LFloat Atan2(LFloat y, LFloat x)
+        {
+            return Atan2(y._val, x._val);
+        }
+
         public static LFloat Atan2(int y, int x)
         {
             int num;
@@ -57,6 +63,14 @@ namespace LockStepMath
                       LUTAcos.HALF_COUNT;
             num = Mathf.Clamp(num, 0, LUTAcos.COUNT);
             return new LFloat((long) LUTAcos.table[num] / 10);
+        }
+
+        public static LFloat Asin(LFloat val)
+        {
+            int num = (int) (val._val * (long) LUTAsin.HALF_COUNT / LFloat.Precision) +
+                      LUTAsin.HALF_COUNT;
+            num = Mathf.Clamp(num, 0, LUTAsin.COUNT);
+            return new LFloat((long) LUTAsin.table[num] / 10);
         }
 
         public static LFloat Sin(LFloat radians)
@@ -129,6 +143,7 @@ namespace LockStepMath
 
             return (int) LMath.Sqrt32((uint) a);
         }
+
         public static int Sqrt(long a)
         {
             if (a <= 0L)
@@ -151,8 +166,9 @@ namespace LockStepMath
                 return LFloat.zero;
             }
 
-            return new LFloat(Sqrt((long)a._val * LFloat.Precision));
+            return new LFloat(Sqrt((long) a._val * LFloat.Precision));
         }
+
         public static long Clamp(long a, long min, long max)
         {
             if (a < min)
@@ -167,6 +183,7 @@ namespace LockStepMath
 
             return a;
         }
+
         public static LFloat Clamp(LFloat a, LFloat min, LFloat max)
         {
             if (a < min)
@@ -185,7 +202,7 @@ namespace LockStepMath
 
         public static bool SameSign(LFloat a, LFloat b)
         {
-            return (long)a._val * b._val > 0L;
+            return (long) a._val * b._val > 0L;
         }
 
         public static int Abs(int val)

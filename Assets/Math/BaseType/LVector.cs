@@ -1,4 +1,5 @@
 ﻿using System;
+using TreeEditor;
 using UnityEngine;
 
 namespace LockStepMath
@@ -9,16 +10,19 @@ namespace LockStepMath
         public LFloat x
         {
             get { return new LFloat(_x); }
+            set { _x = value._val ; }
         }
 
         public LFloat y
         {
             get { return new LFloat(_y); }
+            set { _y = value._val ; }
         }
 
         public LFloat z
         {
             get { return new LFloat(_z); }
+            set { _z = value._val ; }
         }
 
         public int _x;
