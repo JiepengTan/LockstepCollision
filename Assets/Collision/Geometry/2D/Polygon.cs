@@ -1,5 +1,6 @@
 namespace LockStepCollision
 {
+    [System.Serializable]
     public partial class Polygon:BaseShape
     {
                

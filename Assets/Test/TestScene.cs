@@ -12,9 +12,9 @@ public class TestScene : MonoBehaviour
     {
         for (int i = 0; i < count; i++)
         {
-            CreateCollider(PrimitiveType.Cube, new Vector3(2, i * 2, 0));
-            CreateCollider(PrimitiveType.Capsule, new Vector3(4, i * 2, 0));
-            CreateCollider(PrimitiveType.Sphere, new Vector3(6, i * 2, 0));
+            CreateCollider(PrimitiveType.Cube, new Vector3(2, i * 3, 0));
+            CreateCollider(PrimitiveType.Capsule, new Vector3(4, i * 3, 0));
+            CreateCollider(PrimitiveType.Sphere, new Vector3(6, i * 3, 0));
         }
     }
 

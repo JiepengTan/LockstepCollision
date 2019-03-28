@@ -3,6 +3,7 @@ using Point = LockStepMath.LVector;
 
 namespace LockStepCollision
 {
+    [System.Serializable]
     /// <summary>
     /// 碰撞网格  建议仅在静态情况下使用
     /// </summary>

@@ -18,8 +18,8 @@ namespace LockStepCollision
         Polygon,
         EnumCount,
     }
-
-    public abstract partial class BaseShape
+    [System.Serializable]
+    public partial class BaseShape
     {
         /// <summary>
         /// 碰撞类型

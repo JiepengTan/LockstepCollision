@@ -9,6 +9,7 @@ using Collision = LockStepCollision.Collision;
 
 namespace Test
 {
+    [System.Serializable]
     public struct ColliderLocalInfo
     {
         public LVector offset;
@@ -109,7 +110,7 @@ namespace Test
         {
        
             bool hasCollidedOthers = false;
-            //TODO 改为更加 性能友好的判定方式
+            //TODO 暴力测试 改为更加 性能友好的判定方式
             foreach (var col in allProxys)
             {
                 if(col != this)
@@ -132,8 +133,10 @@ namespace Test
                 lastRotation = transform.rotation;
             }
         }
+        
         public  static bool TestColliderProxy(DebugColliderProxy a, DebugColliderProxy b)
         {
+            //使用暴力测试方式 
             bool hasCollidedOthers = false;
             var isCollided = Collision.TestSphereSphere(a.boundSphere, b.boundSphere);
             if (isCollided)
@@ -149,7 +152,6 @@ namespace Test
                         }
                     }
                 }
-                       
             }
             return hasCollidedOthers;
         }

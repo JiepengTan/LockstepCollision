@@ -6,7 +6,8 @@ namespace LockStepMath
 {
     public static partial class LMath
     {
-        public static LFloat ATan2(int y, int x)
+        public static readonly  LFloat PI = new LFloat(3142);
+        public static LFloat Atan2(int y, int x)
         {
             int num;
             int num2;
@@ -50,7 +51,7 @@ namespace LockStepMath
             return new LFloat((long) ((num6 + num2) * num) / 10);
         }
 
-        public static LFloat ACos(LFloat val)
+        public static LFloat Acos(LFloat val)
         {
             int num = (int) (val._val * (long) LUTAcos.HALF_COUNT / LFloat.Precision) +
                       LUTAcos.HALF_COUNT;

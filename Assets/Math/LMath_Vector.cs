@@ -121,7 +121,7 @@ namespace LockStepMath
 
         public static LFloat AngleInt(LVector lhs, LVector rhs)
         {
-            return LMath.ACos(Dot(ref lhs, ref rhs));
+            return LMath.Acos(Dot(ref lhs, ref rhs));
         }
 
     }

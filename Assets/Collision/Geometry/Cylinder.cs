@@ -5,6 +5,7 @@ using Point2D = LockStepMath.LVector2D;
 
 namespace LockStepCollision
 {
+    [System.Serializable]
     /// <summary>
     /// TODO implement
     /// </summary>

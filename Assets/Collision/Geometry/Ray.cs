@@ -3,6 +3,7 @@ using Point = LockStepMath.LVector;
 
 namespace LockStepCollision
 {
+    [System.Serializable]
     public partial class Ray : BaseShape
     {
         /// <summary>

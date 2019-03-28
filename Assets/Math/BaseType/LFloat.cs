@@ -34,7 +34,7 @@ namespace LockStepMath
         /// <param name="rawVal"></param>
         public LFloat(long rawVal)
         {
-            this._val = (int) (rawVal );
+            this._val = (int) (rawVal);
         }
 
         public LFloat(LFloat rhs)
@@ -90,27 +90,124 @@ namespace LockStepMath
             return new LFloat((int) (val / 1000));
         }
 
-        public static LFloat operator *(LFloat a, int b)
-        {
-            return new LFloat((a._val * b));
-        }
-
-        public static LFloat operator *(int b, LFloat a)
-        {
-            return new LFloat((a._val * b));
-        }
-
         public static LFloat operator /(LFloat a, LFloat b)
         {
             long val = (long) (a._val * 1000) / b._val;
             return new LFloat((int) (val));
         }
 
-
         public static LFloat operator -(LFloat a)
         {
             return new LFloat(-a._val);
         }
+
+
+        #region adapt for int
+
+        public static LFloat operator +(LFloat a, int b)
+        {
+            return new LFloat(a._val + b * Precision);
+        }
+
+        public static LFloat operator -(LFloat a, int b)
+        {
+            return new LFloat(a._val - b * Precision);
+        }
+
+        public static LFloat operator *(LFloat a, int b)
+        {
+            return new LFloat((a._val * b));
+        }
+
+        public static LFloat operator /(LFloat a, int b)
+        {
+            return new LFloat((a._val) / b);
+        }
+
+
+        public static LFloat operator +(int a, LFloat b)
+        {
+            return new LFloat(b._val + a * Precision);
+        }
+
+        public static LFloat operator -(int a, LFloat b)
+        {
+            return new LFloat(a * Precision - b._val);
+        }
+
+        public static LFloat operator *(int a, LFloat b)
+        {
+            return new LFloat((b._val * a));
+        }
+
+        public static LFloat operator /(int a, LFloat b)
+        {
+            return new LFloat((int) ((long) (a * Precision * Precision) / b._val));
+        }
+
+
+        public static bool operator <(LFloat a, int b)
+        {
+            return a._val < (b * Precision);
+        }
+
+        public static bool operator >(LFloat a, int b)
+        {
+            return a._val > (b * Precision);
+        }
+
+        public static bool operator <=(LFloat a, int b)
+        {
+            return a._val <= (b * Precision);
+        }
+
+        public static bool operator >=(LFloat a, int b)
+        {
+            return a._val >= (b * Precision);
+        }
+
+        public static bool operator ==(LFloat a, int b)
+        {
+            return a._val == (b * Precision);
+        }
+
+        public static bool operator !=(LFloat a, int b)
+        {
+            return a._val != (b * Precision);
+        }
+
+
+        public static bool operator <(int a, LFloat b)
+        {
+            return (a * Precision) < (b._val);
+        }
+
+        public static bool operator >(int a, LFloat b)
+        {
+            return (a * Precision) > (b._val);
+        }
+
+        public static bool operator <=(int a, LFloat b)
+        {
+            return (a * Precision) <= (b._val);
+        }
+
+        public static bool operator >=(int a, LFloat b)
+        {
+            return (a * Precision) >= (b._val);
+        }
+
+        public static bool operator ==(int a, LFloat b)
+        {
+            return (a * Precision) == (b._val);
+        }
+
+        public static bool operator !=(int a, LFloat b)
+        {
+            return (a * Precision) != (b._val);
+        }
+
+        #endregion
 
         #endregion
 

@@ -2,6 +2,7 @@ using LockStepMath;
 
 namespace LockStepCollision
 {
+    [System.Serializable]
     public partial class Segment:BaseShape
     {  
         /// <summary>

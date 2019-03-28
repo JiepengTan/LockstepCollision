@@ -6,6 +6,7 @@ using Point2D = LockStepMath.LVector2D;
 
 namespace LockStepCollision
 {
+    [System.Serializable]
     public partial class Plane :BaseShape
     {        
         /// <summary>
