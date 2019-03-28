@@ -38,5 +38,9 @@ namespace LockStepCollision
             n = Cross(b - a, c - a).normalized;
             d = Dot(n, a);
         }
+        public override bool TestWithShape(BaseShape shape)
+        {
+            return shape.TestWith(this);
+        }
     };
 }

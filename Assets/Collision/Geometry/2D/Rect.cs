@@ -7,24 +7,31 @@ using Point2D = LockStepMath.LVector2D;
 
 namespace LockStepCollision
 {
-    public partial class Rect:BaseShape
-    {       
+    public partial class Rect : BaseShape
+    {
         /// <summary>
         /// Collision Type
         /// </summary>
-        public override EColType ColType{get { return EColType.Rect;}}
+        public override EColType ColType
+        {
+            get { return EColType.Rect; }
+        }
 
         /// <summary>
         /// // center point of rectangle
         /// </summary>
-        public Point c; 
+        public Point c;
+
         /// <summary>
         ///  unit vectors determining local x and y axes for the rectangle
         /// </summary>
-        public Axis2D u; 
+        public Axis2D u;
+
         /// <summary>
         /// the halfwidth extents of the rectangle along the axes
         /// </summary>
-        public LVector2D e; 
+        public LVector2D e;
+
+     
     };
 }

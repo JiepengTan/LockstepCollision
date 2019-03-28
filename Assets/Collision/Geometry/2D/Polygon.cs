@@ -7,6 +7,5 @@ namespace LockStepCollision
         /// Collision Type
         /// </summary>
         public override EColType ColType{get { return EColType.Polygon;}}
-
     }
 }

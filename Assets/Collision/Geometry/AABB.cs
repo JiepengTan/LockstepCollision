@@ -61,5 +61,10 @@ namespace LockStepCollision
         {
             return new Sphere(c,(max - min).magnitude * LFloat.half);
         }
+        
+        public override bool TestWithShape(BaseShape shape)
+        {
+            return shape.TestWith(this);
+        }
     }
 }

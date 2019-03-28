@@ -35,5 +35,10 @@ namespace LockStepCollision
         {
             return this;
         }
+        
+        public override bool TestWithShape(BaseShape shape)
+        {
+            return shape.TestWith(this);
+        }
     };
 }

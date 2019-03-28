@@ -17,5 +17,6 @@ namespace LockStepCollision
             this.b = b;
             this.e = e;
         }
+        
     }
 }

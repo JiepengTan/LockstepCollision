@@ -27,5 +27,9 @@ namespace LockStepCollision
         {
             return new Sphere((a+b)*LFloat.half,(b-a).magnitude*LFloat.half + r);
         }
+        public override bool TestWithShape(BaseShape shape)
+        {
+            return shape.TestWith(this);
+        }
     };
 }

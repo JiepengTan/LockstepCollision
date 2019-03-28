@@ -1,4 +1,5 @@
 using LockStepMath;
+using System;
 
 namespace LockStepCollision
 {
@@ -7,15 +8,18 @@ namespace LockStepCollision
         Sphere,
         AABB,
         Capsule,
+        Cylinder,
         OBB,
+        ColMesh,
         Plane,
+        Ray,
         Rect,
         Segment,
         Polygon,
         EnumCount,
     }
 
-    public partial class BaseShape
+    public abstract partial class BaseShape
     {
         /// <summary>
         /// 碰撞类型
@@ -30,8 +34,61 @@ namespace LockStepCollision
             return null;
         }
 
-        public virtual void UpdateCollider(bool isDiffPos,bool isDiffRot,LVector targetPos, LVector targetRot )
+        public virtual void UpdateCollider(bool isDiffPos, bool isDiffRot, LVector targetPos, LVector targetRot)
         {
         }
+
+        public static bool TestShapeWithShape(BaseShape a, BaseShape b)
+        {
+            if (a == null || b == null)
+                return false;
+            return a.TestWithShape(b);
+        }
+
+        #region TestInterfaces
+
+        public virtual bool TestWithShape(BaseShape shape)
+        {
+            throw new NotImplementedException(GetType() + " not implement this TestWithShape");
+        }
+
+        public virtual bool TestWith(Sphere sphere)
+        {
+            throw new NotImplementedException(GetType() + " not implement this TestWithSphere");
+        }
+        public virtual bool TestWith(AABB aabb)
+        {
+            throw new NotImplementedException(GetType() + " not implement this TestWithAABB");
+        }
+        public virtual bool TestWith(Capsule capsule)
+        {
+            throw new NotImplementedException(GetType() + " not implement this TestWithCapsule");
+        }
+
+        public virtual bool TestWith(Cylinder cylinder)
+        {
+            throw new NotImplementedException(GetType() + " not implement this TestWithCylinder");
+        }
+
+        public virtual bool TestWith(OBB obb)
+        {
+            throw new NotImplementedException(GetType() + " not implement this TestWithOBB");
+        }
+
+        public virtual bool TestWith(ColMesh mesh)
+        {
+            throw new NotImplementedException(GetType() + " not implement this TestWithMesh");
+        }
+        
+        public virtual bool TestWith(Plane plane)
+        {
+            throw new NotImplementedException(GetType() + " not implement this TestWithPlane");
+        }
+
+        public virtual bool TestWith(Ray ray)
+        {
+            throw new NotImplementedException(GetType() + " not implement this TestWithRay");
+        }
+        #endregion
     }
 }

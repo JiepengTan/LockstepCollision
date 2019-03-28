@@ -1,40 +1,34 @@
 using LockStepMath;
-using UnityEngine;
 using static LockStepMath.LMath;
 using Point = LockStepMath.LVector;
 using Point2D = LockStepMath.LVector2D;
 
 namespace LockStepCollision
 {
-    public partial class OBB : BaseShape
-
-    {
+    /// <summary>
+    /// TODO implement
+    /// </summary>
+    public partial class Cylinder:BaseShape
+    {   
+        public override EColType ColType{get { return EColType.Capsule;}}
         /// <summary>
-        /// Collision Type
+        /// Medial line segment start point
         /// </summary>
-        public override EColType ColType
-        {
-            get { return EColType.OBB; }
-        }
-
-        /// <summary>
-        /// OBB center point
-        /// </summary>
-        public Point c;
+        public Point a;
 
         /// <summary>
-        /// Local x-, y-, and z-axes
+        /// Medial line segment end point
         /// </summary>
-        public Axis3D u;
+        public Point b;
 
         /// <summary>
-        /// Positive halfwidth extents of OBB along each axis
+        /// Radius
         /// </summary>
-        public LVector e;
+        public LFloat r;
         
         public override Sphere GetBoundSphere()
         {
-            return new Sphere(c,e.magnitude);
+            return new Sphere((a+b)*LFloat.half,(b-a).magnitude*LFloat.half + r);
         }
         public override bool TestWithShape(BaseShape shape)
         {
