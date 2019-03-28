@@ -65,8 +65,71 @@ namespace LockStepCollision
             LFloat radiusSum = a.r + b.r;
             return dist2 <= radiusSum * radiusSum;
         }
+        
+        
+        public static  bool TestOBBCapsule(OBB obb, Capsule capsule)
+        {
+            //-1.确认两个包围球是否 碰撞 如果未曾碰撞 加速返回
+            var cc = capsule.GetBoundSphereCenter();
+            var rc = capsule.GetBoudsSphereRadius();
+            var diffr = obb.e.magnitude + rc;
+            if ((obb.c - cc).sqrMagnitude > diffr * diffr)
+            {
+                return false;
+            }
 
-        public static bool TestOBBOBB(ref OBB a, ref OBB b)
+            //0.Capsule 转换到OBB坐标 空间转换为Capsule VS AABB 
+            var rayd = capsule.b - capsule.a;
+            //1 将capsule 变成一个射线 
+            var lrayd = obb.u.WorldToLocal(rayd);
+            var lraydn = lrayd.normalized;
+            var cap2obb = (obb.c - capsule.a);
+            var aabb = obb.ToAABB();
+            //2.将射线沿着AABB 中心靠近capsule.r 距离 
+            var orthDir = (cap2obb -  Dot(lraydn, cap2obb) * lraydn ).normalized;
+            var finalRayC = (-cap2obb) - (orthDir * capsule.r);
+            //3.碰撞转换为ray AABB碰撞 
+            if (Collision.IntersectRayAABB(finalRayC, lrayd, aabb, out LFloat tmin, out Point q))
+            {
+                //4.检测碰撞点时间 确认碰撞是否发生
+                return tmin <= LFloat.one;
+            }
+
+            return false;
+        }
+
+        public static bool TestAABBCapsule(AABB aabb, Capsule capsule)
+        {
+            //-1.确认两个包围球是否 碰撞 如果未曾碰撞 加速返回
+            var cc = capsule.GetBoundSphereCenter();
+            var rc = capsule.GetBoudsSphereRadius();
+            var diffr = aabb.r.magnitude + rc;
+            var aabbc = aabb.c;
+            if ((aabbc - cc).sqrMagnitude > diffr * diffr)
+            {
+                return false;
+            }
+
+            //0.Capsule 转换到OBB坐标 空间转换为Capsule VS AABB 
+            var lrayd = capsule.b - capsule.a;
+            //1 将capsule 变成一个射线 
+            var lraydn = lrayd.normalized;
+            var cap2obb = (aabb.c - capsule.a);
+            //2.将射线沿着AABB 中心靠近capsule.r 距离 
+            var orthDir = (cap2obb -  Dot(lraydn, cap2obb) * lraydn ).normalized;
+            var finalRayC = (-cap2obb) - (orthDir * capsule.r);
+            //3.碰撞转换为ray AABB碰撞 
+            if (Collision.IntersectRayAABB(finalRayC, lrayd, aabb, out LFloat tmin, out Point q))
+            {
+                //4.检测碰撞点时间 确认碰撞是否发生
+                return tmin <= LFloat.one;
+            }
+
+            return false;
+        }
+
+
+        public static bool TestOBBOBB(OBB a, OBB b)
         {
             LFloat ra, rb;
             Matrix33 R = new Matrix33(), AbsR = new Matrix33();
@@ -232,6 +295,12 @@ namespace LockStepCollision
             LFloat s = Dot(p.n, b.c) - p.d;
             // Intersection occurs when distance s falls within [-r,+r] interval
             return Abs(s) <= r;
+        }
+        //TODO TestCapsulePlane
+        // Test if OBB b intersects plane p
+        public static bool TestCapsulePlane(Capsule b, Plane p)
+        {
+            return false;
         }
 
         // Test if AABB b intersects plane p

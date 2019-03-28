@@ -122,8 +122,14 @@ namespace LockStepCollision
             return p;
         }
 
-        //TODO 实现线段和 Capsule 检测
+        //TODO IntersectSegmentCapsule
         public static bool IntersectSegmentCapsule(Segment seg, Point b, Point e, LFloat r, out LFloat t)
+        {
+            t = LFloat.zero;
+            return false;
+        }        
+        //TODO IntersectRayCapsule
+        public static bool IntersectRayCapsule(Ray ray, Point b, Point e, LFloat r, out LFloat t)
         {
             t = LFloat.zero;
             return false;

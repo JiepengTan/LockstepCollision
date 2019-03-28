@@ -31,7 +31,7 @@ namespace LockStepCollision
         public static bool IntersectSegmentPlane(Point a, Point b, Point d, Point e, Point f,
             out LFloat t, out Point q)
         {
-            Plane p = new Plane();//TODO
+            Plane p = new Plane(); //TODO
             p.n = Cross(e - d, f - d);
             p.d = Dot(p.n, d);
             return IntersectSegmentPlane(a, b, p, out t, out q);
@@ -60,6 +60,12 @@ namespace LockStepCollision
             return true;
         }
 
+        public static bool IntersectRayOBB(Point p, LVector d, OBB obb, out LFloat tmin, out Point q)
+        {
+            var fo = p - obb.c;
+            var fd = obb.u.WorldToLocal(d);
+            return Collision.IntersectRayAABB(fo, fd, obb.ToAABB(), out tmin, out q);
+        }
 
         // Intersect ray R(t) = p + t*d against AABB a. When intersecting,
         // return intersection distance tmin and point q of intersection

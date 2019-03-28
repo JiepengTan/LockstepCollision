@@ -13,13 +13,20 @@ namespace LockStepCollision
         /// <summary>
         /// orgin point
         /// </summary>
-        public Point b;
-        public LVector r;
+        public Point o;
+        /// <summary>
+        /// dir
+        /// </summary>
+        public LVector d;
 
-        public Ray(Point b, LVector r)
+        public Ray()
         {
-            this.b = b;
-            this.r = r;
+        }
+
+        public Ray(Point o, LVector d)
+        {
+            this.o = o;
+            this.d = d;
         }
         public override bool TestWithShape(BaseShape shape)
         {

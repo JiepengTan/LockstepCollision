@@ -20,6 +20,18 @@ namespace LockStepCollision
             this.z = z;
         }
 
+        public LVector WorldToLocal(LVector vec)
+        {
+            var _x = Dot(x, vec);
+            var _y = Dot(y, vec);
+            var _z = Dot(z, vec);
+            return new LVector(_x, _y, _z);
+        }
+        public LVector LocalToWorld(LVector vec)
+        {
+            return x * vec.x + y * vec.y + z * vec.z;
+        }
+
         public LVector this[int index]
         {
             get
@@ -51,5 +63,4 @@ namespace LockStepCollision
             }
         }
     }
-
 }
