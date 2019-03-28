@@ -8,10 +8,10 @@ namespace LockStepMath
 {
     public struct Matrix33 : IEquatable<Matrix33>
     {
-        private static readonly Matrix33
-            zeroMatrix = new Matrix33(LVector.zero, LVector.zero, LVector.zero);
+        public static readonly Matrix33
+            zero = new Matrix33(LVector.zero, LVector.zero, LVector.zero);
 
-        private static readonly Matrix33 identityMatrix = new Matrix33(new LVector(LFloat.Precision, 0, 0),
+        public static readonly Matrix33 identity = new Matrix33(new LVector(LFloat.Precision, 0, 0),
             new LVector(0, LFloat.Precision, 0), new LVector(0, 0, LFloat.Precision));
 
         // mRowCol  列优先存储

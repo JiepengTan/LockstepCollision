@@ -7,6 +7,11 @@ namespace LockStepMath
     public static partial class LMath
     {
         public static readonly LFloat PI = new LFloat(3142);
+        public static readonly LFloat PI2 = new LFloat(6283);
+        public static readonly LFloat Rad2Deg = 180 / PI;
+        public static readonly LFloat Deg2Rad = PI / 180;
+
+        public static LFloat Pi => PI;
 
         public static LFloat Atan2(LFloat y, LFloat x)
         {
