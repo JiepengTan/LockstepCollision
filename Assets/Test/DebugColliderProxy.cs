@@ -114,8 +114,7 @@ namespace Test
             {
                 if(col != this)
                 {
-                    var isCollided = Collision.TestSphereSphere(this.boundSphere, col.boundSphere);
-                    if (isCollided)
+                    if (TestColliderProxy(this, col))
                     {
                         hasCollidedOthers = true;
                         break;
@@ -132,6 +131,27 @@ namespace Test
                 lastPosition = transform.position;
                 lastRotation = transform.rotation;
             }
+        }
+        public  static bool TestColliderProxy(DebugColliderProxy a, DebugColliderProxy b)
+        {
+            bool hasCollidedOthers = false;
+            var isCollided = Collision.TestSphereSphere(a.boundSphere, b.boundSphere);
+            if (isCollided)
+            {
+                foreach (var cCola in a.allColliders)
+                {
+                    foreach (var cColb in b.allColliders)
+                    {
+                        if (BaseShape.TestShapeWithShape(cCola, cColb))
+                        {
+                            hasCollidedOthers = true;
+                            break;
+                        }
+                    }
+                }
+                       
+            }
+            return hasCollidedOthers;
         }
 
         public Vector3 lastPosition;
