@@ -7,6 +7,24 @@ namespace LockStepCollision
 {
     public static partial class Collision
     {
+        public static bool IntersectRayPlane(Point o, Point d, Plane p, out LFloat t, out Point q)
+        {
+            // Compute the t value for the directed line ab intersecting the plane
+            t = (p.d - Dot(p.n, o)) / Dot(p.n, d);
+
+            // If t in [0..1] compute and return intersection point
+            if (t >= LFloat.zero && t <= LFloat.one)
+            {
+                q = o + t * d;
+                return true;
+            }
+
+            q = o;
+            // Else no intersection
+            return false;
+        }
+        
+        
         public static bool IntersectSegmentPlane(Point a, Point b, Plane p, out LFloat t, out Point q)
         {
             // Compute the t value for the directed line ab intersecting the plane
@@ -60,18 +78,18 @@ namespace LockStepCollision
             return true;
         }
 
-        public static bool IntersectRayOBB(Point p, LVector d, OBB obb, out LFloat tmin, out Point q)
+        public static bool IntersectRayOBB(Point o, LVector d, OBB obb, out LFloat tmin, out Point p)
         {
-            var fo = p - obb.c;
+            var fo = o - obb.c;
             var fd = obb.u.WorldToLocal(d);
-            return Collision.IntersectRayAABB(fo, fd, obb.ToAABB(), out tmin, out q);
+            return Collision.IntersectRayAABB(fo, fd, obb.ToAABB(), out tmin, out p);
         }
 
         // Intersect ray R(t) = p + t*d against AABB a. When intersecting,
         // return intersection distance tmin and point q of intersection
-        public static bool IntersectRayAABB(Point p, LVector d, AABB a, out LFloat tmin, out Point q)
+        public static bool IntersectRayAABB(Point o, LVector d, AABB a, out LFloat tmin, out Point p)
         {
-            q = p;
+            p = o;
             tmin = LFloat.zero; // set to -FLT_MAX to get first hit on line
             LFloat tmax = LFloat.FLT_MAX; // set to max distance ray can travel (for segment)
 
@@ -81,14 +99,14 @@ namespace LockStepCollision
                 if (Abs(d[i]) < LFloat.EPSILON)
                 {
                     // Ray is parallel to slab. No hit if origin not within slab
-                    if (p[i] < a.min[i] || p[i] > a.max[i]) return false;
+                    if (o[i] < a.min[i] || o[i] > a.max[i]) return false;
                 }
                 else
                 {
                     // Compute intersection t value of ray with near and far plane of slab
                     LFloat ood = LFloat.one / d[i];
-                    LFloat t1 = (a.min[i] - p[i]) * ood;
-                    LFloat t2 = (a.max[i] - p[i]) * ood;
+                    LFloat t1 = (a.min[i] - o[i]) * ood;
+                    LFloat t2 = (a.max[i] - o[i]) * ood;
                     // Make t1 be intersection with near plane, t2 with far plane
                     if (t1 > t2)
                     {
@@ -107,7 +125,7 @@ namespace LockStepCollision
             }
 
             // Ray intersects all 3 slabs. Return point (q) and intersection t value (tmin) 
-            q = p + d * tmin;
+            p = o + d * tmin;
             return true;
         }
 

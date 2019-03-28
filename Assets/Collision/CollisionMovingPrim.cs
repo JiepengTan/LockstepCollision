@@ -129,7 +129,7 @@ namespace LockStepCollision
             return false;
         }        
         //TODO IntersectRayCapsule
-        public static bool IntersectRayCapsule(Ray ray, Point b, Point e, LFloat r, out LFloat t)
+        public static bool IntersectRayCapsule(Point o,LVector d, Point b, Point e, LFloat r, out LFloat t)
         {
             t = LFloat.zero;
             return false;

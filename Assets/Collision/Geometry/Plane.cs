@@ -42,5 +42,33 @@ namespace LockStepCollision
         {
             return shape.TestWith(this);
         }
+        
+        public override bool TestWith(Sphere sphere)
+        {
+            return Collision.TestSpherePlane(sphere, this);
+        }
+        public override bool TestWith(AABB aabb)
+        {
+            return Collision.TestAABBPlane(aabb,this);
+        }
+        public override bool TestWith(Capsule capsule)
+        {
+            return Collision.TestCapsulePlane(capsule,this);
+        }
+
+        public override bool TestWith(OBB obb)
+        {
+            return Collision.TestOBBPlane( obb, this);
+        }
+        
+        public override bool TestWith(Plane plane)
+        {
+            throw new System.NotImplementedException(GetType() + " not implement this TestWithRay");
+        }
+
+        public override bool TestWith(Ray ray)
+        {
+            return Collision.IntersectRayPlane(ray.o, ray.d, this, out LFloat t, out LVector p);
+        }
     };
 }

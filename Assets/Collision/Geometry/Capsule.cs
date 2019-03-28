@@ -65,10 +65,10 @@ namespace LockStepCollision
         {
             return Collision.TestCapsulePlane(this, plane);
         }
-
-        //public override bool TestWith(Ray ray)
-        //{
-        //    return Collision.IntersectRayCapsule(ray, a, b, r, out LFloat t);
-        //}
+        
+        public override bool TestWith(Ray ray)
+        {
+            return Collision.IntersectRayCapsule(ray.o,ray.d, a, b, r, out LFloat t);
+        }
     };
 }
