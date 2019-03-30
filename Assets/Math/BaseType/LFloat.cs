@@ -306,7 +306,7 @@ namespace LockStepMath
             get { return _val * 0.001; }
         }
 
-        public LFloat Floor
+        public int Floor
         {
             get
             {
@@ -327,11 +327,11 @@ namespace LockStepMath
                     }
                 }
 
-                return new LFloat(x * LFloat.Precision);
+                return x;
             }
         }
 
-        public LFloat Ceil
+        public int Ceil
         {
             get
             {
@@ -352,7 +352,7 @@ namespace LockStepMath
                     }
                 }
 
-                return new LFloat(x * LFloat.Precision);
+                return x;
             }
         }
     }

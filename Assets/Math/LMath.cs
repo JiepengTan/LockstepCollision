@@ -174,6 +174,10 @@ namespace LockStepMath
             return new LFloat(Sqrt((long) a._val * LFloat.Precision));
         }
 
+        public static LFloat Sqr(LFloat a){
+            return a * a;
+        }
+
         public static long Clamp(long a, long min, long max)
         {
             if (a < min)
