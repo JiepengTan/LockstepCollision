@@ -73,8 +73,32 @@ namespace LockStepCollision
         {
             return Dot(b, Cross(c, a));
         }
+
+        // BBox Method Definitions
+        public static  AABB Union(AABB b,  Point p) {
+            AABB ret = new AABB();
+            ret.min.x = Min(b.min.x, p.x);
+            ret.min.y = Min(b.min.y, p.y);
+            ret.min.z = Min(b.min.z, p.z);
+            ret.max.x = Max(b.max.x, p.x);
+            ret.max.y = Max(b.max.y, p.y);
+            ret.max.z = Max(b.max.z, p.z);
+            return ret;
+        }
+
+
+        public static  AABB Union(AABB b, AABB b2) {
+            AABB ret = new AABB();
+            ret.min.x = Min(b.min.x, b2.min.x);
+            ret.min.y = Min(b.min.y, b2.min.y);
+            ret.min.z = Min(b.min.z, b2.min.z);
+            ret.max.x = Max(b.max.x, b2.max.x);
+            ret.max.y = Max(b.max.y, b2.max.y);
+            ret.max.z = Max(b.max.z, b2.max.z);
+            return ret;
+        }
         
-    
+    }
     }
 
 

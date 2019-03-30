@@ -1,5 +1,6 @@
 using LockStepMath;
 using System;
+using System.Security.Cryptography.X509Certificates;
 
 namespace LockStepCollision
 {
@@ -11,6 +12,7 @@ namespace LockStepCollision
         Cylinder,
         OBB,
         ColMesh,
+        Triangle,
         Plane,
         Ray,
         Rect,
@@ -28,6 +30,8 @@ namespace LockStepCollision
         {
             get { return EColType.EnumCount; }
         }
+
+        public virtual AABB GetBound(){ return null;}
 
         public virtual Sphere GetBoundSphere()
         {
@@ -80,7 +84,10 @@ namespace LockStepCollision
         {
             throw new System.NotImplementedException(GetType() + " not implement this TestWithRay");
         }
-        
+        public virtual bool TestWith(Ray ray,ref LFloat tmin)
+        {
+            throw new System.NotImplementedException(GetType() + " not implement this TestWithRay");
+        }
         
         
         public virtual bool TestWith(Cylinder cylinder)
