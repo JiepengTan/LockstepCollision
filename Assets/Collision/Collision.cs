@@ -3,15 +3,12 @@ using static LockStepMath.LMath;
 using Point = LockStepMath.LVector;
 using Point2D = LockStepMath.LVector2D;
 
-namespace LockStepCollision
-{
-    public static partial class Collision
-    {
+namespace LockStepCollision {
+    public static partial class Collision {
         // Compute barycentric coordinates (u, v, w) for 
         // point p with respect to triangle (a, b, c)
         // 使用克莱姆法则
-        public static void Barycentric(Point a, Point b, Point c, Point p, out LFloat u, out LFloat v, out LFloat w)
-        {
+        public static void Barycentric(Point a, Point b, Point c, Point p, out LFloat u, out LFloat v, out LFloat w){
             LVector v0 = b - a, v1 = c - a, v2 = p - a;
             LFloat d00 = Dot(v0, v0);
             LFloat d01 = Dot(v0, v1);
@@ -25,13 +22,11 @@ namespace LockStepCollision
         }
 
         //
-        public static LFloat TriArea2D(LFloat x1, LFloat y1, LFloat x2, LFloat y2, LFloat x3, LFloat y3)
-        {
+        public static LFloat TriArea2D(LFloat x1, LFloat y1, LFloat x2, LFloat y2, LFloat x3, LFloat y3){
             return (x1 - x2) * (y2 - y3) - (x2 - x3) * (y1 - y2);
         }
 
-        public static bool IsConvexQuad(Point a, Point b, Point c, Point d)
-        {
+        public static bool IsConvexQuad(Point a, Point b, Point c, Point d){
             // Quad is nonconvex if Dot(Cross(bd, ba), Cross(bd, bc)) >= 0
             LVector bda = Cross(d - b, a - b);
             LVector bdc = Cross(d - b, c - b);
@@ -43,8 +38,7 @@ namespace LockStepCollision
         }
 
         // Return index i of point p[i] farthest from the edge ab, to the left of the edge
-        public static int PointFarthestFromEdge(Point2D a, Point2D b, Point2D[] p, int n)
-        {
+        public static int PointFarthestFromEdge(Point2D a, Point2D b, Point2D[] p, int n){
             // Create edge LVector and LVector (counterclockwise) perpendicular to it
             LVector2D e = b - a, eperp = new LVector2D(-e.y, e.x);
 
@@ -53,12 +47,10 @@ namespace LockStepCollision
             LFloat maxVal = LFloat.FLT_MIN, rightMostVal = LFloat.FLT_MIN;
 
             // Test all points to find the one farthest from edge ab on the left side
-            for (int i = 1; i < n; i++)
-            {
+            for (int i = 1; i < n; i++) {
                 LFloat d = Dot2D(p[i] - a, eperp); // d is proportional to distance along eperp
                 LFloat r = Dot2D(p[i] - a, e); // r is proportional to distance along e
-                if (d > maxVal || (d == maxVal && r > rightMostVal))
-                {
+                if (d > maxVal || (d == maxVal && r > rightMostVal)) {
                     bestIndex = i;
                     maxVal = d;
                     rightMostVal = r;
@@ -67,15 +59,14 @@ namespace LockStepCollision
 
             return bestIndex;
         }
-        
+
         //TODO 校验 Scalar的正负性
-        public static LFloat ScalarTriple(LVector a, LVector b, LVector c)
-        {
+        public static LFloat ScalarTriple(LVector a, LVector b, LVector c){
             return Dot(b, Cross(c, a));
         }
 
         // BBox Method Definitions
-        public static  AABB Union(AABB b,  Point p) {
+        public static AABB Union(AABB b, Point p){
             AABB ret = new AABB();
             ret.min.x = Min(b.min.x, p.x);
             ret.min.y = Min(b.min.y, p.y);
@@ -87,7 +78,7 @@ namespace LockStepCollision
         }
 
 
-        public static  AABB Union(AABB b, AABB b2) {
+        public static AABB Union(AABB b, AABB b2){
             AABB ret = new AABB();
             ret.min.x = Min(b.min.x, b2.min.x);
             ret.min.y = Min(b.min.y, b2.min.y);
@@ -97,12 +88,12 @@ namespace LockStepCollision
             ret.max.z = Max(b.max.z, b2.max.z);
             return ret;
         }
-        
-    }
     }
 
 
     #region 备选方案
+
+/*
 
     public static partial class Collision
     {
@@ -227,8 +218,8 @@ namespace LockStepCollision
 
             return inside;
         }
-        */
     }
+    */
 
     #endregion
 }
