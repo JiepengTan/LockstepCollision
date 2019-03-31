@@ -11,68 +11,66 @@ using Shape = LockStepCollision.BaseShape;
 using static LockStep.Algorithm;
 
 namespace LockStepCollision {
-    public struct Cell {
-        public Cell(int px, int py, int pz){
-            x = px;
-            y = py;
-            z = pz;
-        }
+ 
+    public class HierachyGrid  {
+        /// <summary>
+        /// the size of cell
+        /// </summary>
+        public LFloat MIN_CELL_SIZE = 4.0f.ToLFloat();
 
-        public int x, y, z;
-    };
-
-
-    public class HierachyGrid {
         private const int NUM_BUCKETS = 1024;
-        const uint __h1 = 0x8da6b343; // Large multiplicative constants;
-        const uint __h2 = 0xd8163841; // here arbitrarily chosen primes
-        const uint __h3 = 0xcb1ab31f;
-
-        // Computes hash bucket index in range [0, NUM_BUCKETS-1]
-        static int ComputeHashBucketIndex(Cell cellPos){
-            int n = (int) (__h1 * cellPos.x + __h2 * cellPos.y + __h3 * cellPos.z);
-            n = n % NUM_BUCKETS;
-            if (n < 0) n += NUM_BUCKETS;
-            return n;
-        }
-
         private const int HGRID_MAX_LEVELS = 5;
 
-        uint occupiedLevelsMask; // Initially zero (Implies max 32 hgrid levels)
-        int[] objectsAtLevel = new int[HGRID_MAX_LEVELS]; // Initially all zero
-        CObject[] objectBucket = new CObject[NUM_BUCKETS]; // Initially all NULL
-        int[] timeStamp = new int[NUM_BUCKETS]; // Initially all zero
-        int tick;
+        private uint occupiedLevelsMask; // Initially zero (Implies max 32 hgrid levels)
+        private int[] objectsAtLevel = new int[HGRID_MAX_LEVELS]; // Initially all zero
+        private CObject[] objectBucket = new CObject[NUM_BUCKETS]; // Initially all NULL
+        private int[] timeStamp = new int[NUM_BUCKETS]; // Initially all zero
+        private int tick;
 
+        private static LFloat SPHERE_TO_CELL_RATIO = LFloat.one / 4; // Largest sphere in cell is 1/4*cell size
+        private static LFloat CELL_TO_CELL_RATIO = 2.0f.ToLFloat(); // Cells at next level are 2*side of current cell
 
-        public class CObject {
-            public CObject pNextObject; // Embedded link to next hgrid object
-            public CObject pPreObject;
-            public Point pos; // x, y (and z) position for sphere (or top left AABB corner)
-            public LFloat radius; // Radius for bounding sphere (or width of AABB)
-            public int bucket; // Index of hash bucket object is in
-            public int level; // Grid level for the object
-        };
+        private HashSet<long> allCheckedCollitionPairs = new HashSet<long>(); //all has checked collision pairs in this frame
 
-        static LFloat SPHERE_TO_CELL_RATIO = LFloat.one / 4; // Largest sphere in cell is 1/4*cell size
-        static LFloat CELL_TO_CELL_RATIO = 2.0f.ToLFloat(); // Cells at next level are 2*side of current cell
-        private static LFloat MIN_CELL_SIZE = 4.0f.ToLFloat();
+        private HashSet<long> lastFrameCollidedPairs = new HashSet<long>(); //all pairs that collided last frame
+
+        private LFloat[] levelSize = new LFloat[HGRID_MAX_LEVELS];
+
+        public Dictionary<int, CObject> allCObjs = new Dictionary<int, CObject>();
+
+        public HierachyGrid(){
+            //init level to size map
+            int level = 0;
+            LFloat size = MIN_CELL_SIZE;
+            levelSize[0] = size;
+            for (int i = 1; i < HGRID_MAX_LEVELS; i++) {
+                size *= CELL_TO_CELL_RATIO;
+                levelSize[i] = size;
+            }
+            //should read from config
+            for (int i = 0; i < targetMasks.Length; i++) {
+                targetMasks[i] = 0xffffffff;
+            }
+        }
+        private uint[] targetMasks = new uint[32];
+        private uint GetTargetMask(CObject obj){
+            return targetMasks[obj.layerMaskIdx];
+        }
+
+        public LFloat LevelToSize(int level){
+            return levelSize[level];
+        }
 
         public void AddObject(CObject obj){
             // Find lowest level where object fully fits inside cell, taking RATIO into account
-            int level = 0;
-            LFloat size = MIN_CELL_SIZE;
-            LFloat diameter = obj.radius * 2;
-            for (level = 0; size * SPHERE_TO_CELL_RATIO < diameter; level++)
-                size *= CELL_TO_CELL_RATIO;
+            var cellPos = ComputeCellPos(obj);
+            var bucket = ComputeHashBucketIndex(cellPos);
+            AddObject(obj, bucket, cellPos);
+        }
 
-            // Assert if object is larger than largest grid cell
-            Debug.Assert(level < HGRID_MAX_LEVELS);
-
-            // Add object to grid square, and remember cell and level numbers,
-            // treating level as a third dimension coordinate
-            Cell cellPos = new Cell((int) (obj.pos.x / size), (int) (obj.pos.y / size), level);
-            int bucket = ComputeHashBucketIndex(cellPos);
+        private void AddObject(CObject obj, int bucket, Cell cell){
+            var level = cell.z;
+            obj.cellPos = cell;
             obj.bucket = bucket;
             obj.level = level;
             obj.pPreObject = null;
@@ -111,22 +109,72 @@ namespace LockStepCollision {
             }
         }
 
+        public void ChangeObjectCell(CObject obj, Cell newCell, int newBucket){
+            RemoveObject(obj);
+            AddObject(obj, newBucket, newCell);
+        }
+
+        public void OnObjectMoved(CObject obj, LVector newPos){
+            var size = LevelToSize(obj.level);
+            var x = (int) (obj.pos.x / size);
+            var y = (int) (obj.pos.y / size);
+            //try to quit fast 
+            if (x == obj.cellPos.x && y == obj.cellPos.y) {
+                return;
+            }
+
+            obj.cellPos = new Cell(x, y, obj.level);
+            var bucket = ComputeHashBucketIndex(obj.cellPos);
+            if (obj.bucket != bucket) {
+                ChangeObjectCell(obj, obj.cellPos, bucket);
+            }
+        }
+
+        public void OnObjectMovedAndSizeChanged(CObject obj){
+            var cellPos = ComputeCellPos(obj);
+            if (cellPos != obj.cellPos) {
+                obj.cellPos = cellPos;
+                var bucket = ComputeHashBucketIndex(cellPos);
+                if (obj.bucket != bucket) {
+                    ChangeObjectCell(obj, obj.cellPos, bucket);
+                }
+            }
+        }
+
+        private long ComputeColisionPairKey(CObject a, CObject b){
+            if (a.ID > b.ID) {
+                return (((long) a.ID) << 32) | b.ID;
+            }
+            else {
+                return (((long) b.ID) << 32) | a.ID;
+            }
+        }
+
+        public void CheckAllCollision(System.Func<CObject, CObject, bool> pCallbackFunc,
+            System.Action<CObject, CObject, int> collitionResultCallBack){
+            allCheckedCollitionPairs.Clear();
+            foreach (var item in allCObjs) {
+                CheckCollision(item.Value, pCallbackFunc, collitionResultCallBack, true);
+            }
+
+            allCheckedCollitionPairs.Clear();
+        }
+
+        public const int ETriggerEnter = 0;
+        public const int ETriggerExit = 1;
+        public const int ETriggerStay = 2;
+
         // Test collisions between object and all objects in hgrid
-        public void CheckCollision(CObject obj, System.Action<CObject, CObject> pCallbackFunc){
+        private void CheckCollision(CObject obj, System.Func<CObject, CObject, bool> pCallbackFunc,
+            System.Action<CObject, CObject, int> collitionResultCallBack,
+            bool isNeedRecoderCheck = false){
             LFloat size = MIN_CELL_SIZE;
             int startLevel = 0;
             uint occupiedLevelsMask = this.occupiedLevelsMask;
             Point pos = obj.pos;
 
-            // If all objects are tested at the same time, the appropriate starting
-            // grid level can be computed as:
-            // LFloat diameter = 2.0f * obj.radius;
-            // for ( ; size * SPHERE_TO_CELL_RATIO < diameter; startLevel++) {
-            //     size *= CELL_TO_CELL_RATIO;
-            //     occupiedLevelsMask >>= 1;
-            // }
-
             // For each new query, increase time stamp counter
+            var targetLayerMask = GetTargetMask(obj);
             this.tick++;
             for (int level = startLevel;
                 level < HGRID_MAX_LEVELS;
@@ -145,7 +193,7 @@ namespace LockStepCollision {
                 int y1 = ((pos.y - delta) * ooSize).Floor;
                 int x2 = ((pos.x + delta) * ooSize).Ceil;
                 int y2 = ((pos.y + delta) * ooSize).Ceil;
-
+        
                 // Check all the grid cells overlapped on current level
                 for (int x = x1; x <= x2; x++) {
                     for (int y = y1; y <= y2; y++) {
@@ -160,10 +208,41 @@ namespace LockStepCollision {
                         // Loop through all objects in the bucket to find nearby objects
                         CObject p = this.objectBucket[bucket];
                         while (p != null) {
-                            if (p != obj) {
-                                LFloat dist2 = Sqr(pos.x - p.pos.x) + Sqr(pos.y - p.pos.y);
-                                if (dist2 <= Sqr(obj.radius + p.radius + LFloat.EPSILON))
-                                    pCallbackFunc(obj, p); // Close, call callback function
+                            var layermask = p.LayerMask;
+                            var isTargetLayer = ((targetLayerMask & layermask)!= 0);
+                            if (isTargetLayer && p != obj && p.cellPos == cellPos ) {
+                                long pairKey = -1L; // pairkey must >0L
+                                if (isNeedRecoderCheck) {
+                                    pairKey = ComputeColisionPairKey(p, obj);
+                                    //check whether has checked in this frame
+                                    if (allCheckedCollitionPairs.Add(pairKey)) {
+                                        LFloat dist2 = Sqr(pos.x - p.pos.x) + Sqr(pos.y - p.pos.y);
+                                        if (dist2 <= Sqr(obj.radius + p.radius + LFloat.EPSILON)) {
+                                            var hasCollided = pCallbackFunc(obj, p); // Close, call callback function
+                                            var hasCollidedLastFrame = lastFrameCollidedPairs.Contains(pairKey);
+                                            if (!hasCollided) {
+                                                if (hasCollidedLastFrame) {
+                                                    collitionResultCallBack(p, obj, HierachyGrid.ETriggerExit);
+                                                }
+                                            }
+                                            else if (hasCollidedLastFrame) {
+                                                collitionResultCallBack(p, obj, HierachyGrid.ETriggerStay);
+                                            }
+                                            else {
+                                                collitionResultCallBack(p, obj, HierachyGrid.ETriggerEnter);
+                                            }
+                                        }
+                                    }
+                                }
+                                else {
+                                    LFloat dist2 = Sqr(pos.x - p.pos.x) + Sqr(pos.y - p.pos.y);
+                                    if (dist2 <= Sqr(obj.radius + p.radius + LFloat.EPSILON)) {
+                                        var hasCollided = pCallbackFunc(obj, p); // Close, call callback function
+                                        if (hasCollided) {
+                                            collitionResultCallBack(p, obj, HierachyGrid.ETriggerEnter);
+                                        }
+                                    }
+                                }
                             }
 
                             p = p.pNextObject;
@@ -171,6 +250,31 @@ namespace LockStepCollision {
                     }
                 }
             } // end for level
+        }
+
+
+        // Computes hash bucket index in range [0, NUM_BUCKETS-1]
+        static int ComputeHashBucketIndex(Cell cellPos){
+            int n = cellPos.GetHashCode();
+            n = n % NUM_BUCKETS;
+            if (n < 0) n += NUM_BUCKETS;
+            return n;
+        }
+
+
+        private Cell ComputeCellPos(CObject obj){
+            int level = 0;
+            LFloat size = MIN_CELL_SIZE;
+            LFloat diameter = obj.radius * 2;
+            for (level = 0; size * SPHERE_TO_CELL_RATIO < diameter; level++)
+                size *= CELL_TO_CELL_RATIO;
+
+            // Assert if object is larger than largest grid cell
+            Debug.Assert(level < HGRID_MAX_LEVELS);
+
+            // Add object to grid square, and remember cell and level numbers,
+            // treating level as a third dimension coordinate
+            return new Cell((int) (obj.pos.x / size), (int) (obj.pos.y / size), level);
         }
     }
 }
