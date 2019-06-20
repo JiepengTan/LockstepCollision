@@ -1,13 +1,9 @@
 using Lockstep.Math;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
-using UnityEngine;
-using static Lockstep.Collision.Utils;
 using static Lockstep.Math.LMath;
 using Point2D = Lockstep.Math.LVector2;
 using Debug = UnityEngine.Debug;
 using Shape = Lockstep.Collision.BaseShape;
-using static LockStep.Algorithm;
 
 namespace Lockstep.Collision {
  

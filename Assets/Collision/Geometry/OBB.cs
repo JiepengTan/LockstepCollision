@@ -47,6 +47,16 @@ namespace Lockstep.Collision
         {
             return new Sphere(c,e.magnitude);
         }
+        
+        public override void UpdateRotation(LVector3 forward, LVector3 up){
+            u = new LAxis3D(Cross(forward,up),up,forward);
+        }
+
+        public override void UpdatePosition(LVector3 targetPos){
+            c = targetPos;
+        }
+
+        
         public override bool TestWithShape(BaseShape shape)
         {
             return shape.TestWith(this);

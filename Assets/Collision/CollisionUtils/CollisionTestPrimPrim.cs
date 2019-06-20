@@ -77,16 +77,28 @@ namespace Lockstep.Collision
                 return false;
             }
 
+            //0.检测端点距离
+            var maxDist = capsule.r * capsule.r;
+            var sqDistA = Utils.SqDistPointOBB(capsule.a, obb);
+            if (sqDistA <= maxDist) {
+                return true;
+            }
+            var sqDistB = Utils.SqDistPointOBB(capsule.b, obb);
+            if (sqDistB <= maxDist) {
+                return true;
+            }
+            
             //0.Capsule 转换到OBB坐标 空间转换为Capsule VS AABB 
-            var rayd = capsule.b - capsule.a;
             //1 将capsule 变成一个射线 
-            var lrayd = obb.u.WorldToLocal(rayd);
+            var lrayd = obb.u.WorldToLocal(capsule.b - capsule.a);
             var lraydn = lrayd.normalized;
-            var cap2obb = (obb.c - capsule.a);
+            var lcapa = obb.u.WorldToLocal( capsule.a);
+            var cap2obb = (/*obb.lc == LVector3.zero*/- lcapa);
             var aabb = obb.ToAABB();
             //2.将射线沿着AABB 中心靠近capsule.r 距离 
             var orthDir = (cap2obb -  Dot(lraydn, cap2obb) * lraydn ).normalized;
-            var finalRayC = (-cap2obb) - (orthDir * capsule.r);
+            var finalRayC = lcapa + (orthDir * capsule.r);
+            
             //3.碰撞转换为ray AABB碰撞 
             if (Utils.IntersectRayAABB(finalRayC, lrayd, aabb, out LFloat tmin, out LVector3 q))
             {

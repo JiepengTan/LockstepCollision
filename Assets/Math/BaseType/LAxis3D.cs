@@ -10,11 +10,11 @@ namespace Lockstep.Math
         public LVector3 z;
         public static readonly LAxis3D identity = new LAxis3D(LVector3.right, LVector3.up, LVector3.forward);
 
-        public LAxis3D(LVector3 x, LVector3 y, LVector3 z)
+        public LAxis3D(LVector3 right, LVector3 up, LVector3 forward)
         {
-            this.x = x;
-            this.y = y;
-            this.z = z;
+            this.x = right;
+            this.y = up;
+            this.z = forward;
         }
 
         public LVector3 WorldToLocal(LVector3 vec)

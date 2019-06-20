@@ -7,10 +7,10 @@ using Test;
 using Lockstep.Collision;
 using Lockstep.Math;
 
-[CustomEditor(typeof(DebugColliderProxy))]
+[CustomEditor(typeof(DebugUnityColliderProxy))]
 public class EditorColliderProxy : Editor
 {
-    private DebugColliderProxy owner;
+    private DebugUnityColliderProxy owner;
 
     Vector3 posOffset = new Vector3(0, 0, 0);
     float GizmoSize = 0.4f;
@@ -19,7 +19,7 @@ public class EditorColliderProxy : Editor
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        owner = (DebugColliderProxy) target;
+        owner = (DebugUnityColliderProxy) target;
 
     }
 
@@ -27,7 +27,7 @@ public class EditorColliderProxy : Editor
     void OnSceneGUI()
     {
         
-        owner = (DebugColliderProxy) target;
+        owner = (DebugUnityColliderProxy) target;
         //DrawPathHeap();
     }
     
