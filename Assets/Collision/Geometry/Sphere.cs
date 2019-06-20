@@ -1,6 +1,5 @@
 using Lockstep.Math;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 using Point2D = Lockstep.Math.LVector2;
 
 namespace Lockstep.Collision
@@ -16,14 +15,14 @@ namespace Lockstep.Collision
         /// <summary>
         /// // Sphere center
         /// </summary>
-        public Point c;
+        public LVector3 c;
 
         /// <summary>
         /// Sphere radius
         /// </summary>
         public LFloat r;
         
-        public Sphere(Point c, LFloat r)
+        public Sphere(LVector3 c, LFloat r)
         {
             this.c = c;
             this.r = r;
@@ -57,7 +56,7 @@ namespace Lockstep.Collision
 
         public override bool TestWith(OBB obb)
         {
-            return Utils.TestSphereOBB( this,obb,out LVector p);
+            return Utils.TestSphereOBB( this,obb,out LVector3 p);
         }
         
         public override bool TestWith(Plane plane)
@@ -67,7 +66,7 @@ namespace Lockstep.Collision
         
         public override bool TestWith(Ray ray)
         {
-            return Utils.IntersectRaySphere(ray.o, ray.d,this, out LFloat t,out LVector p);
+            return Utils.IntersectRaySphere(ray.o, ray.d,this, out LFloat t,out LVector3 p);
         }
     };
 }

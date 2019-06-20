@@ -1,7 +1,6 @@
 using Lockstep.Math;
 using Lockstep.Math;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 using Point2D = Lockstep.Math.LVector2;
 
 namespace Lockstep.Collision
@@ -14,14 +13,14 @@ namespace Lockstep.Collision
     public static partial class Utils
     {
         //TODO 如果Plane 发现最后决定需要进行 归一化 则可以省掉 后面的 Dot 计算
-        public static Point ClosestPtPointPlane(Point q, Plane p)
+        public static LVector3 ClosestPtPointPlane(LVector3 q, Plane p)
         {
             LFloat t = (Dot(p.n, q) - p.d) / Dot(p.n, p.n);
             return q - t * p.n;
         }
 
         //TODO n 归一化问题
-        public static LFloat DistPointPlane(Point q, Plane p)
+        public static LFloat DistPointPlane(LVector3 q, Plane p)
         {
             // return Dot(q, p.n) - p.d; if plane equation normalized (||p.n||==1)
             return (Dot(p.n, q) - p.d) / Dot(p.n, p.n);
@@ -29,9 +28,9 @@ namespace Lockstep.Collision
 
         // Given segment ab and point c, computes closest point d on ab.
         // Also returns t for the position of d, d(t) = a + t*(b - a)
-        public static void ClosestPtPointSegment(Point c, Point a, Point b, out LFloat t, out Point d)
+        public static void ClosestPtPointSegment(LVector3 c, LVector3 a, LVector3 b, out LFloat t, out LVector3 d)
         {
-            LVector ab = b - a;
+            LVector3 ab = b - a;
             // Project c onto ab, computing parameterized position d(t) = a + t*(b - a)
             t = Dot(c - a, ab) / Dot(ab, ab);
             // If outside segment, clamp t (and therefore d) to the closest endpoint
@@ -42,9 +41,9 @@ namespace Lockstep.Collision
         }
 
         /// <summary> Returns the squared distance between point c and segment ab </summary>
-        public static LFloat SqDistPointSegment(Point a, Point b, Point c)
+        public static LFloat SqDistPointSegment(LVector3 a, LVector3 b, LVector3 c)
         {
-            LVector ab = b - a, ac = c - a, bc = c - b;
+            LVector3 ab = b - a, ac = c - a, bc = c - b;
             LFloat e = Dot(ac, ab);
             // Handle cases where c projects outside ab
             if (e <= LFloat.zero) return Dot(ac, ac);
@@ -59,12 +58,12 @@ namespace Lockstep.Collision
         /// S2(t)=P2+t*(Q2-P2), returning s and t. Function result is squared
         /// distance between between S1(s) and S2(t)
         /// </summary>
-        public static LFloat ClosestPtSegmentSegment(Point p1, Point q1, Point p2, Point q2,
-            out LFloat s, out LFloat t, out Point c1, out Point c2)
+        public static LFloat ClosestPtSegmentSegment(LVector3 p1, LVector3 q1, LVector3 p2, LVector3 q2,
+            out LFloat s, out LFloat t, out LVector3 c1, out LVector3 c2)
         {
-            LVector d1 = q1 - p1; // Direction vector of segment S1
-            LVector d2 = q2 - p2; // Direction vector of segment S2
-            LVector r = p1 - p2;
+            LVector3 d1 = q1 - p1; // Direction vector of segment S1
+            LVector3 d2 = q2 - p2; // Direction vector of segment S2
+            LVector3 r = p1 - p2;
             LFloat a = Dot(d1, d1); // Squared length of segment S1, always nonnegative
             LFloat e = Dot(d2, d2); // Squared length of segment S2, always nonnegative
             LFloat f = Dot(d2, r);
@@ -136,7 +135,7 @@ namespace Lockstep.Collision
 
 
         // Given point p, return the point q on or in AABB b, that is closest to p
-        public static void ClosestPtPointAABB(Point p, AABB b, out Point q)
+        public static void ClosestPtPointAABB(LVector3 p, AABB b, out LVector3 q)
         {
             q = p;
             // For each coordinate axis, if the point coordinate value is
@@ -151,7 +150,7 @@ namespace Lockstep.Collision
         }
 
         // Computes the square distance between a point p and an AABB b
-        public static LFloat SqDistPointAABB(Point p, AABB b)
+        public static LFloat SqDistPointAABB(LVector3 p, AABB b)
         {
             LFloat sqDist = LFloat.zero;
             for (int i = 0; i < 3; i++)
@@ -166,9 +165,9 @@ namespace Lockstep.Collision
         }
 
         // Given point p, return point q on (or in) OBB b, closest to p
-        public static void ClosestPtPointOBB(Point p, OBB b, out Point q)
+        public static void ClosestPtPointOBB(LVector3 p, OBB b, out LVector3 q)
         {
-            LVector d = p - b.c;
+            LVector3 d = p - b.c;
             // Start result at center of box; make steps from there
             q = b.c;
             // For each OBB axis...
@@ -187,9 +186,9 @@ namespace Lockstep.Collision
 
 
         // Computes the square distance between point p and OBB b
-        public static LFloat SqDistPointOBB(Point p, OBB b)
+        public static LFloat SqDistPointOBB(LVector3 p, OBB b)
         {
-            LVector v = p - b.c;
+            LVector3 v = p - b.c;
             LFloat sqDist = LFloat.zero;
             for (int i = 0; i < 3; i++)
             {
@@ -208,9 +207,9 @@ namespace Lockstep.Collision
 
 
         // Given point p, return point q on (or in) Rect r, closest to p
-        public static void ClosestPtPointRect(Point p, Rect r, out Point q)
+        public static void ClosestPtPointRect(LVector3 p, Rect r, out LVector3 q)
         {
-            LVector d = p - r.c;
+            LVector3 d = p - r.c;
             // Start result at center of rect; make steps from there
             q = r.c;
             // For each rect axis...
@@ -229,18 +228,18 @@ namespace Lockstep.Collision
 
         //通过划分Voronoi 区域  来进行判定 最近点 拉格朗日恒等式展开
         //Dot(Cross(a,b),Cross(c,d)) = Dot(a,c)*Dot(b,d) - Dot(a,d)*Dot(b,c)
-        public static Point ClosestPtPointTriangle(Point p, Point a, Point b, Point c)
+        public static LVector3 ClosestPtPointTriangle(LVector3 p, LVector3 a, LVector3 b, LVector3 c)
         {
             // Check if P in vertex region outside A
-            LVector ab = b - a;
-            LVector ac = c - a;
-            LVector ap = p - a;
+            LVector3 ab = b - a;
+            LVector3 ac = c - a;
+            LVector3 ap = p - a;
             LFloat d1 = Dot(ab, ap);
             LFloat d2 = Dot(ac, ap);
             if (d1 <= LFloat.zero && d2 <= LFloat.zero) return a; // barycentric coordinates (1,0,0)
 
             // Check if P in vertex region outside B
-            LVector bp = p - b;
+            LVector3 bp = p - b;
             LFloat d3 = Dot(ab, bp);
             LFloat d4 = Dot(ac, bp);
             if (d3 >= LFloat.zero && d4 <= d3) return b; // barycentric coordinates (0,1,0)
@@ -254,7 +253,7 @@ namespace Lockstep.Collision
             }
 
             // Check if P in vertex region outside C
-            LVector cp = p - c;
+            LVector3 cp = p - c;
             LFloat d5 = Dot(ab, cp);
             LFloat d6 = Dot(ac, cp);
             if (d6 >= LFloat.zero && d5 <= d6) return c; // barycentric coordinates (0,0,1)
@@ -336,20 +335,20 @@ namespace Lockstep.Collision
         }
          */
         // Test if point p lies outside plane through abc
-        public static bool PointOutsideOfPlane(Point p, Point a, Point b, Point c)
+        public static bool PointOutsideOfPlane(LVector3 p, LVector3 a, LVector3 b, LVector3 c)
         {
             return Dot(p - a, Cross(b - a, c - a)) >= LFloat.zero; // [AP AB AC] >= 0
         }
 
-        public static Point ClosestPtPointTetrahedron(Point p, Point a, Point b, Point c, Point d)
+        public static LVector3 ClosestPtPointTetrahedron(LVector3 p, LVector3 a, LVector3 b, LVector3 c, LVector3 d)
         {
             // Start out assuming point inside all halfspaces, so closest to itself
-            Point closestPt = p;
+            LVector3 closestPt = p;
             LFloat bestSqDist = LFloat.FLT_MAX;
             // If point outside face abc then compute closest point on abc
             if (PointOutsideOfPlane(p, a, b, c))
             {
-                Point q = ClosestPtPointTriangle(p, a, b, c);
+                LVector3 q = ClosestPtPointTriangle(p, a, b, c);
                 LFloat sqDist = Dot(q - p, q - p);
                 // Update best closest point if (squared) distance is less than current best
                 if (sqDist < bestSqDist)
@@ -362,7 +361,7 @@ namespace Lockstep.Collision
             // Repeat test for face acd
             if (PointOutsideOfPlane(p, a, c, d))
             {
-                Point q = ClosestPtPointTriangle(p, a, c, d);
+                LVector3 q = ClosestPtPointTriangle(p, a, c, d);
                 LFloat sqDist = Dot(q - p, q - p);
                 if (sqDist < bestSqDist)
                 {
@@ -374,7 +373,7 @@ namespace Lockstep.Collision
             // Repeat test for face adb
             if (PointOutsideOfPlane(p, a, d, b))
             {
-                Point q = ClosestPtPointTriangle(p, a, d, b);
+                LVector3 q = ClosestPtPointTriangle(p, a, d, b);
                 LFloat sqDist = Dot(q - p, q - p);
                 if (sqDist < bestSqDist)
                 {
@@ -386,7 +385,7 @@ namespace Lockstep.Collision
             // Repeat test for face bdc
             if (PointOutsideOfPlane(p, b, d, c))
             {
-                Point q = ClosestPtPointTriangle(p, b, d, c);
+                LVector3 q = ClosestPtPointTriangle(p, b, d, c);
                 LFloat sqDist = Dot(q - p, q - p);
                 if (sqDist < bestSqDist)
                 {
@@ -398,7 +397,7 @@ namespace Lockstep.Collision
             return closestPt;
         }
 
-        public static LFloat Signed2DTriArea(Point a, Point b, Point c)
+        public static LFloat Signed2DTriArea(LVector3 a, LVector3 b, LVector3 c)
         {
             return (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x);
         }

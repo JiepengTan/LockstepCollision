@@ -3,7 +3,6 @@ using Lockstep.Math;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 using static Lockstep.Collision.Utils;
 using Debug = UnityEngine.Debug;
 using Shape = Lockstep.Collision.BaseShape;
@@ -20,7 +19,7 @@ namespace Lockstep.Collision {
         }
 
         public int ShapeNumber;
-        public Point centroid;
+        public LVector3 centroid;
         public AABB bounds;
     };
 
@@ -95,7 +94,7 @@ namespace Lockstep.Collision {
 
         public bool Compare(BVHShapeInfo p){
             int b = (nBuckets * ((p.centroid[dim] - centroidBounds.min[dim]) /
-                                 (centroidBounds.max[dim] - centroidBounds.min[dim]))).ToInt;
+                                 (centroidBounds.max[dim] - centroidBounds.min[dim]))).ToInt();
             if (b == nBuckets) b = nBuckets - 1;
             Debug.Assert(b >= 0 && b < nBuckets);
             return b <= splitBucket;
@@ -128,7 +127,7 @@ namespace Lockstep.Collision {
     }
 
     public class BVH {
-        static bool IntersectP(AABB bounds, Ray ray, LVector invDir, int[] dirIsNeg, LFloat mint, LFloat maxt){
+        static bool IntersectP(AABB bounds, Ray ray, LVector3 invDir, int[] dirIsNeg, LFloat mint, LFloat maxt){
             // Check for ray intersection against $x$ and $y$ slabs
             LFloat tmin = (bounds[dirIsNeg[0]].x - ray.o.x) * invDir.x;
             LFloat tmax = (bounds[1 - dirIsNeg[0]].x - ray.o.x) * invDir.x;
@@ -190,7 +189,7 @@ namespace Lockstep.Collision {
 
         bool IntersectP(Ray ray, LFloat tmin, LFloat tmax){
             if (nodes == null || nodes.Count == 0) return false;
-            LVector invDir = new LVector(1 / ray.d.x, 1 / ray.d.y, 1 / ray.d.z);
+            LVector3 invDir = new LVector3(1 / ray.d.x, 1 / ray.d.y, 1 / ray.d.z);
             int[] dirIsNeg = new int[3] {
                 invDir.x < 0 ? 1 : 0,
                 invDir.y < 0 ? 1 : 0,
@@ -305,7 +304,7 @@ namespace Lockstep.Collision {
                     for (int i = start; i < end; ++i) {
                         int b = (nBuckets * (
                                      (buildData[i].centroid[dim] - centroidBounds.min[dim]) /
-                                     (centroidBounds.max[dim] - centroidBounds.min[dim]))).ToInt;
+                                     (centroidBounds.max[dim] - centroidBounds.min[dim]))).ToInt();
                         if (b == nBuckets) b = nBuckets - 1;
                         Debug.Assert(b >= 0 && b < nBuckets);
                         buckets[b].count++;
@@ -403,7 +402,7 @@ namespace Lockstep.Collision {
         bool Intersect(Ray ray, ref LFloat isect){
             if (nodes == null || nodes.Count == 0) return false;
             bool hit = false;
-            LVector invDir = new LVector(1 / ray.d.x, 1 / ray.d.y, 1 / ray.d.z);
+            LVector3 invDir = new LVector3(1 / ray.d.x, 1 / ray.d.y, 1 / ray.d.z);
             int[] dirIsNeg = new int[3] {
                 invDir.x < 0 ? 1 : 0,
                 invDir.y < 0 ? 1 : 0,

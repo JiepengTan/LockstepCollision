@@ -20,7 +20,7 @@ namespace Lockstep.Collision
         public override void OnDrawGizmos(bool isGizmo,Color color)
         {
 #if UNITY_EDITOR
-            DebugExtension.DebugLocalCube(Matrix4x4.TRS(c.ToVector3,Quaternion.identity, Vector3.one),r.ToVector3, color);
+            DebugExtension.DebugLocalCube(Matrix4x4.TRS(c.ToVector3(),Quaternion.identity, Vector3.one),r.ToVector3(), color);
 #endif
         }
     }
@@ -30,7 +30,7 @@ namespace Lockstep.Collision
         public override void OnDrawGizmos(bool isGizmo,Color color)
         {
 #if UNITY_EDITOR
-            DebugExtension.DebugLocalCube(Matrix4x4.TRS(c.ToVector3,Quaternion.identity, Vector3.one),e.ToVector3, color);
+            DebugExtension.DebugLocalCube(Matrix4x4.TRS(c.ToVector3(),Quaternion.identity, Vector3.one),e.ToVector3(), color);
 #endif
         }
     }
@@ -40,7 +40,7 @@ namespace Lockstep.Collision
         public override void OnDrawGizmos(bool isGizmo,Color color)
         {
 #if UNITY_EDITOR
-            DebugExtension.DebugWireSphere(c.ToVector3, color,r.ToFloat);
+            DebugExtension.DebugWireSphere(c.ToVector3(), color,r.ToFloat());
 #endif
         }
     }
@@ -50,7 +50,7 @@ namespace Lockstep.Collision
         public override void OnDrawGizmos(bool isGizmo,Color color)
         {
 #if UNITY_EDITOR
-            DebugExtension.DrawCapsule(a.ToVector3, b.ToVector3,color,r.ToFloat);
+            DebugExtension.DrawCapsule(a.ToVector3(), b.ToVector3(),color,r.ToFloat());
 #endif
         }
     }

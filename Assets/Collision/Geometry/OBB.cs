@@ -2,7 +2,6 @@ using Lockstep.Math;
 using TMPro;
 using UnityEngine;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 using Point2D = Lockstep.Math.LVector2;
 
 namespace Lockstep.Collision
@@ -22,17 +21,17 @@ namespace Lockstep.Collision
         /// <summary>
         /// OBB center point
         /// </summary>
-        public Point c;
+        public LVector3 c;
 
         /// <summary>
         /// Local x-, y-, and z-axes
         /// </summary>
-        public Axis3D u;
+        public LAxis3D u;
 
         /// <summary>
         /// Positive halfwidth extents of OBB along each axis
         /// </summary>
-        public LVector e;
+        public LVector3 e;
         
         public AABB ToAABB()
         {
@@ -55,7 +54,7 @@ namespace Lockstep.Collision
         
         public override bool TestWith(Sphere sphere)
         {
-            return Utils.TestSphereOBB(sphere, this,out LVector p);
+            return Utils.TestSphereOBB(sphere, this,out LVector3 p);
         }
         public override bool TestWith(AABB aabb)
         {
@@ -79,7 +78,7 @@ namespace Lockstep.Collision
 
         public override bool TestWith(Ray ray)
         {
-            return Utils.IntersectRayOBB(ray.o, ray.d, this, out LFloat tmin, out LVector temp);
+            return Utils.IntersectRayOBB(ray.o, ray.d, this, out LFloat tmin, out LVector3 temp);
         }
 
     };

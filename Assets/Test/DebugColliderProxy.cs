@@ -11,11 +11,11 @@ namespace Test
     [System.Serializable]
     public struct ColliderLocalInfo
     {
-        public LVector offset;
-        public LVector rotation;
-        public static readonly ColliderLocalInfo identity = new ColliderLocalInfo(LVector.zero, LVector.zero); 
+        public LVector3 offset;
+        public LVector3 rotation;
+        public static readonly ColliderLocalInfo identity = new ColliderLocalInfo(LVector3.zero, LVector3.zero); 
 
-        public ColliderLocalInfo(LVector offset,LVector rotation)
+        public ColliderLocalInfo(LVector3 offset,LVector3 rotation)
         {
             this.offset = offset;
             this.rotation = rotation;
@@ -127,7 +127,7 @@ namespace Test
             var diffRot = lastRotation != transform.rotation;
             if (diffPos|| diffRot)
             {
-                UpdateBoundBox(diffPos, diffRot,transform.position.ToLVector(),transform.rotation.eulerAngles.ToLVector());
+                UpdateBoundBox(diffPos, diffRot,transform.position.ToLVector3(),transform.rotation.eulerAngles.ToLVector3());
                 lastPosition = transform.position;
                 lastRotation = transform.rotation;
             }
@@ -165,7 +165,7 @@ namespace Test
         {
         }
 
-        public void UpdateBoundBox(bool isDiffPos,bool isDiffRot,LVector targetPos,LVector targetRot)
+        public void UpdateBoundBox(bool isDiffPos,bool isDiffRot,LVector3 targetPos,LVector3 targetRot)
         {
             if (isDiffPos)
             {
@@ -186,20 +186,20 @@ namespace Test
                 case PrimitiveType.Cube:
                 {
                     var _col = new AABB();
-                    _col.min = (obj.transform.position - Vector3.one * 0.5f).ToLVector();
-                    _col.max = (obj.transform.position + Vector3.one * 0.5f).ToLVector();
+                    _col.min = (obj.transform.position - Vector3.one * 0.5f).ToLVector3();
+                    _col.max = (obj.transform.position + Vector3.one * 0.5f).ToLVector3();
                     AddCollider(_col,ColliderLocalInfo.identity); break;
                 }
                 case PrimitiveType.Sphere:
                 {
-                    var _col = new Sphere(obj.transform.position.ToLVector(),0.5f.ToLFloat());
+                    var _col = new Sphere(obj.transform.position.ToLVector3(),0.5f.ToLFloat());
                     AddCollider(_col,ColliderLocalInfo.identity); break;
                 }
                 case PrimitiveType.Capsule:
                 {
                     var _col = new Capsule();
-                    _col.a = (obj.transform.position - Vector3.up * 0.5f).ToLVector();
-                    _col.b = (obj.transform.position + Vector3.up * 0.5f).ToLVector();
+                    _col.a = (obj.transform.position - Vector3.up * 0.5f).ToLVector3();
+                    _col.b = (obj.transform.position + Vector3.up * 0.5f).ToLVector3();
                     _col.r = 0.5f.ToLFloat();
                     AddCollider(_col,ColliderLocalInfo.identity); break;
                 }

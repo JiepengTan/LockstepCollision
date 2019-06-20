@@ -2,7 +2,6 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using Lockstep.Math;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 using Point2D = Lockstep.Math.LVector2;
 
 namespace Lockstep.Collision
@@ -21,12 +20,12 @@ namespace Lockstep.Collision
         /// <summary>
         /// // center point of rectangle
         /// </summary>
-        public Point c;
+        public LVector3 c;
 
         /// <summary>
         ///  unit vectors determining local x and y axes for the rectangle
         /// </summary>
-        public Axis2D u;
+        public LAxis2D u;
 
         /// <summary>
         /// the halfwidth extents of the rectangle along the axes

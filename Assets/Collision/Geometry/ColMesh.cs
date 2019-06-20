@@ -1,5 +1,4 @@
 using Lockstep.Math;
-using Point = Lockstep.Math.LVector;
 
 namespace Lockstep.Collision
 {
@@ -18,9 +17,9 @@ namespace Lockstep.Collision
         }
 
         public int verticesCount;
-        public LVector[] vertices;
-        public LVector[] triangles;
-        public LVector[] normal;
+        public LVector3[] vertices;
+        public LVector3[] triangles;
+        public LVector3[] normal;
         public AABB bounds;
         protected Sphere boundSphere;
 
@@ -33,7 +32,7 @@ namespace Lockstep.Collision
             return boundSphere;
         }
 
-        public override void UpdateCollider(bool isDiffPos, bool isDiffRot, LVector targetPos, LVector targetRot)
+        public override void UpdateCollider(bool isDiffPos, bool isDiffRot, LVector3 targetPos, LVector3 targetRot)
         {
         }
         public override bool TestWithShape(BaseShape shape)

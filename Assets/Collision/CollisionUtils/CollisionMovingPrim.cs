@@ -1,6 +1,5 @@
 using Lockstep.Math;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 using Point2D = Lockstep.Math.LVector2;
 
 namespace Lockstep.Collision
@@ -9,7 +8,7 @@ namespace Lockstep.Collision
     {
         // Intersect sphere s0 moving in direction d over time interval t0 <= t <= t1, against
         // a stationary sphere s1. If found intersecting, return time t of collision
-        public static bool TestMovingSphereSphere(Sphere s0, LVector d, LFloat t0, LFloat t1, Sphere s1, out LFloat t)
+        public static bool TestMovingSphereSphere(Sphere s0, LVector3 d, LFloat t0, LFloat t1, Sphere s1, out LFloat t)
         {
             // Compute sphere bounding motion of s0 during time interval from t0 to t1
             Sphere b = new Sphere();//TODO 移除掉new
@@ -37,7 +36,7 @@ namespace Lockstep.Collision
 
         // Intersect sphere s with movement vector v with plane p. If intersecting
         // return time t of collision and point q at which sphere hits plane
-        public static bool IntersectMovingSpherePlane(Sphere s, LVector v, Plane p, out LFloat t, out Point q)
+        public static bool IntersectMovingSpherePlane(Sphere s, LVector3 v, Plane p, out LFloat t, out LVector3 q)
         {
             // Compute distance of sphere center to plane
             LFloat dist = Dot(p.n, s.c) - p.d;
@@ -74,7 +73,7 @@ namespace Lockstep.Collision
 
 
         // Test if sphere with radius r moving from a to b intersects with plane p
-        public static bool TestMovingSpherePlane(Point a, Point b, LFloat r, Plane p)
+        public static bool TestMovingSpherePlane(LVector3 a, LVector3 b, LFloat r, Plane p)
         {
             // Get the distance for both a and b from plane p
             LFloat adist = Dot(a, p.n) - p.d;
@@ -87,10 +86,10 @@ namespace Lockstep.Collision
             return false;
         }
 
-        public static bool TestMovingSphereSphere(Sphere s0, Sphere s1, LVector v0, LVector v1, out LFloat t)
+        public static bool TestMovingSphereSphere(Sphere s0, Sphere s1, LVector3 v0, LVector3 v1, out LFloat t)
         {
-            LVector s = s1.c - s0.c; // LVector between sphere centers
-            LVector v = v1 - v0; // Relative motion of s1 with respect to stationary s0
+            LVector3 s = s1.c - s0.c; // LVector between sphere centers
+            LVector3 v = v1 - v0; // Relative motion of s1 with respect to stationary s0
             LFloat r = s1.r + s0.r; // Sum of sphere radii
             LFloat c = Dot(s, s) - r * r;
             t = LFloat.zero;
@@ -113,9 +112,9 @@ namespace Lockstep.Collision
         }
 
         // Support function that returns the AABB vertex with index n
-        private static Point Corner(AABB b, int n)
+        private static LVector3 Corner(AABB b, int n)
         {
-            Point p;
+            LVector3 p;
             p._x = ((n & 1) != 0 ? b.max.x : b.min.x)._val;
             p._y = ((n & 2) != 0 ? b.max.y : b.min.y)._val;
             p._z = ((n & 4) != 0 ? b.max.z : b.min.z)._val;
@@ -123,19 +122,19 @@ namespace Lockstep.Collision
         }
 
         //TODO IntersectSegmentCapsule
-        public static bool IntersectSegmentCapsule(Segment seg, Point b, Point e, LFloat r, out LFloat t)
+        public static bool IntersectSegmentCapsule(Segment seg, LVector3 b, LVector3 e, LFloat r, out LFloat t)
         {
             t = LFloat.zero;
             return false;
         }        
         //TODO IntersectRayCapsule
-        public static bool IntersectRayCapsule(Point o,LVector d, Point b, Point e, LFloat r, out LFloat t)
+        public static bool IntersectRayCapsule(LVector3 o,LVector3 d, LVector3 b, LVector3 e, LFloat r, out LFloat t)
         {
             t = LFloat.zero;
             return false;
         }
 
-        public static bool IntersectMovingSphereAABB(Sphere s, LVector d, AABB b, out LFloat t)
+        public static bool IntersectMovingSphereAABB(Sphere s, LVector3 d, AABB b, out LFloat t)
         {
             // Compute the AABB resulting from expanding b by sphere radius r
             AABB e = b;
@@ -149,7 +148,7 @@ namespace Lockstep.Collision
 
             // Intersect ray against expanded AABB e. Exit with no intersection if ray
             // misses e, else get intersection point p and time t as result
-            Point p;
+            LVector3 p;
             if (!IntersectRayAABB(s.c, d, e, out t, out p) || t > LFloat.one)
                 return false;
 
@@ -202,7 +201,7 @@ namespace Lockstep.Collision
 
         // Intersect AABBs ‘a’ and ‘b’ moving with constant velocities va and vb.
         // On intersection, return time of first and last contact in tfirst and tlast
-        public static bool IntersectMovingAABBAABB(AABB a, AABB b, LVector va, LVector vb,
+        public static bool IntersectMovingAABBAABB(AABB a, AABB b, LVector3 va, LVector3 vb,
             out LFloat tfirst, out LFloat tlast)
         {
             // Exit early if ‘a’ and ‘b’ initially overlapping
@@ -213,7 +212,7 @@ namespace Lockstep.Collision
             }
 
             // Use relative velocity; effectively treating 'a' as stationary
-            LVector v = vb - va;
+            LVector3 v = vb - va;
 
             // Initialize times of first and last contact
             tfirst = LFloat.zero;

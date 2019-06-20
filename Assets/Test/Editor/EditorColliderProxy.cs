@@ -41,14 +41,14 @@ public class EditorColliderProxy : Editor
             var _colType = col.ColType;
             switch (_colType)
             {
-                // case   EColType. Sphere: {var _col = col as AABB; Handles.DrawSphere(_col.c.ToVector3, _col.r.ToVector3* GizmoSize * 10f);break;}
-                // case  EColType. AABB: {var _col = col as AABB; Handles.DrawWireCube(_col.c.ToVector3, _col.r.ToVector3* GizmoSize * 10f);break;}
-                // case  EColType. Capsule: {var _col = col as AABB; Handles.DrawWireCube(_col.c.ToVector3, _col.r.ToVector3* GizmoSize * 10f);break;}
-                // case  EColType. OBB: {var _col = col as AABB; Handles.DrawWireCube(_col.c.ToVector3, _col.r.ToVector3* GizmoSize * 10f);break;}
-                // case  EColType. Plane: {var _col = col as AABB; Handles.DrawWireCube(_col.c.ToVector3, _col.r.ToVector3* GizmoSize * 10f);break;}
-                // case  EColType. Rect: {var _col = col as AABB; Handles.DrawWireCube(_col.c.ToVector3, _col.r.ToVector3* GizmoSize * 10f);break;}
-                // case  EColType. Segment: {var _col = col as AABB; Handles.DrawWireCube(_col.c.ToVector3, _col.r.ToVector3* GizmoSize * 10f);break;}
-                // case  EColType. Polygon: {var _col = col as AABB; Handles.DrawWireCube(_col.c.ToVector3, _col.r.ToVector3* GizmoSize * 10f);break;}
+                // case   EColType. Sphere: {var _col = col as AABB; Handles.DrawSphere(_col.c.ToVector3(), _col.r.ToVector3* GizmoSize * 10f);break;}
+                // case  EColType. AABB: {var _col = col as AABB; Handles.DrawWireCube(_col.c.ToVector3(), _col.r.ToVector3* GizmoSize * 10f);break;}
+                // case  EColType. Capsule: {var _col = col as AABB; Handles.DrawWireCube(_col.c.ToVector3(), _col.r.ToVector3* GizmoSize * 10f);break;}
+                // case  EColType. OBB: {var _col = col as AABB; Handles.DrawWireCube(_col.c.ToVector3(), _col.r.ToVector3* GizmoSize * 10f);break;}
+                // case  EColType. Plane: {var _col = col as AABB; Handles.DrawWireCube(_col.c.ToVector3(), _col.r.ToVector3* GizmoSize * 10f);break;}
+                // case  EColType. Rect: {var _col = col as AABB; Handles.DrawWireCube(_col.c.ToVector3(), _col.r.ToVector3* GizmoSize * 10f);break;}
+                // case  EColType. Segment: {var _col = col as AABB; Handles.DrawWireCube(_col.c.ToVector3(), _col.r.ToVector3* GizmoSize * 10f);break;}
+                // case  EColType. Polygon: {var _col = col as AABB; Handles.DrawWireCube(_col.c.ToVector3(), _col.r.ToVector3* GizmoSize * 10f);break;}
             }
         }
         //Gizmos.DrawCube();

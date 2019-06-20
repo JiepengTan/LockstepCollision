@@ -1,38 +1,35 @@
 using Lockstep.Math;
-using UnityEngine;
-using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
-using Point2D = Lockstep.Math.LVector2;
+using static Lockstep.Math.LVector3;
 
-namespace Lockstep.Collision
+namespace Lockstep.Math
 {
-    public struct Axis3D
+    public struct LAxis3D
     {
-        public LVector x;
-        public LVector y;
-        public LVector z;
-        public static readonly Axis3D identity = new Axis3D(LVector.right, LVector.up, LVector.forward);
+        public LVector3 x;
+        public LVector3 y;
+        public LVector3 z;
+        public static readonly LAxis3D identity = new LAxis3D(LVector3.right, LVector3.up, LVector3.forward);
 
-        public Axis3D(LVector x, LVector y, LVector z)
+        public LAxis3D(LVector3 x, LVector3 y, LVector3 z)
         {
             this.x = x;
             this.y = y;
             this.z = z;
         }
 
-        public LVector WorldToLocal(LVector vec)
+        public LVector3 WorldToLocal(LVector3 vec)
         {
             var _x = Dot(x, vec);
             var _y = Dot(y, vec);
             var _z = Dot(z, vec);
-            return new LVector(_x, _y, _z);
+            return new LVector3(_x, _y, _z);
         }
-        public LVector LocalToWorld(LVector vec)
+        public LVector3 LocalToWorld(LVector3 vec)
         {
             return x * vec.x + y * vec.y + z * vec.z;
         }
 
-        public LVector this[int index]
+        public LVector3 this[int index]
         {
             get
             {

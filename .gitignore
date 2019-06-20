@@ -38,3 +38,5 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+Assets/Collision/EditorExtensions/submodule.h
+Assets/Collision/EditorExtensions/submodule.h.meta

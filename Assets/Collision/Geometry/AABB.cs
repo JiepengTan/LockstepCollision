@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using Lockstep.Math;
 using UnityEditor;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 using Point2D = Lockstep.Math.LVector2;
 
 namespace Lockstep.Collision
@@ -14,24 +13,24 @@ namespace Lockstep.Collision
             get { return EColType.AABB; }
         }
 
-        public Point min;
-        public Point max;
+        public LVector3 min;
+        public LVector3 max;
 
         /// <summary>
         /// center point of AABB
         /// </summary>
-        public Point c {
+        public LVector3 c {
             get { return (max + min) * LFloat.half; }
         }
 
         /// <summary>
         /// radius or halfwidth extents
         /// </summary>
-        public LVector r {
+        public LVector3 r {
             get { return (max - min) * LFloat.half; }
         }
 
-        public AABB(Point min, Point max){
+        public AABB(LVector3 min, LVector3 max){
             this.min = min;
             this.max = max;
         }
@@ -55,12 +54,12 @@ namespace Lockstep.Collision
             var obb = new OBB();
             obb.c = c;
             obb.e = r;
-            obb.u = Axis3D.identity;
+            obb.u = LAxis3D.identity;
             return obb;
         }
 
         public LFloat SurfaceArea(){
-            LVector d = min - min;
+            LVector3 d = min - min;
             return (d.x * d.y + d.x * d.z + d.y * d.z) * 2;
         }
 
@@ -74,7 +73,7 @@ namespace Lockstep.Collision
                 return 2;
         }
 
-        public LVector this[int index] {
+        public LVector3 this[int index] {
             get {
                 if (index == 0) return min;
                 else return max;
@@ -87,10 +86,10 @@ namespace Lockstep.Collision
 
         // Transform AABB a by the matrix m and translation t,
         // find maximum extents, and store result into AABB b.
-        public void UpdateAABB(Matrix33 m, LVector t)
+        public void UpdateAABB(LMatrix33 m, LVector3 t)
         {
-            Point _c = c + t;
-            LVector _r = r;
+            LVector3 _c = c + t;
+            LVector3 _r = r;
             min = max = _c;
             // For all three axes
             for (int i = 0; i < 3; i++)
@@ -151,7 +150,7 @@ namespace Lockstep.Collision
 
         public override bool TestWith(Ray ray)
         {
-            return Utils.IntersectRayAABB(ray.o, ray.d, this, out LFloat tmin, out LVector temp);
+            return Utils.IntersectRayAABB(ray.o, ray.d, this, out LFloat tmin, out LVector3 temp);
         }
     }
 }

@@ -1,6 +1,5 @@
 using Lockstep.Math;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 using Point2D = Lockstep.Math.LVector2;
 
 namespace Lockstep.Collision
@@ -16,7 +15,7 @@ namespace Lockstep.Collision
             return false;
         }
         // Test if point p is contained in triangle (a, b, c)
-        public static bool PointInTriangle(Point p, Point a, Point b, Point c)
+        public static bool PointInTriangle(LVector3 p, LVector3 a, LVector3 b, LVector3 c)
         {
             // Translate point and triangle so that point lies at origin
             a -= p; b -= p; c -= p;
@@ -59,7 +58,7 @@ namespace Lockstep.Collision
         public static bool TestSphereSphere(Sphere a, Sphere b)
         {
             // Calculate squared distance between centers
-            LVector d = a.c - b.c;
+            LVector3 d = a.c - b.c;
             LFloat dist2 = Dot(d, d);
             // Spheres intersect if squared distance is less than squared sum of radii
             LFloat radiusSum = a.r + b.r;
@@ -89,7 +88,7 @@ namespace Lockstep.Collision
             var orthDir = (cap2obb -  Dot(lraydn, cap2obb) * lraydn ).normalized;
             var finalRayC = (-cap2obb) - (orthDir * capsule.r);
             //3.碰撞转换为ray AABB碰撞 
-            if (Utils.IntersectRayAABB(finalRayC, lrayd, aabb, out LFloat tmin, out Point q))
+            if (Utils.IntersectRayAABB(finalRayC, lrayd, aabb, out LFloat tmin, out LVector3 q))
             {
                 //4.检测碰撞点时间 确认碰撞是否发生
                 return tmin <= LFloat.one;
@@ -119,7 +118,7 @@ namespace Lockstep.Collision
             var orthDir = (cap2obb -  Dot(lraydn, cap2obb) * lraydn ).normalized;
             var finalRayC = (-cap2obb) - (orthDir * capsule.r);
             //3.碰撞转换为ray AABB碰撞 
-            if (Utils.IntersectRayAABB(finalRayC, lrayd, aabb, out LFloat tmin, out Point q))
+            if (Utils.IntersectRayAABB(finalRayC, lrayd, aabb, out LFloat tmin, out LVector3 q))
             {
                 //4.检测碰撞点时间 确认碰撞是否发生
                 return tmin <= LFloat.one;
@@ -132,7 +131,7 @@ namespace Lockstep.Collision
         public static bool TestOBBOBB(OBB a, OBB b)
         {
             LFloat ra, rb;
-            Matrix33 R = new Matrix33(), AbsR = new Matrix33();
+            LMatrix33 R = new LMatrix33(), AbsR = new LMatrix33();
 
             // Compute rotation matrix expressing b in a's coordinate frame
             for (int i = 0; i < 3; i++)
@@ -140,9 +139,9 @@ namespace Lockstep.Collision
                 R[i, j] = Dot(a.u[i], b.u[j]);
 
             // Compute translation LVector t
-            LVector t = b.c - a.c;
+            LVector3 t = b.c - a.c;
             // Bring translation into a's coordinate frame
-            t = new LVector(Dot(t, a.u[0]), Dot(t, a.u[1]), Dot(t, a.u[2]));
+            t = new LVector3(Dot(t, a.u[0]), Dot(t, a.u[1]), Dot(t, a.u[2]));
 
             // Compute common subexpressions. Add in an epsilon term to
             // counteract arithmetic errors when two edges are parallel and
@@ -230,7 +229,7 @@ namespace Lockstep.Collision
         {
             // Compute (squared) distance between the inner structures of the capsules
             LFloat s, t;
-            Point c1, c2;
+            LVector3 c1, c2;
             LFloat dist2 = ClosestPtSegmentSegment(capsule1.a, capsule1.b,
                 capsule2.a, capsule2.b, out s, out t, out c1, out c2);
 
@@ -242,7 +241,7 @@ namespace Lockstep.Collision
 
         // Test if segments ab and cd overlap. If they do, compute and return
         // intersection t value along ab and intersection position p
-        public static bool Test2DSegmentSegment(Point a, Point b, Point c, Point d, ref LFloat t, ref Point p)
+        public static bool Test2DSegmentSegment(LVector3 a, LVector3 b, LVector3 c, LVector3 d, ref LFloat t, ref LVector3 p)
         {
             // Sign of areas correspond to which side of ab points c and d are
             LFloat a1 = Signed2DTriArea(a, b, d); // Compute winding of abd (+ or -)
@@ -307,8 +306,8 @@ namespace Lockstep.Collision
         public static bool TestAABBPlane(AABB b, Plane p)
         {
             // These two lines not necessary with a (center, extents) AABB representation
-            Point c = (b.max + b.min) * LFloat.half; // Compute AABB center
-            Point e = b.max - c; // Compute positive extents
+            LVector3 c = (b.max + b.min) * LFloat.half; // Compute AABB center
+            LVector3 e = b.max - c; // Compute positive extents
             // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
             LFloat r = e[0] * Abs(p.n[0]) + e[1] * Abs(p.n[1]) + e[2] * Abs(p.n[2]);
             // Compute distance of box center from plane
@@ -331,41 +330,41 @@ namespace Lockstep.Collision
 
         // Returns true if sphere s intersects AABB b, false otherwise.
         // The point p on the AABB closest to the sphere center is also returned
-        public static bool TestSphereAABB(Sphere s, AABB b, out Point p)
+        public static bool TestSphereAABB(Sphere s, AABB b, out LVector3 p)
         {
             // Find point p on AABB closest to sphere center
             ClosestPtPointAABB(s.c, b, out p);
 
             // Sphere and AABB intersect if the (squared) distance from sphere
             // center to point p is less than the (squared) sphere radius
-            LVector v = p - s.c;
+            LVector3 v = p - s.c;
             return Dot(v, v) <= s.r * s.r;
         }
 
         // Returns true if sphere s intersects OBB b, false otherwise.
         // The point p on the OBB closest to the sphere center is also returned
-        public static bool TestSphereOBB(Sphere s, OBB b, out Point p)
+        public static bool TestSphereOBB(Sphere s, OBB b, out LVector3 p)
         {
             // Find point p on OBB closest to sphere center
             ClosestPtPointOBB(s.c, b, out p);
 
             // Sphere and OBB intersect if the (squared) distance from sphere
             // center to point p is less than the (squared) sphere radius
-            LVector v = p - s.c;
+            LVector3 v = p - s.c;
             return Dot(v, v) <= s.r * s.r;
         }
 
 
         // Returns true if sphere s intersects triangle ABC, false otherwise.
         // The point p on abc closest to the sphere center is also returned
-        public static bool TestSphereTriangle(Sphere s, Point a, Point b, Point c, out Point p)
+        public static bool TestSphereTriangle(Sphere s, LVector3 a, LVector3 b, LVector3 c, out LVector3 p)
         {
             // Find point P on triangle ABC closest to sphere center
             p = ClosestPtPointTriangle(s.c, a, b, c);
 
             // Sphere and triangle intersect if the (squared) distance from sphere
             // center to point p is less than the (squared) sphere radius
-            LVector v = p - s.c;
+            LVector3 v = p - s.c;
             return Dot(v, v) <= s.r * s.r;
         }
         // TODO

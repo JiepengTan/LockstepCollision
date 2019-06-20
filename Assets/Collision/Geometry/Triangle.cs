@@ -2,18 +2,17 @@ using System.Numerics;
 using Lockstep.Math;
 using UnityEditor.Experimental.UIElements.GraphView;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 using Point2D = Lockstep.Math.LVector2;
 
 namespace Lockstep.Collision {
     [System.Serializable]
     public partial class Triangle : BaseShape {
-        public Point a;
-        public Point b;
-        public Point c;
+        public LVector3 a;
+        public LVector3 b;
+        public LVector3 c;
 
         //所在平面 
-        public LVector n;
+        public LVector3 n;
         public LFloat d;
 
         /// <summary>
@@ -26,19 +25,19 @@ namespace Lockstep.Collision {
     
     
     public class SAABB {
-        public LVector min;
-        public LVector max;
+        public LVector3 min;
+        public LVector3 max;
     }
 
     /// <summary>
     /// 结构体 方便 内存紧凑
     /// </summary>
     public struct STriangle {
-        public Point a;
-        public Point b;
-        public Point c;
+        public LVector3 a;
+        public LVector3 b;
+        public LVector3 c;
 
-        public STriangle(Point a, Point b, Point c){
+        public STriangle(LVector3 a, LVector3 b, LVector3 c){
             this.a = a;
             this.b = b;
             this.c = c;
@@ -61,11 +60,11 @@ namespace Lockstep.Collision {
         }
 
         //所在平面 
-        public LVector n;
+        public LVector3 n;
         public LFloat d;
 
         //bound box
-        public Point min;
-        public Point max;
+        public LVector3 min;
+        public LVector3 max;
     }
 }

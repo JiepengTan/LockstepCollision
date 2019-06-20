@@ -38,7 +38,7 @@ namespace Lockstep.Collision
             return null;
         }
 
-        public virtual void UpdateCollider(bool isDiffPos, bool isDiffRot, LVector targetPos, LVector targetRot)
+        public virtual void UpdateCollider(bool isDiffPos, bool isDiffRot, LVector3 targetPos, LVector3 targetRot)
         {
         }
 

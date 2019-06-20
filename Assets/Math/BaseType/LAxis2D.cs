@@ -1,24 +1,21 @@
 using Lockstep.Math;
-using UnityEngine;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
-using Point2D = Lockstep.Math.LVector2;
 
-namespace Lockstep.Collision
+namespace Lockstep.Math
 {
    
-    public struct Axis2D
+    public struct LAxis2D
     {
-        public LVector x;
-        public LVector y;
+        public LVector3 x;
+        public LVector3 y;
         
-        public static readonly Axis2D identity = new Axis2D(LVector.right, LVector.up);
-        public Axis2D(LVector x, LVector y)
+        public static readonly LAxis2D identity = new LAxis2D(LVector3.right, LVector3.up);
+        public LAxis2D(LVector3 x, LVector3 y)
         {
             this.x = x;
             this.y = y;
         }
-        public LVector this[int index]
+        public LVector3 this[int index]
         {
             get
             {

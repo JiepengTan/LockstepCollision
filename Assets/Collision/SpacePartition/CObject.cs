@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net.Http.Headers;
 using UnityEngine;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 using Point2D = Lockstep.Math.LVector2;
 using Debug = UnityEngine.Debug;
 using Shape = Lockstep.Collision.BaseShape;
@@ -17,7 +16,7 @@ namespace Lockstep.Collision {
         public int ID { private set; get; }
         public CObject pNextObject; // Embedded link to next hgrid object
         public CObject pPreObject;
-        public Point pos; // x, y (and z) position for sphere (or top left AABB corner)
+        public LVector3 pos; // x, y (and z) position for sphere (or top left AABB corner)
         public LFloat radius; // Radius for bounding sphere (or width of AABB)
         public int bucket; // Index of hash bucket object is in
         public int level; // Grid level for the object

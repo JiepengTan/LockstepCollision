@@ -10,10 +10,10 @@ namespace Lockstep.Collision
         /// </summary>
         public override EColType ColType{get { return EColType.Segment;}}
 
-        public LVector b;
-        public LVector e;
+        public LVector3 b;
+        public LVector3 e;
 
-        public Segment(LVector b, LVector e)
+        public Segment(LVector3 b, LVector3 e)
         {
             this.b = b;
             this.e = e;

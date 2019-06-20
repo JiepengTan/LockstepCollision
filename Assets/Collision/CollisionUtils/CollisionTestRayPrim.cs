@@ -1,13 +1,12 @@
 using Lockstep.Math;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 using Point2D = Lockstep.Math.LVector2;
 
 namespace Lockstep.Collision
 {
     public static partial class Utils
     {
-        public static bool IntersectRayPlane(Point o, Point d, Plane p, out LFloat t, out Point q)
+        public static bool IntersectRayPlane(LVector3 o, LVector3 d, Plane p, out LFloat t, out LVector3 q)
         {
             // Compute the t value for the directed line ab intersecting the plane
             t = (p.d - Dot(p.n, o)) / Dot(p.n, d);
@@ -25,10 +24,10 @@ namespace Lockstep.Collision
         }
         
         
-        public static bool IntersectSegmentPlane(Point a, Point b, Plane p, out LFloat t, out Point q)
+        public static bool IntersectSegmentPlane(LVector3 a, LVector3 b, Plane p, out LFloat t, out LVector3 q)
         {
             // Compute the t value for the directed line ab intersecting the plane
-            LVector ab = b - a;
+            LVector3 ab = b - a;
             t = (p.d - Dot(p.n, a)) / Dot(p.n, ab);
 
             // If t in [0..1] compute and return intersection point
@@ -46,8 +45,8 @@ namespace Lockstep.Collision
 
         // Intersect segment ab against plane of triangle def. If intersecting,
         // return t value and position q of intersection
-        public static bool IntersectSegmentPlane(Point a, Point b, Point d, Point e, Point f,
-            out LFloat t, out Point q)
+        public static bool IntersectSegmentPlane(LVector3 a, LVector3 b, LVector3 d, LVector3 e, LVector3 f,
+            out LFloat t, out LVector3 q)
         {
             Plane p = new Plane(); //TODO
             p.n = Cross(e - d, f - d);
@@ -58,9 +57,9 @@ namespace Lockstep.Collision
 
         // Intersects ray r = p + td, |d| = 1, with sphere s and, if intersecting,
         // returns t value of intersection and intersection point q
-        public static bool IntersectRaySphere(Point p, LVector d, Sphere s, out LFloat t, out Point q)
+        public static bool IntersectRaySphere(LVector3 p, LVector3 d, Sphere s, out LFloat t, out LVector3 q)
         {
-            LVector m = p - s.c;
+            LVector3 m = p - s.c;
             LFloat b = Dot(m, d);
             LFloat c = Dot(m, m) - s.r * s.r;
             t = LFloat.zero;
@@ -78,7 +77,7 @@ namespace Lockstep.Collision
             return true;
         }
 
-        public static bool IntersectRayOBB(Point o, LVector d, OBB obb, out LFloat tmin, out Point p)
+        public static bool IntersectRayOBB(LVector3 o, LVector3 d, OBB obb, out LFloat tmin, out LVector3 p)
         {
             var fo = o - obb.c;
             var fd = obb.u.WorldToLocal(d);
@@ -87,7 +86,7 @@ namespace Lockstep.Collision
 
         // Intersect ray R(t) = p + t*d against AABB a. When intersecting,
         // return intersection distance tmin and point q of intersection
-        public static bool IntersectRayAABB(Point o, LVector d, AABB a, out LFloat tmin, out Point p)
+        public static bool IntersectRayAABB(LVector3 o, LVector3 d, AABB a, out LFloat tmin, out LVector3 p)
         {
             p = o;
             tmin = LFloat.zero; // set to -FLT_MAX to get first hit on line
@@ -131,13 +130,13 @@ namespace Lockstep.Collision
 
         // Given line pq and ccw triangle abc, return whether line pierces triangle. If
         // so, also return the barycentric coordinates (u,v,w) of the intersection point
-        public static bool IntersectLineTriangle(Point p, Point q, Point a, Point b, Point c,
+        public static bool IntersectLineTriangle(LVector3 p, LVector3 q, LVector3 a, LVector3 b, LVector3 c,
             out LFloat u, out LFloat v, out LFloat w)
         {
-            LVector pq = q - p;
-            LVector pa = a - p;
-            LVector pb = b - p;
-            LVector pc = c - p;
+            LVector3 pq = q - p;
+            LVector3 pa = a - p;
+            LVector3 pb = b - p;
+            LVector3 pc = c - p;
 
             u = LFloat.zero;
             v = LFloat.zero;
@@ -164,16 +163,16 @@ namespace Lockstep.Collision
 
         // Given line pq and ccw quadrilateral abcd, return whether the line
         // pierces the triangle. If so, also return the point r of intersection
-        public static bool IntersectLineQuad(Point p, Point q, Point a, Point b, Point c, Point d, out Point r)
+        public static bool IntersectLineQuad(LVector3 p, LVector3 q, LVector3 a, LVector3 b, LVector3 c, LVector3 d, out LVector3 r)
         {
-            LVector pq = q - p;
-            LVector pa = a - p;
-            LVector pb = b - p;
-            LVector pc = c - p;
+            LVector3 pq = q - p;
+            LVector3 pa = a - p;
+            LVector3 pb = b - p;
+            LVector3 pc = c - p;
 
             r = p;
             // Determine which triangle to test against by testing against diagonal first
-            LVector m = Cross(pc, pq);
+            LVector3 m = Cross(pc, pq);
             LFloat v = Dot(pa, m); // ScalarTriple(pq, pa, pc);
             if (v >= LFloat.zero)
             {
@@ -192,7 +191,7 @@ namespace Lockstep.Collision
             else
             {
                 // Test intersection against triangle dac
-                LVector pd = d - p;
+                LVector3 pd = d - p;
                 LFloat u = Dot(pd, m); // ScalarTriple(pq, pd, pc);
                 if (u < LFloat.zero) return false;
                 LFloat w = ScalarTriple(pq, pa, pd);
@@ -212,12 +211,12 @@ namespace Lockstep.Collision
         // Given segment pq and triangle abc, returns whether segment intersects
         // triangle and if so, also returns the barycentric coordinates (u,v,w)
         // of the intersection point
-        public static bool IntersectSegmentTriangle(Point p, Point q, Point a, Point b, Point c,
+        public static bool IntersectSegmentTriangle(LVector3 p, LVector3 q, LVector3 a, LVector3 b, LVector3 c,
             out LFloat u, out LFloat v, out LFloat w, out LFloat t)
         {
-            LVector ab = b - a;
-            LVector ac = c - a;
-            LVector qp = p - q;
+            LVector3 ab = b - a;
+            LVector3 ac = c - a;
+            LVector3 qp = p - q;
 
             t = LFloat.zero;
             u = LFloat.zero;
@@ -226,7 +225,7 @@ namespace Lockstep.Collision
 
             // Compute triangle normal. Can be precalculated or cached if
             // intersecting multiple segments against the same triangle
-            LVector n = Cross(ab, ac);
+            LVector3 n = Cross(ab, ac);
 
             // Compute denominator d. If d <= 0, segment is parallel to or points
             // away from triangle, so exit early
@@ -236,13 +235,13 @@ namespace Lockstep.Collision
             // Compute intersection t value of pq with plane of triangle. A ray
             // intersects iff 0 <= t. Segment intersects iff 0 <= t <= 1. Delay
             // dividing by d until intersection has been found to pierce triangle
-            LVector ap = p - a;
+            LVector3 ap = p - a;
             t = Dot(ap, n);
             if (t < LFloat.zero) return false;
             if (t > d) return false; // For segment; exclude this code line for a ray test
 
             // Compute barycentric coordinate components and test if within bounds
-            LVector e = Cross(qp, ap);
+            LVector3 e = Cross(qp, ap);
             v = Dot(ac, e);
             if (v < LFloat.zero || v > d) return false;
             w = -Dot(ab, e);
@@ -260,9 +259,9 @@ namespace Lockstep.Collision
 
 
         // Intersect segment S(t)=sa+t(sb-sa), 0<=t<=1 against cylinder specified by p, q and r
-        public static bool IntersectSegmentCylinder(Point sa, Point sb, Point p, Point q, LFloat r, out LFloat t)
+        public static bool IntersectSegmentCylinder(LVector3 sa, LVector3 sb, LVector3 p, LVector3 q, LFloat r, out LFloat t)
         {
-            LVector d = q - p, m = sa - p, n = sb - sa;
+            LVector3 d = q - p, m = sa - p, n = sb - sa;
             LFloat md = Dot(m, d);
             LFloat nd = Dot(n, d);
             LFloat dd = Dot(d, d);
@@ -316,11 +315,11 @@ namespace Lockstep.Collision
         // Intersect segment S(t)=A+t(B-A), 0<=t<=1 against convex polyhedron specified
         // by the n halfspaces defined by the planes p[]. On exit tfirst and tlast
         // define the intersection, if any
-        public static bool IntersectSegmentPolyhedron(Point a, Point b, Plane[] p, int n, out LFloat tfirst,
+        public static bool IntersectSegmentPolyhedron(LVector3 a, LVector3 b, Plane[] p, int n, out LFloat tfirst,
             out LFloat tlast)
         {
             // Compute direction vector for the segment
-            LVector d = b - a;
+            LVector3 d = b - a;
             // Set initial interval to being the whole segment. For a ray, tlast should be
             // set to +FLT_MAX. For a line, additionally tfirst should be set to -FLT_MAX
             tfirst = LFloat.zero;

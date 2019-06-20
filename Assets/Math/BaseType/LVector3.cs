@@ -1,27 +1,28 @@
 ﻿using System;
-using TreeEditor;
+#if UNITY_5_3_OR_NEWER 
 using UnityEngine;
+#endif
 
 namespace Lockstep.Math
 {
     [Serializable]
-    public struct LVector : IEquatable<LVector>
+    public struct LVector3 : IEquatable<LVector3>
     {
         public LFloat x
         {
-            get { return new LFloat(_x); }
+            get { return new LFloat(true,_x); }
             set { _x = value._val ; }
         }
 
         public LFloat y
         {
-            get { return new LFloat(_y); }
+            get { return new LFloat(true,_y); }
             set { _y = value._val ; }
         }
 
         public LFloat z
         {
-            get { return new LFloat(_z); }
+            get { return new LFloat(true,_z); }
             set { _z = value._val ; }
         }
 
@@ -30,38 +31,59 @@ namespace Lockstep.Math
         public int _z;
 
 
-        public static readonly LVector zero = new LVector(0, 0, 0);
-        public static readonly LVector one = new LVector(LFloat.Precision, LFloat.Precision, LFloat.Precision);
-        public static readonly LVector half = new LVector(LFloat.Precision / 2, LFloat.Precision / 2,LFloat.Precision / 2);
+        public static readonly LVector3 zero = new LVector3(true,0, 0, 0);
+        public static readonly LVector3 one = new LVector3(true,LFloat.Precision, LFloat.Precision, LFloat.Precision);
+        public static readonly LVector3 half = new LVector3(true,LFloat.Precision / 2, LFloat.Precision / 2,LFloat.Precision / 2);
         
-        public static readonly LVector forward = new LVector(0, 0, LFloat.Precision);
-        public static readonly LVector up = new LVector(0, LFloat.Precision, 0);
-        public static readonly LVector right = new LVector(LFloat.Precision, 0, 0);
-        public static readonly LVector back = new LVector(0, 0, -LFloat.Precision);
-        public static readonly LVector down = new LVector(0, -LFloat.Precision, 0);
-        public static readonly LVector left = new LVector(-LFloat.Precision, 0, 0);
-
-        public LVector(int _x, int _y, int _z)
+        public static readonly LVector3 forward = new LVector3(true,0, 0, LFloat.Precision);
+        public static readonly LVector3 up = new LVector3(true,0, LFloat.Precision, 0);
+        public static readonly LVector3 right = new LVector3(true,LFloat.Precision, 0, 0);
+        public static readonly LVector3 back = new LVector3(true,0, 0, -LFloat.Precision);
+        public static readonly LVector3 down = new LVector3(true,0, -LFloat.Precision, 0);
+        public static readonly LVector3 left = new LVector3(true,-LFloat.Precision, 0, 0);
+        
+        /// <summary>
+        /// 将这些值作为内部值 直接构造(高效) （仅用于内部实现，外部不建议使用）
+        /// </summary>
+        public LVector3(bool isUseRawVal,int _x, int _y, int _z)
         {
             this._x = _x;
             this._y = _y;
             this._z = _z;
         }
-
-        public LVector(long _x, long _y, long _z)
+        /// <summary>
+        /// 将这些值作为内部值 直接构造(高效) （仅用于内部实现，外部不建议使用）
+        /// </summary>
+        public LVector3(bool isUseRawVal,long _x, long _y, long _z)
         {
             this._x = (int) _x;
             this._y = (int) _y;
             this._z = (int) _z;
         }
 
-        public LVector(LFloat x, LFloat y, LFloat z)
+        public LVector3(int _x, int _y, int _z)
+        {
+            this._x = _x * LFloat.Precision;
+            this._y = _y * LFloat.Precision;
+            this._z = _z * LFloat.Precision;
+        }
+        public LVector3(LFloat x, LFloat y, LFloat z)
         {
             this._x = x._val;
             this._y = y._val;
             this._z = z._val;
         }
-
+        #if UNITY_EDITOR
+        /// <summary>
+        /// 直接使用浮点型 进行构造 警告!!! 仅应该在Editor模式下使用，不应该在正式代码中使用,避免出现引入浮点的不确定性
+        /// </summary>
+        public LVector3(bool shouldOnlyUseInEditor,float x, float y, float z)
+        {
+            this._x = (int)(x * LFloat.Precision);
+            this._y = (int)(y * LFloat.Precision);
+            this._z = (int)(z * LFloat.Precision);
+        }
+        #endif
 
         public LFloat magnitude
         {
@@ -70,7 +92,7 @@ namespace Lockstep.Math
                 long num = (long) this._x;
                 long num2 = (long) this._y;
                 long num3 = (long) this._z;
-                return new LFloat(LMath.Sqrt(num * num + num2 * num2 + num3 * num3));
+                return new LFloat(true,LMath.Sqrt(num * num + num2 * num2 + num3 * num3));
             }
         }
 
@@ -82,21 +104,21 @@ namespace Lockstep.Math
                 long num = (long) this._x;
                 long num2 = (long) this._y;
                 long num3 = (long) this._z;
-                return new LFloat((num * num + num2 * num2 + num3 * num3) / LFloat.Precision);
+                return new LFloat(true,(num * num + num2 * num2 + num3 * num3) / LFloat.Precision);
             }
         }
 
-        public LVector abs
+        public LVector3 abs
         {
-            get { return new LVector(LMath.Abs(this._x), LMath.Abs(this._y), LMath.Abs(this._z)); }
+            get { return new LVector3(true,LMath.Abs(this._x), LMath.Abs(this._y), LMath.Abs(this._z)); }
         }
 
-        public LVector Normalize()
+        public LVector3 Normalize()
         {
             return Normalize((LFloat) 1);
         }
 
-        public LVector Normalize(LFloat newMagn)
+        public LVector3 Normalize(LFloat newMagn)
         {
             long num = (long) (this._x * 100);
             long num2 = (long) (this._y * 100);
@@ -115,7 +137,7 @@ namespace Lockstep.Math
             return this;
         }
 
-        public LVector normalized
+        public LVector3 normalized
         {
             get
             {
@@ -125,10 +147,10 @@ namespace Lockstep.Math
                 long num4 = num * num + num2 * num2 + num3 * num3;
                 if (num4 == 0L)
                 {
-                    return LVector.zero;
+                    return LVector3.zero;
                 }
 
-                var ret = new LVector();
+                var ret = new LVector3();
                 long b = (long) LMath.Sqrt(num4);
                 long num5 = LFloat.Precision;
                 ret._x = (int) (num * num5 / b);
@@ -138,12 +160,12 @@ namespace Lockstep.Math
             }
         }
 
-        public LVector RotateY(LFloat degree)
+        public LVector3 RotateY(LFloat degree)
         {
             LFloat s;
             LFloat c;
-            LMath.SinCos(out s, out c, new LFloat(degree._val * 31416L / 1800000L));
-            LVector vInt;
+            LMath.SinCos(out s, out c, new LFloat(true,degree._val * 31416L / 1800000L));
+            LVector3 vInt;
             vInt._x = (int) (((long) this._x * s._val + (long) this._z * c._val) / LFloat.Precision);
             vInt._z = (int) (((long) this._x * -c._val + (long) this._z * s._val) / LFloat.Precision);
             vInt._y = 0;
@@ -151,17 +173,17 @@ namespace Lockstep.Math
         }
 
 
-        public static bool operator ==(LVector lhs, LVector rhs)
+        public static bool operator ==(LVector3 lhs, LVector3 rhs)
         {
             return lhs._x == rhs._x && lhs._y == rhs._y && lhs._z == rhs._z;
         }
 
-        public static bool operator !=(LVector lhs, LVector rhs)
+        public static bool operator !=(LVector3 lhs, LVector3 rhs)
         {
             return lhs._x != rhs._x || lhs._y != rhs._y || lhs._z != rhs._z;
         }
 
-        public static LVector operator -(LVector lhs, LVector rhs)
+        public static LVector3 operator -(LVector3 lhs, LVector3 rhs)
         {
             lhs._x -= rhs._x;
             lhs._y -= rhs._y;
@@ -169,7 +191,7 @@ namespace Lockstep.Math
             return lhs;
         }
 
-        public static LVector operator -(LVector lhs)
+        public static LVector3 operator -(LVector3 lhs)
         {
             lhs._x = -lhs._x;
             lhs._y = -lhs._y;
@@ -177,7 +199,7 @@ namespace Lockstep.Math
             return lhs;
         }
 
-        public static LVector operator +(LVector lhs, LVector rhs)
+        public static LVector3 operator +(LVector3 lhs, LVector3 rhs)
         {
             lhs._x += rhs._x;
             lhs._y += rhs._y;
@@ -185,7 +207,7 @@ namespace Lockstep.Math
             return lhs;
         }
 
-        public static LVector operator *(LVector lhs, LVector rhs)
+        public static LVector3 operator *(LVector3 lhs, LVector3 rhs)
         {
             lhs._x = (int) (((long) (lhs._x * rhs._x)) / LFloat.Precision);
             lhs._y = (int) (((long) (lhs._y * rhs._y)) / LFloat.Precision);
@@ -193,7 +215,7 @@ namespace Lockstep.Math
             return lhs;
         }
 
-        public static LVector operator *(LVector lhs, LFloat rhs)
+        public static LVector3 operator *(LVector3 lhs, LFloat rhs)
         {
             lhs._x = (int) (((long) (lhs._x * rhs._val)) / LFloat.Precision);
             lhs._y = (int) (((long) (lhs._y * rhs._val)) / LFloat.Precision);
@@ -201,7 +223,7 @@ namespace Lockstep.Math
             return lhs;
         }
 
-        public static LVector operator /(LVector lhs, LFloat rhs)
+        public static LVector3 operator /(LVector3 lhs, LFloat rhs)
         {
             lhs._x = (int) (((long) lhs._x * LFloat.Precision) / rhs._val);
             lhs._y = (int) (((long) lhs._y * LFloat.Precision) / rhs._val);
@@ -209,7 +231,7 @@ namespace Lockstep.Math
             return lhs;
         }
         
-        public static LVector operator *(LFloat rhs,LVector lhs)
+        public static LVector3 operator *(LFloat rhs,LVector3 lhs)
         {
             lhs._x = (int) (((long) (lhs._x * rhs._val)) / LFloat.Precision);
             lhs._y = (int) (((long) (lhs._y * rhs._val)) / LFloat.Precision);
@@ -230,12 +252,12 @@ namespace Lockstep.Math
                 return false;
             }
 
-            LVector other = (LVector) o;
+            LVector3 other = (LVector3) o;
             return this._x == other._x && this._y == other._y && this._z == other._z;
         }
 
 
-        public bool Equals(LVector other)
+        public bool Equals(LVector3 other)
         {
             return this._x == other._x && this._y == other._y && this._z == other._z;
         }
@@ -244,21 +266,6 @@ namespace Lockstep.Math
         public override int GetHashCode()
         {
             return this._x * 73856093 ^ this._y * 19349663 ^ this._z * 83492791;
-        }
-
-
-        public Vector3Int ToVector3Int
-        {
-            get { return new Vector3Int(x.ToInt, y.ToInt, z.ToInt); }
-        }
-
-        public Vector3 ToVector3
-        {
-            get
-            {
-                return new Vector3(_x * LFloat.PrecisionFactor, _y * LFloat.PrecisionFactor,
-                    _z * LFloat.PrecisionFactor);
-            }
         }
 
         
@@ -290,62 +297,44 @@ namespace Lockstep.Math
 
         }
 
-        #region 2D
-
-        public LVector2 xz
+        public static LFloat Dot(ref LVector3 lhs, ref LVector3 rhs)
         {
-            get { return new LVector2(this._x, this._z); }
+            var val = ((long) lhs._x) * rhs._x + ((long) lhs._y) * rhs._y + ((long) lhs._z) * rhs._z;
+            return new LFloat(true,val / LFloat.Precision);
         }
 
-        public LFloat magnitude2D
+        public static LFloat Dot(LVector3 lhs, LVector3 rhs)
         {
-            get
-            {
-                long num = (long) this._x;
-                long num2 = (long) this._z;
-                return new LFloat(LMath.Sqrt(num * num + num2 * num2));
-            }
+            var val = ((long) lhs._x) * rhs._x + ((long) lhs._y) * rhs._y + ((long) lhs._z) * rhs._z;
+            return new LFloat(true,val / LFloat.Precision);
+            ;
+        }
+        
+        public static LVector3 Cross(ref LVector3 lhs, ref LVector3 rhs)
+        {
+            return new LVector3(true,
+                ((long) lhs._y * rhs._z - (long) lhs._z * rhs._y) / LFloat.Precision,
+                ((long) lhs._z * rhs._x - (long) lhs._x * rhs._z) / LFloat.Precision,
+                ((long) lhs._x * rhs._y - (long) lhs._y * rhs._x) / LFloat.Precision
+            );
         }
 
-        public LFloat sqrMagnitudeLong2D
+        public static LVector3 Cross(LVector3 lhs, LVector3 rhs)
         {
-            get
-            {
-                long num = (long) this._x;
-                long num2 = (long) this._z;
-                return new LFloat((num * num + num2 * num2) / LFloat.Precision);
-            }
+            return new LVector3(true,
+                ((long) lhs._y * rhs._z - (long) lhs._z * rhs._y) / LFloat.Precision,
+                ((long) lhs._z * rhs._x - (long) lhs._x * rhs._z) / LFloat.Precision,
+                ((long) lhs._x * rhs._y - (long) lhs._y * rhs._x) / LFloat.Precision
+            );
         }
-
-        public LFloat XZSqrMagnitude(LVector rhs)
+        
+        
+        public static LVector3 Lerp(LVector3 a, LVector3 b, LFloat f)
         {
-            long num = (long) (this._x - rhs._x);
-            long num2 = (long) (this._z - rhs._z);
-            return new LFloat((num * num + num2 * num2) / LFloat.Precision);
+            return new LVector3(true,
+                (int) (((long) (b._x - a._x) * f._val) / LFloat.Precision) + a._x,
+                (int) (((long) (b._y - a._y) * f._val) / LFloat.Precision) + a._y,
+                (int) (((long) (b._z - a._z) * f._val) / LFloat.Precision) + a._z);
         }
-
-        public LFloat XZSqrMagnitude(ref LVector rhs)
-        {
-            long num = (long) (this._x - rhs._x);
-            long num2 = (long) (this._z - rhs._z);
-            return new LFloat((num * num + num2 * num2) / LFloat.Precision);
-        }
-
-        public bool IsEqualXZ(LVector rhs)
-        {
-            return this._x == rhs._x && this._z == rhs._z;
-        }
-
-        public bool IsEqualXZ(ref LVector rhs)
-        {
-            return this._x == rhs._x && this._z == rhs._z;
-        }
-
-        public LVector Normal2D()
-        {
-            return new LVector(this._z, this._y, -this._x);
-        }
-
-        #endregion
     }
 }

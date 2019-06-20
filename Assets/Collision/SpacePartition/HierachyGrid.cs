@@ -4,7 +4,6 @@ using System.Net.Http.Headers;
 using UnityEngine;
 using static Lockstep.Collision.Utils;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 using Point2D = Lockstep.Math.LVector2;
 using Debug = UnityEngine.Debug;
 using Shape = Lockstep.Collision.BaseShape;
@@ -114,7 +113,7 @@ namespace Lockstep.Collision {
             AddObject(obj, newBucket, newCell);
         }
 
-        public void OnObjectMoved(CObject obj, LVector newPos){
+        public void OnObjectMoved(CObject obj, LVector3 newPos){
             var size = LevelToSize(obj.level);
             var x = (int) (obj.pos.x / size);
             var y = (int) (obj.pos.y / size);
@@ -171,7 +170,7 @@ namespace Lockstep.Collision {
             LFloat size = MIN_CELL_SIZE;
             int startLevel = 0;
             uint occupiedLevelsMask = this.occupiedLevelsMask;
-            Point pos = obj.pos;
+            LVector3 pos = obj.pos;
 
             // For each new query, increase time stamp counter
             var targetLayerMask = GetTargetMask(obj);
@@ -189,10 +188,10 @@ namespace Lockstep.Collision {
                 // the maximum object overlap: size * SPHERE_TO_CELL_RATIO
                 LFloat delta = obj.radius + size * SPHERE_TO_CELL_RATIO + LFloat.EPSILON;
                 LFloat ooSize = 1 / size;
-                int x1 = ((pos.x - delta) * ooSize).Floor;
-                int y1 = ((pos.y - delta) * ooSize).Floor;
-                int x2 = ((pos.x + delta) * ooSize).Ceil;
-                int y2 = ((pos.y + delta) * ooSize).Ceil;
+                int x1 = ((pos.x - delta) * ooSize).Floor();
+                int y1 = ((pos.y - delta) * ooSize).Floor();
+                int x2 = ((pos.x + delta) * ooSize).Ceil();
+                int y2 = ((pos.y + delta) * ooSize).Ceil();
         
                 // Check all the grid cells overlapped on current level
                 for (int x = x1; x <= x2; x++) {

@@ -1,5 +1,4 @@
 using Lockstep.Math;
-using Point = Lockstep.Math.LVector;
 
 namespace Lockstep.Collision
 {
@@ -17,18 +16,18 @@ namespace Lockstep.Collision
         /// <summary>
         /// orgin point
         /// </summary>
-        public Point o;
+        public LVector3 o;
 
         /// <summary>
         /// dir
         /// </summary>
-        public LVector d;
+        public LVector3 d;
 
         public Ray()
         {
         }
 
-        public Ray(Point o, LVector d)
+        public Ray(LVector3 o, LVector3 d)
         {
             this.o = o;
             this.d = d;
@@ -41,12 +40,12 @@ namespace Lockstep.Collision
 
         public override bool TestWith(Sphere sphere)
         {
-            return Utils.IntersectRaySphere(o, d, sphere, out LFloat t, out LVector p);
+            return Utils.IntersectRaySphere(o, d, sphere, out LFloat t, out LVector3 p);
         }
 
         public override bool TestWith(AABB aabb)
         {
-            return Utils.IntersectRayAABB(o, d, aabb, out LFloat t, out LVector p);
+            return Utils.IntersectRayAABB(o, d, aabb, out LFloat t, out LVector3 p);
         }
 
         public override bool TestWith(Capsule capsule)
@@ -56,12 +55,12 @@ namespace Lockstep.Collision
 
         public override bool TestWith(OBB obb)
         {
-            return Utils.IntersectRayOBB(o, d, obb, out LFloat t, out LVector p);
+            return Utils.IntersectRayOBB(o, d, obb, out LFloat t, out LVector3 p);
         }
 
         public override bool TestWith(Plane plane)
         {
-            return Utils.IntersectRayPlane(o, d, plane, out LFloat t, out LVector p);
+            return Utils.IntersectRayPlane(o, d, plane, out LFloat t, out LVector3 p);
         }
 
         public override bool TestWith(Ray ray)

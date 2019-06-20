@@ -1,6 +1,5 @@
 using Lockstep.Math;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 using Point2D = Lockstep.Math.LVector2;
 
 namespace Lockstep.Collision
@@ -12,12 +11,12 @@ namespace Lockstep.Collision
         /// <summary>
         /// Medial line segment start point
         /// </summary>
-        public Point a;
+        public LVector3 a;
 
         /// <summary>
         /// Medial line segment end point
         /// </summary>
-        public Point b;
+        public LVector3 b;
 
         /// <summary>
         /// Radius
@@ -29,7 +28,7 @@ namespace Lockstep.Collision
             return (b - a).magnitude * LFloat.half + r;
         }
 
-        public LVector GetBoundSphereCenter()
+        public LVector3 GetBoundSphereCenter()
         {
             return (a + b) * LFloat.half;
         }

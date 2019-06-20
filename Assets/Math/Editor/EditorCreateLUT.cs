@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.IO;
 using System.Net;
 using System.Net.Mime;
@@ -12,7 +13,7 @@ namespace Lockstep.Math
 	    [MenuItem("Lockstep.Math/CreateLUTAsin")]
         static void  CreateLUTAsin()
         {
-            string fileName = Application.dataPath + "/Math/LUT/LUTAsin.cs";
+            string fileName = Application.dataPath + "/Lockstep.Math/LUT/LUTAsin.cs";
             const int count = 1024;
             const int percision = 10000;
             string content = @"using System;
@@ -26,15 +27,23 @@ namespace Lockstep.Math
 		public static readonly int[] table;
 		static LUTAsin()
 		{
-			COUNT = #COUNT_VAL;
+			COUNT = $COUNT_VAL;
 			HALF_COUNT = COUNT >> 1;
 			table = new int[]
 			{
-#ALL_VALUES
+$ALL_VALUES
 			};
 		}
 	}
 }";
+            
+            //public static LFloat LMath.Asin(LFloat val)
+            //{
+            //    int num = (int) (val._val * (long) LUTAsin.HALF_COUNT / LFloat.Precision) +
+            //              LUTAsin.HALF_COUNT;
+            //    num = Mathf.Clamp(num, 0, LUTAsin.COUNT);
+            //    return new LFloat(true,(long) LUTAsin.table[num] / 10);
+            //}
             StringBuilder sb = new StringBuilder();
             //
             string prefix = "\t\t\t\t";
@@ -53,18 +62,12 @@ namespace Lockstep.Math
 	            }
             }
             
-            content = content.Replace("#COUNT_VAL",count.ToString())
-	            .Replace("#ALL_VALUES", sb.ToString());
+            content = content.Replace("$COUNT_VAL",count.ToString())
+	            .Replace("$ALL_VALUES", sb.ToString());
             //save to files
             File.WriteAllText(fileName,content);
 			AssetDatabase.Refresh();
         }
-        public static LFloat Asin(LFloat val)
-        {
-	        int num = (int) (val._val * (long) LUTAsin.HALF_COUNT / LFloat.Precision) +
-	                  LUTAsin.HALF_COUNT;
-	        num = Mathf.Clamp(num, 0, LUTAsin.COUNT);
-	        return new LFloat((long) LUTAsin.table[num] / 10);
-        }
     }
 }
+#endif

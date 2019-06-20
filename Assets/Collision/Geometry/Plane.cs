@@ -1,7 +1,6 @@
 using Lockstep.Math;
 
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 using Point2D = Lockstep.Math.LVector2;
 
 namespace Lockstep.Collision
@@ -17,7 +16,7 @@ namespace Lockstep.Collision
         /// <summary>
         /// Plane normal. Points x on the plane satisfy Dot(n,x) = d
         /// </summary>
-        public LVector n;
+        public LVector3 n;
 
         /// <summary>
         /// d = dot(n,p) for a given point p on the plane
@@ -28,13 +27,13 @@ namespace Lockstep.Collision
         {
         }
 
-        public Plane(LVector n, LFloat d)
+        public Plane(LVector3 n, LFloat d)
         {
             this.n = n;
             this.d = d;
         }
 
-        public Plane(Point a, Point b, Point c)
+        public Plane(LVector3 a, LVector3 b, LVector3 c)
         {
             n = Cross(b - a, c - a).normalized;
             d = Dot(n, a);
@@ -69,7 +68,7 @@ namespace Lockstep.Collision
 
         public override bool TestWith(Ray ray)
         {
-            return Utils.IntersectRayPlane(ray.o, ray.d, this, out LFloat t, out LVector p);
+            return Utils.IntersectRayPlane(ray.o, ray.d, this, out LFloat t, out LVector3 p);
         }
     };
 }

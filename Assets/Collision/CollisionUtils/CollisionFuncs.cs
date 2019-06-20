@@ -1,14 +1,13 @@
 using Lockstep.Math;
 using static Lockstep.Math.LMath;
-using Point = Lockstep.Math.LVector;
 
 namespace Lockstep.Collision {
     public static partial class Utils {
         // Compute barycentric coordinates (u, v, w) for 
         // point p with respect to triangle (a, b, c)
         // 使用克莱姆法则
-        public static void Barycentric(Point a, Point b, Point c, Point p, out LFloat u, out LFloat v, out LFloat w){
-            LVector v0 = b - a, v1 = c - a, v2 = p - a;
+        public static void Barycentric(LVector3 a, LVector3 b, LVector3 c, LVector3 p, out LFloat u, out LFloat v, out LFloat w){
+            LVector3 v0 = b - a, v1 = c - a, v2 = p - a;
             LFloat d00 = Dot(v0, v0);
             LFloat d01 = Dot(v0, v1);
             LFloat d11 = Dot(v1, v1);
@@ -25,14 +24,14 @@ namespace Lockstep.Collision {
             return (x1 - x2) * (y2 - y3) - (x2 - x3) * (y1 - y2);
         }
 
-        public static bool IsConvexQuad(Point a, Point b, Point c, Point d){
+        public static bool IsConvexQuad(LVector3 a, LVector3 b, LVector3 c, LVector3 d){
             // Quad is nonconvex if Dot(Cross(bd, ba), Cross(bd, bc)) >= 0
-            LVector bda = Cross(d - b, a - b);
-            LVector bdc = Cross(d - b, c - b);
+            LVector3 bda = Cross(d - b, a - b);
+            LVector3 bdc = Cross(d - b, c - b);
             if (Dot(bda, bdc) >= LFloat.zero) return false;
             // Quad is now convex iff Dot(Cross(ac, ad), Cross(ac, ab)) < 0
-            LVector acd = Cross(c - a, d - a);
-            LVector acb = Cross(c - a, b - a);
+            LVector3 acd = Cross(c - a, d - a);
+            LVector3 acb = Cross(c - a, b - a);
             return Dot(acd, acb) < LFloat.zero;
         }
 
@@ -60,12 +59,12 @@ namespace Lockstep.Collision {
         }
 
         //TODO 校验 Scalar的正负性
-        public static LFloat ScalarTriple(LVector a, LVector b, LVector c){
+        public static LFloat ScalarTriple(LVector3 a, LVector3 b, LVector3 c){
             return Dot(b, Cross(c, a));
         }
 
         // BBox Method Definitions
-        public static AABB Union(AABB b, Point p){
+        public static AABB Union(AABB b, LVector3 p){
             AABB ret = new AABB();
             ret.min.x = Min(b.min.x, p.x);
             ret.min.y = Min(b.min.y, p.y);
