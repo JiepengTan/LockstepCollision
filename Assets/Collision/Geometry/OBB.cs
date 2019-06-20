@@ -1,11 +1,11 @@
-using LockStepMath;
+using Lockstep.Math;
 using TMPro;
 using UnityEngine;
-using static LockStepMath.LMath;
-using Point = LockStepMath.LVector;
-using Point2D = LockStepMath.LVector2D;
+using static Lockstep.Math.LMath;
+using Point = Lockstep.Math.LVector;
+using Point2D = Lockstep.Math.LVector2;
 
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
     [System.Serializable]
     public partial class OBB : BaseShape
@@ -55,31 +55,31 @@ namespace LockStepCollision
         
         public override bool TestWith(Sphere sphere)
         {
-            return Collision.TestSphereOBB(sphere, this,out LVector p);
+            return Utils.TestSphereOBB(sphere, this,out LVector p);
         }
         public override bool TestWith(AABB aabb)
         {
             //TODO 改为更加高效的判定方式
-            return Collision.TestOBBOBB(this, aabb.ToOBB());
+            return Utils.TestOBBOBB(this, aabb.ToOBB());
         }
         public override bool TestWith(Capsule capsule)
         {
-            return Collision.TestOBBCapsule(this, capsule);
+            return Utils.TestOBBCapsule(this, capsule);
         }
 
         public override bool TestWith(OBB obb)
         {
-            return Collision.TestOBBOBB(obb, this);
+            return Utils.TestOBBOBB(obb, this);
         }
         
         public override bool TestWith(Plane plane)
         {
-            return Collision.TestOBBPlane(this, plane);
+            return Utils.TestOBBPlane(this, plane);
         }
 
         public override bool TestWith(Ray ray)
         {
-            return Collision.IntersectRayOBB(ray.o, ray.d, this, out LFloat tmin, out LVector temp);
+            return Utils.IntersectRayOBB(ray.o, ray.d, this, out LFloat tmin, out LVector temp);
         }
 
     };

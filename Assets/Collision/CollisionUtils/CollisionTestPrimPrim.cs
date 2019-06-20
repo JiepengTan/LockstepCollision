@@ -1,14 +1,14 @@
-using LockStepMath;
-using static LockStepMath.LMath;
-using Point = LockStepMath.LVector;
-using Point2D = LockStepMath.LVector2D;
+using Lockstep.Math;
+using static Lockstep.Math.LMath;
+using Point = Lockstep.Math.LVector;
+using Point2D = Lockstep.Math.LVector2;
 
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
     /// <summary>
     /// Collision Query 
     /// </summary>
-    public static partial class Collision
+    public static partial class Utils
     {
         //TODO 实现碰撞检测 派发
         public static bool TestShapeShape(BaseShape a, BaseShape b)
@@ -89,7 +89,7 @@ namespace LockStepCollision
             var orthDir = (cap2obb -  Dot(lraydn, cap2obb) * lraydn ).normalized;
             var finalRayC = (-cap2obb) - (orthDir * capsule.r);
             //3.碰撞转换为ray AABB碰撞 
-            if (Collision.IntersectRayAABB(finalRayC, lrayd, aabb, out LFloat tmin, out Point q))
+            if (Utils.IntersectRayAABB(finalRayC, lrayd, aabb, out LFloat tmin, out Point q))
             {
                 //4.检测碰撞点时间 确认碰撞是否发生
                 return tmin <= LFloat.one;
@@ -119,7 +119,7 @@ namespace LockStepCollision
             var orthDir = (cap2obb -  Dot(lraydn, cap2obb) * lraydn ).normalized;
             var finalRayC = (-cap2obb) - (orthDir * capsule.r);
             //3.碰撞转换为ray AABB碰撞 
-            if (Collision.IntersectRayAABB(finalRayC, lrayd, aabb, out LFloat tmin, out Point q))
+            if (Utils.IntersectRayAABB(finalRayC, lrayd, aabb, out LFloat tmin, out Point q))
             {
                 //4.检测碰撞点时间 确认碰撞是否发生
                 return tmin <= LFloat.one;

@@ -1,17 +1,17 @@
-using LockStepMath;
-using LockStepMath;
-using static LockStepMath.LMath;
-using Point = LockStepMath.LVector;
-using Point2D = LockStepMath.LVector2D;
+using Lockstep.Math;
+using Lockstep.Math;
+using static Lockstep.Math.LMath;
+using Point = Lockstep.Math.LVector;
+using Point2D = Lockstep.Math.LVector2;
 
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
     /// <summary>
     /// ClosestPtXxx 获取最近点
     /// DistXxx  获取最近距离
     /// SqDistXxx 最近距离平方
     /// </summary>
-    public static partial class Collision
+    public static partial class Utils
     {
         //TODO 如果Plane 发现最后决定需要进行 归一化 则可以省掉 后面的 Dot 计算
         public static Point ClosestPtPointPlane(Point q, Plane p)

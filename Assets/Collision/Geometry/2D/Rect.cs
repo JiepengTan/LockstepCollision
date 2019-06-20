@@ -1,11 +1,11 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using LockStepMath;
-using static LockStepMath.LMath;
-using Point = LockStepMath.LVector;
-using Point2D = LockStepMath.LVector2D;
+using Lockstep.Math;
+using static Lockstep.Math.LMath;
+using Point = Lockstep.Math.LVector;
+using Point2D = Lockstep.Math.LVector2;
 
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
     [System.Serializable]
     public partial class Rect : BaseShape
@@ -31,7 +31,7 @@ namespace LockStepCollision
         /// <summary>
         /// the halfwidth extents of the rectangle along the axes
         /// </summary>
-        public LVector2D e;
+        public LVector2 e;
 
      
     };

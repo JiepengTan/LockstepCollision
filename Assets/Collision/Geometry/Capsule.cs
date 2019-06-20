@@ -1,9 +1,9 @@
-using LockStepMath;
-using static LockStepMath.LMath;
-using Point = LockStepMath.LVector;
-using Point2D = LockStepMath.LVector2D;
+using Lockstep.Math;
+using static Lockstep.Math.LMath;
+using Point = Lockstep.Math.LVector;
+using Point2D = Lockstep.Math.LVector2;
 
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
     [System.Serializable]
     public partial class Capsule:BaseShape
@@ -46,30 +46,30 @@ namespace LockStepCollision
 
         public override bool TestWith(Sphere sphere)
         {
-            return Collision.TestSphereCapsule(sphere, this);
+            return Utils.TestSphereCapsule(sphere, this);
         }
         public override bool TestWith(AABB aabb)
         {
-            return Collision.TestAABBCapsule(aabb, this);
+            return Utils.TestAABBCapsule(aabb, this);
         }
         public override bool TestWith(Capsule capsule)
         {
-            return Collision.TestCapsuleCapsule(this, capsule);
+            return Utils.TestCapsuleCapsule(this, capsule);
         }
 
         public override bool TestWith(OBB obb)
         {
-            return Collision.TestOBBCapsule(obb, this);
+            return Utils.TestOBBCapsule(obb, this);
         }
         
         public override bool TestWith(Plane plane)
         {
-            return Collision.TestCapsulePlane(this, plane);
+            return Utils.TestCapsulePlane(this, plane);
         }
         
         public override bool TestWith(Ray ray)
         {
-            return Collision.IntersectRayCapsule(ray.o,ray.d, a, b, r, out LFloat t);
+            return Utils.IntersectRayCapsule(ray.o,ray.d, a, b, r, out LFloat t);
         }
     };
 }

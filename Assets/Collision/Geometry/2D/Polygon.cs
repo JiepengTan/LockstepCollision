@@ -1,4 +1,4 @@
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
     [System.Serializable]
     public partial class Polygon:BaseShape

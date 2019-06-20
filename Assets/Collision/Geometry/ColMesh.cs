@@ -1,7 +1,7 @@
-using LockStepMath;
-using Point = LockStepMath.LVector;
+using Lockstep.Math;
+using Point = Lockstep.Math.LVector;
 
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
     [System.Serializable]
     /// <summary>

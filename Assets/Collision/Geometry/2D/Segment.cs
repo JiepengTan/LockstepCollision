@@ -1,6 +1,6 @@
-using LockStepMath;
+using Lockstep.Math;
 
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
     [System.Serializable]
     public partial class Segment:BaseShape

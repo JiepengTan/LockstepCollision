@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 using Test;
-using LockStepCollision;
-using LockStepMath;
+using Lockstep.Collision;
+using Lockstep.Math;
 
 [CustomEditor(typeof(DebugColliderProxy))]
 public class EditorColliderProxy : Editor

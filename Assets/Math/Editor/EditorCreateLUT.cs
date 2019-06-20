@@ -5,19 +5,19 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-namespace LockStepMath
+namespace Lockstep.Math
 {
     public static class EditorCreateLUT
     {
-	    [MenuItem("LockStepMath/CreateLUTAsin")]
+	    [MenuItem("Lockstep.Math/CreateLUTAsin")]
         static void  CreateLUTAsin()
         {
             string fileName = Application.dataPath + "/Math/LUT/LUTAsin.cs";
             const int count = 1024;
             const int percision = 10000;
             string content = @"using System;
-using LockStepMath;
-namespace LockStepMath
+using Lockstep.Math;
+namespace Lockstep.Math
 {
 	public static class LUTAsin
 	{

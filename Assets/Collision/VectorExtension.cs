@@ -1,7 +1,7 @@
-using LockStepMath;
+using Lockstep.Math;
 using UnityEngine;
 
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
     public static class VectorExtension
     {

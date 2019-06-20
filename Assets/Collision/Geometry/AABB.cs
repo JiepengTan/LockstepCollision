@@ -1,12 +1,12 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using LockStepMath;
+using Lockstep.Math;
 using UnityEditor;
-using static LockStepMath.LMath;
-using Point = LockStepMath.LVector;
-using Point2D = LockStepMath.LVector2D;
+using static Lockstep.Math.LMath;
+using Point = Lockstep.Math.LVector;
+using Point2D = Lockstep.Math.LVector2;
 
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
     [System.Serializable]
     public partial class AABB : BaseShape {
@@ -126,32 +126,32 @@ namespace LockStepCollision
 
         public override bool TestWith(Sphere sphere)
         {
-            return Collision.TestSphereAABB(sphere, this);
+            return Utils.TestSphereAABB(sphere, this);
         }
 
         public override bool TestWith(AABB aabb)
         {
-            return Collision.TestAABBAABB(aabb, this);
+            return Utils.TestAABBAABB(aabb, this);
         }
 
         public override bool TestWith(Capsule capsule)
         {
-            return Collision.TestAABBCapsule(this,capsule);
+            return Utils.TestAABBCapsule(this,capsule);
         }
 
         public override bool TestWith(OBB obb)
         {
-            return Collision.TestOBBOBB(obb, this.ToOBB());
+            return Utils.TestOBBOBB(obb, this.ToOBB());
         }
 
         public override bool TestWith(Plane plane)
         {
-            return Collision.TestAABBPlane(this, plane);
+            return Utils.TestAABBPlane(this, plane);
         }
 
         public override bool TestWith(Ray ray)
         {
-            return Collision.IntersectRayAABB(ray.o, ray.d, this, out LFloat tmin, out LVector temp);
+            return Utils.IntersectRayAABB(ray.o, ray.d, this, out LFloat tmin, out LVector temp);
         }
     }
 }

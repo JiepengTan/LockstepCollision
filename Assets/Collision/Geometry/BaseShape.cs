@@ -1,8 +1,8 @@
-using LockStepMath;
+using Lockstep.Math;
 using System;
 using System.Security.Cryptography.X509Certificates;
 
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
     public enum EColType
     {

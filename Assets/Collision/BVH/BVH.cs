@@ -1,16 +1,15 @@
 ///代码 参考来自PBRT2 BVH
-using LockStepMath;
+using Lockstep.Math;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
-using static LockStepMath.LMath;
-using Point = LockStepMath.LVector;
-using Point2D = LockStepMath.LVector2D;
-using static LockStepCollision.Collision;
+using static Lockstep.Math.LMath;
+using Point = Lockstep.Math.LVector;
+using static Lockstep.Collision.Utils;
 using Debug = UnityEngine.Debug;
-using Shape = LockStepCollision.BaseShape;
+using Shape = Lockstep.Collision.BaseShape;
 using static LockStep.Algorithm;
 
-namespace LockStepCollision {
+namespace Lockstep.Collision {
 
     // BVHAccel Local Declarations
     public struct BVHShapeInfo {

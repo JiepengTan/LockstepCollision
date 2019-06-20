@@ -2,7 +2,7 @@
 using TreeEditor;
 using UnityEngine;
 
-namespace LockStepMath
+namespace Lockstep.Math
 {
     [Serializable]
     public struct LVector : IEquatable<LVector>
@@ -292,9 +292,9 @@ namespace LockStepMath
 
         #region 2D
 
-        public LVector2D xz
+        public LVector2 xz
         {
-            get { return new LVector2D(this._x, this._z); }
+            get { return new LVector2(this._x, this._z); }
         }
 
         public LFloat magnitude2D

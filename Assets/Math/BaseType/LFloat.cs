@@ -1,7 +1,7 @@
 ﻿using System;
-using LockStepMath;
+using Lockstep.Math;
 
-namespace LockStepMath
+namespace Lockstep.Math
 {
     [Serializable]
     public struct LFloat : IEquatable<LFloat>, IComparable<LFloat>

@@ -1,10 +1,10 @@
-using LockStepMath;
+using Lockstep.Math;
 
-using static LockStepMath.LMath;
-using Point = LockStepMath.LVector;
-using Point2D = LockStepMath.LVector2D;
+using static Lockstep.Math.LMath;
+using Point = Lockstep.Math.LVector;
+using Point2D = Lockstep.Math.LVector2;
 
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
     [System.Serializable]
     public partial class Plane :BaseShape
@@ -46,20 +46,20 @@ namespace LockStepCollision
         
         public override bool TestWith(Sphere sphere)
         {
-            return Collision.TestSpherePlane(sphere, this);
+            return Utils.TestSpherePlane(sphere, this);
         }
         public override bool TestWith(AABB aabb)
         {
-            return Collision.TestAABBPlane(aabb,this);
+            return Utils.TestAABBPlane(aabb,this);
         }
         public override bool TestWith(Capsule capsule)
         {
-            return Collision.TestCapsulePlane(capsule,this);
+            return Utils.TestCapsulePlane(capsule,this);
         }
 
         public override bool TestWith(OBB obb)
         {
-            return Collision.TestOBBPlane( obb, this);
+            return Utils.TestOBBPlane( obb, this);
         }
         
         public override bool TestWith(Plane plane)
@@ -69,7 +69,7 @@ namespace LockStepCollision
 
         public override bool TestWith(Ray ray)
         {
-            return Collision.IntersectRayPlane(ray.o, ray.d, this, out LFloat t, out LVector p);
+            return Utils.IntersectRayPlane(ray.o, ray.d, this, out LFloat t, out LVector p);
         }
     };
 }

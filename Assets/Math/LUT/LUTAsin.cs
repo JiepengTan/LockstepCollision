@@ -1,6 +1,6 @@
 using System;
-using LockStepMath;
-namespace LockStepMath
+using Lockstep.Math;
+namespace Lockstep.Math
 {
 	public static class LUTAsin
 	{

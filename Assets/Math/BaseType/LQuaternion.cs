@@ -1,8 +1,8 @@
 ﻿
 using System;
 using UnityEngine.Internal;
-using LockStepMath;
-using static LockStepMath.LMath;
+using Lockstep.Math;
+using static Lockstep.Math.LMath;
 
 namespace LockStepLMath
 {

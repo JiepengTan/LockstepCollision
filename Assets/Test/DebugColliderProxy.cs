@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-using LockStepCollision;
-using LockStepMath;
-using Collision = LockStepCollision.Collision;
+using Lockstep.Collision;
+using Lockstep.Math;
 
 namespace Test
 {
@@ -138,7 +137,7 @@ namespace Test
         {
             //使用暴力测试方式 
             bool hasCollidedOthers = false;
-            var isCollided = Collision.TestSphereSphere(a.boundSphere, b.boundSphere);
+            var isCollided = Utils.TestSphereSphere(a.boundSphere, b.boundSphere);
             if (isCollided)
             {
                 foreach (var cCola in a.allColliders)

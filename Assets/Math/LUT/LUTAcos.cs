@@ -1,7 +1,7 @@
 ﻿using System;
-using LockStepMath;
+using Lockstep.Math;
 
-namespace LockStepMath
+namespace Lockstep.Math
 {
 
 	public static class LUTAcos

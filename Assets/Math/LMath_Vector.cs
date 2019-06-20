@@ -1,15 +1,15 @@
 using System;
-using LockStepMath;
+using Lockstep.Math;
 
-namespace LockStepMath
+namespace Lockstep.Math
 {
     public static partial class LMath
     {
-        public static LFloat Dot(LVector2D u, LVector2D v)
+        public static LFloat Dot(LVector2 u, LVector2 v)
         {
             return new LFloat(((long) u._x * v._x + (long) u._y * v._y) / LFloat.Precision);
         }
-        public static LFloat Dot2D(LVector2D u, LVector2D v)
+        public static LFloat Dot2D(LVector2 u, LVector2 v)
         {
             return new LFloat(((long) u._x * v._x + (long) u._y * v._y) / LFloat.Precision);
         }
@@ -28,7 +28,7 @@ namespace LockStepMath
             return new LFloat(val / LFloat.Precision);
             ;
         }
-        public static LFloat Cross2D(LVector2D u, LVector2D v)
+        public static LFloat Cross2D(LVector2 u, LVector2 v)
         {
             return u.y * v.x - u.x * v.y;
         }

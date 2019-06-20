@@ -1,7 +1,7 @@
-using LockStepMath;
-using Point = LockStepMath.LVector;
+using Lockstep.Math;
+using Point = Lockstep.Math.LVector;
 
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
     [System.Serializable]
     public partial class Ray : BaseShape
@@ -41,27 +41,27 @@ namespace LockStepCollision
 
         public override bool TestWith(Sphere sphere)
         {
-            return Collision.IntersectRaySphere(o, d, sphere, out LFloat t, out LVector p);
+            return Utils.IntersectRaySphere(o, d, sphere, out LFloat t, out LVector p);
         }
 
         public override bool TestWith(AABB aabb)
         {
-            return Collision.IntersectRayAABB(o, d, aabb, out LFloat t, out LVector p);
+            return Utils.IntersectRayAABB(o, d, aabb, out LFloat t, out LVector p);
         }
 
         public override bool TestWith(Capsule capsule)
         {
-            return Collision.IntersectRayCapsule(o, d, capsule.a, capsule.b, capsule.r, out LFloat t);
+            return Utils.IntersectRayCapsule(o, d, capsule.a, capsule.b, capsule.r, out LFloat t);
         }
 
         public override bool TestWith(OBB obb)
         {
-            return Collision.IntersectRayOBB(o, d, obb, out LFloat t, out LVector p);
+            return Utils.IntersectRayOBB(o, d, obb, out LFloat t, out LVector p);
         }
 
         public override bool TestWith(Plane plane)
         {
-            return Collision.IntersectRayPlane(o, d, plane, out LFloat t, out LVector p);
+            return Utils.IntersectRayPlane(o, d, plane, out LFloat t, out LVector p);
         }
 
         public override bool TestWith(Ray ray)

@@ -2,11 +2,11 @@ using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-using LockStepMath;
+using Lockstep.Math;
 
 /*
 */
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
     public partial class BaseShape
     {

@@ -1,10 +1,9 @@
-using LockStepMath;
-using static LockStepMath.LMath;
-using Point = LockStepMath.LVector;
-using Point2D = LockStepMath.LVector2D;
+using Lockstep.Math;
+using static Lockstep.Math.LMath;
+using Point = Lockstep.Math.LVector;
 
-namespace LockStepCollision {
-    public static partial class Collision {
+namespace Lockstep.Collision {
+    public static partial class Utils {
         // Compute barycentric coordinates (u, v, w) for 
         // point p with respect to triangle (a, b, c)
         // 使用克莱姆法则
@@ -38,9 +37,9 @@ namespace LockStepCollision {
         }
 
         // Return index i of point p[i] farthest from the edge ab, to the left of the edge
-        public static int PointFarthestFromEdge(Point2D a, Point2D b, Point2D[] p, int n){
+        public static int PointFarthestFromEdge(LVector2 a, LVector2 b, LVector2[] p, int n){
             // Create edge LVector and LVector (counterclockwise) perpendicular to it
-            LVector2D e = b - a, eperp = new LVector2D(-e.y, e.x);
+            LVector2 e = b - a, eperp = new LVector2(-e.y, e.x);
 
             // Track index, ‘distance’ and ‘rightmostness’ of currently best point
             int bestIndex = -1;
@@ -141,7 +140,7 @@ namespace LockStepCollision {
         /// <summary>
         /// 点是否在线段上  仅仅考虑点在直线上情况
         /// </summary>
-        private static bool IsPointOnSegment(ref LVector2D segSrc, ref LVector2D segVec, LVector2D point)
+        private static bool IsPointOnSegment(ref LVector2 segSrc, ref LVector2 segVec, LVector2 point)
         {
             long num = point._x - (long) segSrc._x;
             long num2 = point._y - (long) segSrc._y;
@@ -153,10 +152,10 @@ namespace LockStepCollision {
         /// 判定两线段是否相交 并求交点
         /// https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect/565282#
         /// </summary>
-        public static bool IntersectSegment(ref LVector2D seg1Src, ref LVector2D seg1Vec, ref LVector2D seg2Src,
-            ref LVector2D seg2Vec, out LVector2D interPoint)
+        public static bool IntersectSegment(ref LVector2 seg1Src, ref LVector2 seg1Vec, ref LVector2 seg2Src,
+            ref LVector2 seg2Vec, out LVector2 interPoint)
         {
-            interPoint = LVector2D.zero;
+            interPoint = LVector2.zero;
             long denom = (long) seg1Vec._x * seg2Vec._y - (long) seg2Vec._x * seg1Vec._y; //sacle 1000
             if (denom == 0L)
                 return false; // Collinear
@@ -184,7 +183,7 @@ namespace LockStepCollision {
         ///  判定点是否在多边形内
         /// https://stackoverflow.com/questions/217578/how-can-i-determine-whether-a-2d-point-is-within-a-polygon
         /// </summary>
-        public static bool IsPointInPolygon(LVector2D p, LVector2D[] polygon)
+        public static bool IsPointInPolygon(LVector2 p, LVector2[] polygon)
         {
             var minX = polygon[0]._x;
             var maxX = polygon[0]._x;
@@ -192,7 +191,7 @@ namespace LockStepCollision {
             var maxY = polygon[0]._y;
             for (int i = 1; i < polygon.Length; i++)
             {
-                LVector2D q = polygon[i];
+                LVector2 q = polygon[i];
                 minX = LMath.Min(q._x, minX);
                 maxX = LMath.Max(q._x, maxX);
                 minY = LMath.Min(q._y, minY);

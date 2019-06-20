@@ -1,8 +1,8 @@
 ﻿using System;
 using UnityEngine;
-using LockStepMath;
+using Lockstep.Math;
 
-namespace LockStepMath
+namespace Lockstep.Math
 {
     public static partial class LMath
     {
@@ -279,9 +279,9 @@ namespace LockStepMath
             return new LFloat((int) (((long) (b._val - a._val) * f._val) / LFloat.Precision) + a._val);
         }
 
-        public static LVector2D Lerp(LVector2D a, LVector2D b, LFloat f)
+        public static LVector2 Lerp(LVector2 a, LVector2 b, LFloat f)
         {
-            return new LVector2D(
+            return new LVector2(
                 (int) (((long) (b._x - a._x) * f._val) / LFloat.Precision) + a._x,
                 (int) (((long) (b._y - a._y) * f._val) / LFloat.Precision) + a._y);
         }

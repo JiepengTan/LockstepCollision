@@ -1,11 +1,11 @@
-using LockStepMath;
-using static LockStepMath.LMath;
-using Point = LockStepMath.LVector;
-using Point2D = LockStepMath.LVector2D;
+using Lockstep.Math;
+using static Lockstep.Math.LMath;
+using Point = Lockstep.Math.LVector;
+using Point2D = Lockstep.Math.LVector2;
 
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
-    public static partial class Collision
+    public static partial class Utils
     {
         public static bool IntersectRayPlane(Point o, Point d, Plane p, out LFloat t, out Point q)
         {
@@ -82,7 +82,7 @@ namespace LockStepCollision
         {
             var fo = o - obb.c;
             var fd = obb.u.WorldToLocal(d);
-            return Collision.IntersectRayAABB(fo, fd, obb.ToAABB(), out tmin, out p);
+            return Utils.IntersectRayAABB(fo, fd, obb.ToAABB(), out tmin, out p);
         }
 
         // Intersect ray R(t) = p + t*d against AABB a. When intersecting,

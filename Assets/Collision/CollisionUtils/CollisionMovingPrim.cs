@@ -1,11 +1,11 @@
-using LockStepMath;
-using static LockStepMath.LMath;
-using Point = LockStepMath.LVector;
-using Point2D = LockStepMath.LVector2D;
+using Lockstep.Math;
+using static Lockstep.Math.LMath;
+using Point = Lockstep.Math.LVector;
+using Point2D = Lockstep.Math.LVector2;
 
-namespace LockStepCollision
+namespace Lockstep.Collision
 {
-    public static partial class Collision
+    public static partial class Utils
     {
         // Intersect sphere s0 moving in direction d over time interval t0 <= t <= t1, against
         // a stationary sphere s1. If found intersecting, return time t of collision
