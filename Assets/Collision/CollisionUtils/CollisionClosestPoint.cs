@@ -157,8 +157,10 @@ namespace Lockstep.Collision
             {
                 // For each axis count any excess distance outside box extents
                 LFloat v = p[i];
-                if (v < b.min[i]) sqDist += (b.min[i] - v) * (b.min[i] - v);
-                if (v > b.max[i]) sqDist += (v - b.max[i]) * (v - b.max[i]);
+                var min = b.min[i];
+                var max = b.max[i];
+                if (v < min) sqDist += (min - v) * (min - v);
+                if (v > max) sqDist += (v - max) * (v - max);
             }
 
             return sqDist;

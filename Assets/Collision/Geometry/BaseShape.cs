@@ -1,6 +1,7 @@
 using Lockstep.Math;
 using System;
 using System.Security.Cryptography.X509Certificates;
+using LockStepLMath;
 
 namespace Lockstep.Collision
 {
@@ -38,10 +39,14 @@ namespace Lockstep.Collision
             return null;
         }
 
-        public virtual void UpdateCollider(bool isDiffPos, bool isDiffRot, LVector3 targetPos, LVector3 targetRot)
+        public virtual void UpdatePosition(LVector3 targetPos)
         {
+            
         }
-
+        public virtual void UpdateRotation(LVector3 forward, LVector3 up)
+        {
+            throw new NotImplementedException(GetType() + "Can not rotate ");
+        }
         public static bool TestShapeWithShape(BaseShape a, BaseShape b)
         {
             if (a == null || b == null)

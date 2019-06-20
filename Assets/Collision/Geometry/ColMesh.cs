@@ -32,9 +32,6 @@ namespace Lockstep.Collision
             return boundSphere;
         }
 
-        public override void UpdateCollider(bool isDiffPos, bool isDiffRot, LVector3 targetPos, LVector3 targetRot)
-        {
-        }
         public override bool TestWithShape(BaseShape shape)
         {
             return shape.TestWith(this);

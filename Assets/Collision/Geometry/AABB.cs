@@ -5,8 +5,7 @@ using UnityEditor;
 using static Lockstep.Math.LMath;
 using Point2D = Lockstep.Math.LVector2;
 
-namespace Lockstep.Collision
-{
+namespace Lockstep.Collision {
     [System.Serializable]
     public partial class AABB : BaseShape {
         public override EColType ColType {
@@ -34,7 +33,8 @@ namespace Lockstep.Collision
             this.min = min;
             this.max = max;
         }
-        public AABB(AABB o ){
+
+        public AABB(AABB o){
             this.min = o.min;
             this.max = o.max;
         }
@@ -80,31 +80,31 @@ namespace Lockstep.Collision
             }
             set {
                 if (index == 0) min = value;
-                else  max =value;
+                else max = value;
             }
         }
 
+        public override void UpdatePosition(LVector3 targetPos){
+            var oldR = r;
+            min = targetPos - oldR;
+            max = targetPos + oldR;
+        }
         // Transform AABB a by the matrix m and translation t,
         // find maximum extents, and store result into AABB b.
-        public void UpdateAABB(LMatrix33 m, LVector3 t)
-        {
+        public void UpdateAABB(LMatrix33 m, LVector3 t){
             LVector3 _c = c + t;
             LVector3 _r = r;
             min = max = _c;
             // For all three axes
-            for (int i = 0; i < 3; i++)
-            {
+            for (int i = 0; i < 3; i++) {
                 // Form extent by summing smaller and larger terms respectively
-                for (int j = 0; j < 3; j++)
-                {
+                for (int j = 0; j < 3; j++) {
                     LFloat e = m[i, j] * _r[j];
-                    if (e < LFloat.zero)
-                    {
+                    if (e < LFloat.zero) {
                         min[i] += e;
                         max[i] -= e;
                     }
-                    else
-                    {
+                    else {
                         min[i] -= e;
                         max[i] += e;
                     }
@@ -112,44 +112,36 @@ namespace Lockstep.Collision
             }
         }
 
-        public override Sphere GetBoundSphere()
-        {
+        public override Sphere GetBoundSphere(){
             return new Sphere(c, (max - min).magnitude * LFloat.half);
         }
 
-        public override bool TestWithShape(BaseShape shape)
-        {
+        public override bool TestWithShape(BaseShape shape){
             return shape.TestWith(this);
         }
 
 
-        public override bool TestWith(Sphere sphere)
-        {
+        public override bool TestWith(Sphere sphere){
             return Utils.TestSphereAABB(sphere, this);
         }
 
-        public override bool TestWith(AABB aabb)
-        {
+        public override bool TestWith(AABB aabb){
             return Utils.TestAABBAABB(aabb, this);
         }
 
-        public override bool TestWith(Capsule capsule)
-        {
-            return Utils.TestAABBCapsule(this,capsule);
+        public override bool TestWith(Capsule capsule){
+            return Utils.TestAABBCapsule(this, capsule);
         }
 
-        public override bool TestWith(OBB obb)
-        {
+        public override bool TestWith(OBB obb){
             return Utils.TestOBBOBB(obb, this.ToOBB());
         }
 
-        public override bool TestWith(Plane plane)
-        {
+        public override bool TestWith(Plane plane){
             return Utils.TestAABBPlane(this, plane);
         }
 
-        public override bool TestWith(Ray ray)
-        {
+        public override bool TestWith(Ray ray){
             return Utils.IntersectRayAABB(ray.o, ray.d, this, out LFloat tmin, out LVector3 temp);
         }
     }

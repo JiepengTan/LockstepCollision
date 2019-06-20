@@ -70,7 +70,7 @@ namespace Lockstep.Collision
         {
             //-1.确认两个包围球是否 碰撞 如果未曾碰撞 加速返回
             var cc = capsule.GetBoundSphereCenter();
-            var rc = capsule.GetBoudsSphereRadius();
+            var rc = capsule.GetBoundsSphereRadius();
             var diffr = obb.e.magnitude + rc;
             if ((obb.c - cc).sqrMagnitude > diffr * diffr)
             {
@@ -101,7 +101,7 @@ namespace Lockstep.Collision
         {
             //-1.确认两个包围球是否 碰撞 如果未曾碰撞 加速返回
             var cc = capsule.GetBoundSphereCenter();
-            var rc = capsule.GetBoudsSphereRadius();
+            var rc = capsule.GetBoundsSphereRadius();
             var diffr = aabb.r.magnitude + rc;
             var aabbc = aabb.c;
             if ((aabbc - cc).sqrMagnitude > diffr * diffr)
@@ -109,19 +109,31 @@ namespace Lockstep.Collision
                 return false;
             }
 
-            //0.Capsule 转换到OBB坐标 空间转换为Capsule VS AABB 
+            //0.检测端点距离
+            var maxDist = capsule.r * capsule.r;
+            var sqDistA = Utils.SqDistPointAABB(capsule.a, aabb);
+            if (sqDistA <= maxDist) {
+                return true;
+            }
+            var sqDistB = Utils.SqDistPointAABB(capsule.b, aabb);
+            if (sqDistB <= maxDist) {
+                return true;
+            }
+            
+            //1.Capsule 转换到OBB坐标 空间转换为Capsule VS AABB 
             var lrayd = capsule.b - capsule.a;
-            //1 将capsule 变成一个射线 
+            //2 将capsule 变成一个射线 
             var lraydn = lrayd.normalized;
             var cap2obb = (aabb.c - capsule.a);
-            //2.将射线沿着AABB 中心靠近capsule.r 距离 
-            var orthDir = (cap2obb -  Dot(lraydn, cap2obb) * lraydn ).normalized;
-            var finalRayC = (-cap2obb) - (orthDir * capsule.r);
-            //3.碰撞转换为ray AABB碰撞 
+            //3.将射线沿着AABB 中心靠近capsule.r 距离
+            var proj = Dot(lraydn, cap2obb) * lraydn;
+            var orthDir = (cap2obb -  proj ).normalized;
+            var finalRayC = capsule.a + (orthDir * capsule.r);
+            //4.碰撞转换为ray AABB碰撞 
             if (Utils.IntersectRayAABB(finalRayC, lrayd, aabb, out LFloat tmin, out LVector3 q))
             {
-                //4.检测碰撞点时间 确认碰撞是否发生
-                return tmin <= LFloat.one;
+                //5.检测碰撞点时间 确认碰撞是否发生
+                return tmin <= LFloat.one && tmin >=LFloat.zero;
             }
 
             return false;

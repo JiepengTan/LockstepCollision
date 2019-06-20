@@ -89,10 +89,10 @@ namespace Lockstep.Math
         {
             get
             {
-                long num = (long) this._x;
-                long num2 = (long) this._y;
-                long num3 = (long) this._z;
-                return new LFloat(true,LMath.Sqrt(num * num + num2 * num2 + num3 * num3));
+                long x = (long) this._x;
+                long y = (long) this._y;
+                long z = (long) this._z;
+                return new LFloat(true,LMath.Sqrt(x * x + y * y + z * z));
             }
         }
 
@@ -101,10 +101,10 @@ namespace Lockstep.Math
         {
             get
             {
-                long num = (long) this._x;
-                long num2 = (long) this._y;
-                long num3 = (long) this._z;
-                return new LFloat(true,(num * num + num2 * num2 + num3 * num3) / LFloat.Precision);
+                long x = (long) this._x;
+                long y = (long) this._y;
+                long z = (long) this._z;
+                return new LFloat(true,(x * x + y * y + z * z) / LFloat.Precision);
             }
         }
 
