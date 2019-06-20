@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿#if UNITY_5_3_OR_NEWER
 using UnityEngine;
 
 public class TestRotation : MonoBehaviour
@@ -63,3 +62,4 @@ public class TestRotation : MonoBehaviour
  
     }
 }
+#endif

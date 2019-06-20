@@ -1,7 +1,4 @@
-﻿using System;
-using Lockstep.Math;
-using UnityEngine;
-
+﻿
 namespace Lockstep.Math
 {
     public static partial class LMath

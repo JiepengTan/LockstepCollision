@@ -1,7 +1,6 @@
 ///代码 参考来自PBRT2 BVH
 using Lockstep.Math;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
 using static Lockstep.Math.LMath;
 using static Lockstep.Collision.Utils;
 using Debug = UnityEngine.Debug;

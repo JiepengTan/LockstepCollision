@@ -45,7 +45,7 @@ namespace Lockstep.Collision
         }
         public virtual void UpdateRotation(LVector3 forward, LVector3 up)
         {
-            throw new NotImplementedException(GetType() + "Can not rotate ");
+            //throw new NotImplementedException(GetType() + "Can not rotate ");
         }
         public static bool TestShapeWithShape(BaseShape a, BaseShape b)
         {

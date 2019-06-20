@@ -28,13 +28,13 @@ namespace Lockstep.Collision {
         }
 #if UNITY_EDITOR
         private void OnDrawGizmos(){
-            if (allColliders[0] is Capsule) {
+            return;
+            if (allCollider[0] is Capsule) {
                 int i = 0;
             }
-            foreach (var col in allColliders) {
+            foreach (var col in allCollider) {
                 col.OnDrawGizmos(true, Color.green);
             }
-
             //boundSphere?.OnDrawGizmos(true, Color.red);
         }
 #endif

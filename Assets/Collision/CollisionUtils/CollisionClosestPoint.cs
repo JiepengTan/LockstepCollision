@@ -1,5 +1,4 @@
 using Lockstep.Math;
-using Lockstep.Math;
 using static Lockstep.Math.LMath;
 using Point2D = Lockstep.Math.LVector2;
 

@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections;
 using System.Reflection;
 
 /// <summary>
@@ -1390,7 +1389,6 @@ public static class DebugExtension
 	{
 		DrawCapsule(start, end, Color.white, radius);
 	}
-	
 	#endregion
 	
 	#region DebugFunctions

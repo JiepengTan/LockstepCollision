@@ -57,6 +57,7 @@ namespace Lockstep.Collision
             DebugExtension.DrawCapsule(
                 a.ToVector3() - (_hDir.normalized.ToVector3() * r.ToFloat()) , 
                 b.ToVector3() + (_hDir.normalized.ToVector3() * r.ToFloat()) , 
+                color,
                 r.ToFloat());
 #endif
         }

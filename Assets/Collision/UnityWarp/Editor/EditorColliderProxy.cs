@@ -1,11 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
+#if UNITY_5_3_OR_NEWER
 using UnityEngine;
 using UnityEditor;
-using System.IO;
-using Test;
-using Lockstep.Collision;
-using Lockstep.Math;
 
 [CustomEditor(typeof(DebugUnityColliderProxy))]
 public class EditorColliderProxy : Editor
@@ -36,7 +31,7 @@ public class EditorColliderProxy : Editor
     /// </summary>
     void DrawPathHeap()
     {
-        foreach (var col in owner.allColliders)
+        foreach (var col in owner.allCollider)
         {
             var _colType = col.ColType;
             switch (_colType)
@@ -54,3 +49,4 @@ public class EditorColliderProxy : Editor
         //Gizmos.DrawCube();
     }
 }
+#endif
