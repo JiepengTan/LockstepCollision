@@ -6,7 +6,7 @@ using Lockstep.Collision;
 using Lockstep.Math;
 using Random = UnityEngine.Random;
 
-public class TestScene : MonoBehaviour {
+public class TestCollision3D : MonoBehaviour {
     public enum ETestShape3D {
         Obb,
         Capsule,

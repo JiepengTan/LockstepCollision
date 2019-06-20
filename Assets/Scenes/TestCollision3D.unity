@@ -123,7 +123,7 @@ GameObject:
   - component: {fileID: 86627610}
   - component: {fileID: 86627611}
   m_Layer: 0
-  m_Name: TestScene
+  m_Name: TestCollision3D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -155,7 +155,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e68bf4f36a589417e8744d39ba6e5e01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  count: 2
+  gridGap: 6
+  moveDist: 4
+  rawRotateDeg: 180
+  rawSize: 1
+  rawMoveTime: 2
+  timeFloatRate: 0.3
+  sizeFloatRate: 0.4
+  degFloatRate: 0.4
 --- !u!1 &170076733
 GameObject:
   m_ObjectHideFlags: 0
