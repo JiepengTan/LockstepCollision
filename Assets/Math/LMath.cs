@@ -396,6 +396,12 @@ namespace Lockstep.Math
             return new LFloat(true,(int) (((long) (b._val - a._val) * f._val) / LFloat.Precision) + a._val);
         }
 
+        public static LFloat InverseLerp(LFloat a, LFloat b, LFloat value)
+        {
+            if ( a !=  b)
+                return Clamp01( (( value -  a) / ( b -  a)));
+            return LFloat.zero;
+        }
         public static LVector2 Lerp(LVector2 a, LVector2 b, LFloat f)
         {
             return new LVector2(true,
