@@ -4,47 +4,33 @@ using UnityEngine;
 
 namespace Lockstep.Collision2D {
     public struct LRect {
-        public LFloat m_XMin;
-        public LFloat m_YMin;
-        public LFloat m_Width;
-        public LFloat m_Height;
+        public LFloat x;
+        public LFloat y;
+        public LFloat xMax;
+        public LFloat yMax;
 
-
-        /// <summary>
-        ///   <para>Creates a new rectangle.</para>
-        /// </summary>
-        /// <param name="x">The X value the rect is measured from.</param>
-        /// <param name="y">The Y value the rect is measured from.</param>
-        /// <param name="width">The width of the rectangle.</param>
-        /// <param name="height">The height of the rectangle.</param>
-        public LRect(LFloat x, LFloat y, LFloat width, LFloat height){
-            this.m_XMin = x;
-            this.m_YMin = y;
-            this.m_Width = width;
-            this.m_Height = height;
+        public LRect(LFloat x, LFloat y, LFloat width, LFloat heigh){
+            this.x = x;
+            this.y = y;
+            this.xMax = x + width;
+            this.yMax = y + heigh;
         }
 
-        /// <summary>
-        ///   <para>Creates a rectangle given a size and position.</para>
-        /// </summary>
-        /// <param name="position">The position of the minimum corner of the rect.</param>
-        /// <param name="size">The width and height of the rect.</param>
         public LRect(LVector2 position, LVector2 size){
-            this.m_XMin = position.x;
-            this.m_YMin = position.y;
-            this.m_Width = size.x;
-            this.m_Height = size.y;
+            this.x = position.x;
+            this.y = position.y;
+            this.xMax = x + size.x;
+            this.yMax = y + size.y;
         }
 
-        /// <summary>
-        ///   <para></para>
-        /// </summary>
-        /// <param name="source"></param>
-        public LRect(Rect source){
-            this.m_XMin = source.x.ToLFloat();
-            this.m_YMin = source.y.ToLFloat();
-            this.m_Width = source.width.ToLFloat();
-            this.m_Height = source.height.ToLFloat();
+        public LFloat width {
+            get => xMax - x;
+            set => xMax = x + width;
+        }
+
+        public LFloat height {
+            get => yMax - y;
+            set => yMax = y + width;
         }
 
         /// <summary>
@@ -59,35 +45,29 @@ namespace Lockstep.Collision2D {
         }
 
         public void Set(LFloat x, LFloat y, LFloat width, LFloat height){
-            this.m_XMin = x;
-            this.m_YMin = y;
-            this.m_Width = width;
-            this.m_Height = height;
-        }
-
-        public LFloat x {
-            get { return this.m_XMin; }
-            set { this.m_XMin = value; }
-        }
-
-        public LFloat y {
-            get { return this.m_YMin; }
-            set { this.m_YMin = value; }
+            this.x = x;
+            this.y = y;
+            this.xMax = x + width;
+            this.yMax = y + height;
         }
 
         public LVector2 position {
-            get { return new LVector2(this.m_XMin, this.m_YMin); }
+            get { return new LVector2(this.x, this.y); }
             set {
-                this.m_XMin = value.x;
-                this.m_YMin = value.y;
+                this.x = value.x;
+                this.y = value.y;
             }
         }
 
         public LVector2 center {
-            get { return new LVector2(this.x + this.m_Width / 2, this.y + this.m_Height / 2); }
+            get { return new LVector2((x + xMax) / 2, (y + yMax) / 2); }
             set {
-                this.m_XMin = value.x - this.m_Width / 2;
-                this.m_YMin = value.y - this.m_Height / 2;
+                var wid = width;
+                var high = height;
+                this.x = value.x - width / 2;
+                this.y = value.y - height / 2;
+                xMax = x + wid;
+                yMax = y + high;
             }
         }
 
@@ -95,10 +75,10 @@ namespace Lockstep.Collision2D {
         ///   <para>The position of the minimum corner of the rectangle.</para>
         /// </summary>
         public LVector2 min {
-            get { return new LVector2(this.xMin, this.yMin); }
+            get { return new LVector2(this.x, this.y); }
             set {
-                this.xMin = value.x;
-                this.yMin = value.y;
+                this.x = value.x;
+                this.y = value.y;
             }
         }
 
@@ -114,130 +94,36 @@ namespace Lockstep.Collision2D {
         }
 
         /// <summary>
-        ///   <para>The width of the rectangle, measured from the X position.</para>
-        /// </summary>
-        public LFloat width {
-            get { return this.m_Width; }
-            set { this.m_Width = value; }
-        }
-
-        /// <summary>
-        ///   <para>The height of the rectangle, measured from the Y position.</para>
-        /// </summary>
-        public LFloat height {
-            get { return this.m_Height; }
-            set { this.m_Height = value; }
-        }
-
-        /// <summary>
         ///   <para>The width and height of the rectangle.</para>
         /// </summary>
         public LVector2 size {
-            get { return new LVector2(this.m_Width, this.m_Height); }
+            get { return new LVector2(xMax - x, yMax - y); }
             set {
-                this.m_Width = value.x;
-                this.m_Height = value.y;
+                this.xMax = value.x + x;
+                this.yMax = value.y + y;
             }
         }
 
-        /// <summary>
-        ///   <para>The minimum X coordinate of the rectangle.</para>
-        /// </summary>
-        public LFloat xMin {
-            get { return this.m_XMin; }
-            set {
-                LFloat xMax = this.xMax;
-                this.m_XMin = value;
-                this.m_Width = xMax - this.m_XMin;
-            }
-        }
-
-        /// <summary>
-        ///   <para>The minimum Y coordinate of the rectangle.</para>
-        /// </summary>
-        public LFloat yMin {
-            get { return this.m_YMin; }
-            set {
-                LFloat yMax = this.yMax;
-                this.m_YMin = value;
-                this.m_Height = yMax - this.m_YMin;
-            }
-        }
-
-        /// <summary>
-        ///   <para>The maximum X coordinate of the rectangle.</para>
-        /// </summary>
-        public LFloat xMax {
-            get { return this.m_Width + this.m_XMin; }
-            set { this.m_Width = value - this.m_XMin; }
-        }
-
-        /// <summary>
-        ///   <para>The maximum Y coordinate of the rectangle.</para>
-        /// </summary>
-        public LFloat yMax {
-            get { return this.m_Height + this.m_YMin; }
-            set { this.m_Height = value - this.m_YMin; }
-        }
-
-        /// <summary>
-        ///   <para>Returns true if the x and y components of point is a point inside this rectangle. If allowInverse is present and true, the width and height of the LRect are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.</para>
-        /// </summary>
-        /// <param name="point">Point to test.</param>
-        /// <param name="allowInverse">Does the test allow the LRect's width and height to be negative?</param>
-        /// <returns>
-        ///   <para>True if the point lies within the specified rectangle.</para>
-        /// </returns>
         public bool Contains(LVector2 point){
-            return point.x >= this.xMin && point.x < this.xMax &&
-                   point.y >= this.yMin && point.y < this.yMax;
+            return point.x >= this.x && point.x < this.xMax &&
+                   point.y >= this.y && point.y < this.yMax;
         }
 
-        /// <summary>
-        ///   <para>Returns true if the x and y components of point is a point inside this rectangle. If allowInverse is present and true, the width and height of the LRect are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.</para>
-        /// </summary>
-        /// <param name="point">Point to test.</param>
-        /// <param name="allowInverse">Does the test allow the LRect's width and height to be negative?</param>
-        /// <returns>
-        ///   <para>True if the point lies within the specified rectangle.</para>
-        /// </returns>
         public bool Contains(LVector3 point){
-            return point.x >= this.xMin && point.x < this.xMax &&
-                   point.y >= this.yMin && point.y < this.yMax;
-        }
-
-        /// <summary>
-        ///   <para>Returns true if the x and y components of point is a point inside this rectangle. If allowInverse is present and true, the width and height of the LRect are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.</para>
-        /// </summary>
-        /// <param name="point">Point to test.</param>
-        /// <param name="allowInverse">Does the test allow the LRect's width and height to be negative?</param>
-        /// <returns>
-        ///   <para>True if the point lies within the specified rectangle.</para>
-        /// </returns>
-        public bool Contains(LVector3 point, bool allowInverse){
-            if (!allowInverse)
-                return this.Contains(point);
-            bool flag = false;
-            if (this.width < 0 && point.x <= this.xMin &&
-                point.x > this.xMax || this.width >= 0 &&
-                point.x >= this.xMin && point.x < this.xMax)
-                flag = true;
-            return flag &&
-                   (this.height < 0 && point.y <= this.yMin &&
-                    point.y > this.yMax || this.height >= 0 &&
-                    point.y >= this.yMin && point.y < this.yMax);
+            return point.x >= this.x && point.x < this.xMax &&
+                   point.y >= this.y && point.y < this.yMax;
         }
 
         private static LRect OrderMinMax(LRect rect){
-            if ( rect.xMin >  rect.xMax) {
-                LFloat xMin = rect.xMin;
-                rect.xMin = rect.xMax;
+            if (rect.x > rect.xMax) {
+                LFloat xMin = rect.x;
+                rect.x = rect.xMax;
                 rect.xMax = xMin;
             }
 
-            if ( rect.yMin >  rect.yMax) {
-                LFloat yMin = rect.yMin;
-                rect.yMin = rect.yMax;
+            if (rect.y > rect.yMax) {
+                LFloat yMin = rect.y;
+                rect.y = rect.yMax;
                 rect.yMax = yMin;
             }
 
@@ -251,17 +137,15 @@ namespace Lockstep.Collision2D {
         /// <param name="allowInverse">Does the test allow the widths and heights of the LRects to be negative?</param>
         public bool Overlaps(LRect other){
             return
-                other.xMax >  this.xMin
-                && other.xMin <  this.xMax
-                && other.yMax > this.yMin
-                && other.yMin < this.yMax;
+                other.xMax > this.x
+                && other.x < this.xMax
+                && other.yMax > this.y
+                && other.y < this.yMax;
         }
 
         /// <summary>
         ///   <para>Returns true if the other rectangle overlaps this one. If allowInverse is present and true, the widths and heights of the LRects are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.</para>
         /// </summary>
-        /// <param name="other">Other rectangle to test overlapping with.</param>
-        /// <param name="allowInverse">Does the test allow the widths and heights of the LRects to be negative?</param>
         public bool Overlaps(LRect other, bool allowInverse){
             var rect = this;
             if (allowInverse) {
@@ -275,8 +159,6 @@ namespace Lockstep.Collision2D {
         /// <summary>
         ///   <para>Returns a point inside a rectangle, given normalized coordinates.</para>
         /// </summary>
-        /// <param name="rectangle">Rectangle to get a point inside.</param>
-        /// <param name="normalizedRectCoordinates">Normalized coordinates to get a point for.</param>
         public static LVector2 NormalizedToPoint(
             LRect rectangle,
             LVector2 normalizedRectCoordinates){
@@ -291,32 +173,28 @@ namespace Lockstep.Collision2D {
 
         public static bool operator ==(LRect lhs, LRect rhs){
             return lhs.x == rhs.x && lhs.y == rhs.y &&
-                   lhs.width == rhs.width && lhs.height == rhs.height;
+                   lhs.xMax == rhs.xMax && lhs.yMax == rhs.yMax;
         }
 
         public override int GetHashCode(){
-            return this.x.GetHashCode() ^ this.width.GetHashCode() << 2 ^ this.y.GetHashCode() >> 2 ^
-                   this.height.GetHashCode() >> 1;
+            return this.x.GetHashCode() ^ this.xMax.GetHashCode() << 2 ^ this.y.GetHashCode() >> 2 ^
+                   this.yMax.GetHashCode() >> 1;
         }
 
         public override bool Equals(object other){
             if (!(other is LRect))
                 return false;
-            return this.Equals((Rect) other);
+            return this.Equals((LRect) other);
         }
 
-        public bool Equals(Rect other){
-            return this.x.Equals(other.x) && this.y.Equals(other.y) && this.width.Equals(other.width) &&
-                   this.height.Equals(other.height);
+        public bool Equals(LRect other){
+            return this.x.Equals(other.x) && this.y.Equals(other.y) && this.xMax.Equals(other.xMax) &&
+                   this.yMax.Equals(other.yMax);
         }
 
-        /// <summary>
-        ///   <para>Returns a nicely formatted string for this LRect.</para>
-        /// </summary>
-        /// <param name="format"></param>
         public override string ToString(){
-            return String.Format("(x:{0:F2}, y:{1:F2}, width:{2:F2}, height:{3:F2})", (object) this.x, (object) this.y,
-                (object) this.width, (object) this.height);
+            return
+                $"(x:{(object) this.x:F2}, y:{(object) this.y:F2}, width:{(object) this.xMax:F2}, height:{(object) this.yMax:F2})";
         }
     }
 }

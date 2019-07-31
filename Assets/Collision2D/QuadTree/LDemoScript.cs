@@ -31,6 +31,7 @@ namespace Lockstep.Collision2D {
             //raw 5.91~7.0ms
             //LMath 13.06ms 14.02ms  12.9ms
             //Unsafe LMath 7.0~7.5ms
+            //LRect Simple 5.3~6.4ms
             Profiler.BeginSample("QuadTreeUpdate");
             OnUpdate();
             Profiler.EndSample();
