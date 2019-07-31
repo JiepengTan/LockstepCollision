@@ -2,9 +2,10 @@
 using UnityEngine;
 
 namespace Lockstep.Collision2D {
-    public class LDemoPhysicsBody : MonoBehaviour, ICollisionBody {
+    public unsafe class LDemoPhysicsBody : MonoBehaviour, ICollisionBody {
         private Color _gizmoColor = Color.green;
 
+        public Sphere2D* ColPtr;
         public Bounds Bounds;
         public bool TwoD;
 
@@ -46,12 +47,12 @@ namespace Lockstep.Collision2D {
 
         public bool isDebug = false;
         private void Update(){
-            if (isDebug) {
-                int ii = 0;
-            }
 
             Center = transform.position.ToLVector2XZ();
             Y = transform.position.y.ToLFloat();
+            if (ColPtr != null) {
+                ColPtr->Pos = Center;
+            }
         }
 
         private void OnDrawGizmos(){
@@ -61,6 +62,9 @@ namespace Lockstep.Collision2D {
 
         public void OnCollision(CollisionResult result, ICollisionBody other){
             _gizmoColor = result.Type == CollisionType.Exit ? Color.green : Color.red;
+            if (isDebug&& result.Type == CollisionType.Enter) {
+                Debug.LogError("Enter Collision");
+            }
         }
     }
 }

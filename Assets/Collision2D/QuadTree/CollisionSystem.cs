@@ -48,6 +48,7 @@ namespace Lockstep.Collision2D {
             }
         }
 
+        public int countDetectBodyVsBody = 0;
         /// <summary>
         /// Process CollisionSystem by one step
         /// </summary>

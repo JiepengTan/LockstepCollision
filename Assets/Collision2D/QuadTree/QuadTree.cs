@@ -100,7 +100,7 @@ namespace Lockstep.Collision2D {
         private QuadTree* _childB;
         private QuadTree* _childC;
         private QuadTree* _childD;
-        private static List<PointerFilter> _tempPtrList = new List<PointerFilter>(64);
+        private static List<long> _tempPtrList = new List<long>(64);
 
         public void AddBody(AABB2D* body){
             AddBody((Sphere2D*) body);
@@ -123,23 +123,23 @@ namespace Lockstep.Collision2D {
             }
         }
 
-        public List<PointerFilter> GetBodies(LVector2 point, LFloat radius){
+        public List<long> GetBodies(LVector2 point, LFloat radius){
             _tempPtrList.Clear();
             _GetBodies(point, radius, _tempPtrList);
             return _tempPtrList;
         }
 
-        public List<PointerFilter> GetBodies(LRect rect){
+        public List<long> GetBodies(LRect rect){
             _tempPtrList.Clear();
             _GetBodies(rect, _tempPtrList);
             return _tempPtrList;
         }
 
-        private void _GetBodies(LVector2 point, LFloat radius, List<PointerFilter> bods){
+        private void _GetBodies(LVector2 point, LFloat radius, List<long> bods){
             //no children
             if (_childA == null) {
                 for (int i = 0; i < _bodyCount; i++)
-                    bods.Add(new PointerFilter(_bodies[i]));
+                    bods.Add((long)(_bodies[i]));
             }
             else {
                 if (_childA->ContainsCircle(point, radius))
@@ -153,11 +153,11 @@ namespace Lockstep.Collision2D {
             }
         }
 
-        private void _GetBodies(LRect rect, List<PointerFilter> bods){
+        private void _GetBodies(LRect rect, List<long> bods){
             //no children
             if (_childA == null) {
                 for (int i = 0; i < _bodyCount; i++)
-                    bods.Add(new PointerFilter(_bodies[i]));
+                    bods.Add((long)(_bodies[i]));
             }
             else {
                 if (_childA->ContainsRect(rect))
@@ -204,6 +204,7 @@ namespace Lockstep.Collision2D {
         //TODO Free all child
         public void Clear(){
             _parent = null;
+            _bodyCount = 0;
             FreeTree(ref _childA);
             FreeTree(ref _childB);
             FreeTree(ref _childC);

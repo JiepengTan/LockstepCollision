@@ -1,3 +1,5 @@
+using UnityEngine.Profiling;
+
 namespace Lockstep.Collision2D {
     /// <summary>
     /// Queries a QuadTree to test for collisions with only nearby bodies
@@ -17,16 +19,26 @@ namespace Lockstep.Collision2D {
 
 
         public override void DetectBodyVsBody(){
-            IteratePtrs((body1) => {
-                var bodies = _quadTree->GetBodies(body1->Pos, body1->Radius);
-                for (int i = 0; i < bodies.Count; i++) {
-                    var body2 = (Sphere2D*) bodies[i].value;
-                    if (body2 == null || body1 == body2) {
-                        continue;
-                    }
-                    Test(body1, body2);
+            countDetectBodyVsBody = 0;
+            IteratePtrs(OnShapePtr);
+        }
+
+        void OnShapePtr(Sphere2D* body1){
+            countDetectBodyVsBody++;
+            Profiler.BeginSample("GetBodies");
+            var bodies = _quadTree->GetBodies(new LRect(body1->Pos,((AABB2D*)body1)->Extents));
+            Profiler.EndSample();
+            Profiler.BeginSample("Test");
+            var count = bodies.Count;
+            for (int i = 0; i < count; i++) {
+                var body2 = (Sphere2D*) bodies[i];
+                if (body2 == null || body1 == body2) {
+                    continue;
                 }
-            });
+
+                Test(body1, body2);
+            }
+            Profiler.EndSample();
         }
     }
 }

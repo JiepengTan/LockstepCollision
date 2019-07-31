@@ -24,14 +24,13 @@ namespace Lockstep.Collision2D {
         private CollisionSystemQuadTree _collisionSystem;
 
         private void Start(){
-            //raw  35.43ms 38.52ms 39.05ms
-            //LMath 40.7ms 38.9ms
             OnStart();
         }
 
         private void Update(){
             //raw 5.91~7.0ms
             //LMath 13.06ms 14.02ms  12.9ms
+            //Unsafe LMath 7.0~7.5ms
             Profiler.BeginSample("QuadTreeUpdate");
             OnUpdate();
             Profiler.EndSample();
@@ -55,11 +54,14 @@ namespace Lockstep.Collision2D {
                 body.transform.position = new Vector3(Random.Range(0, WorldSize.x), 0, Random.Range(0, WorldSize.y));
                 tempLst.Add(body);
             }
-
+            //raw  35.43ms 38.52ms 39.05ms
+            //LMath 40.7ms 38.9ms
+            //UnsafeLMath 8.6ms 8.7ms
             Profiler.BeginSample("QuadInit");
             foreach (var body in tempLst) {
                 AABB2D* boxPtr = CollisionFactory.AllocAABB();
                 body.RefId = _collisionSystem.AddBody(body,boxPtr, body.Position, body.Extents);
+                body.ColPtr = (Sphere2D*)boxPtr;
                 _quadTree->AddBody(boxPtr); // add body to QuadTree
             }
 
@@ -68,17 +70,17 @@ namespace Lockstep.Collision2D {
 
         private void OnUpdate(){
             _collisionSystem.Step();
-
-            //_quadTree->Clear();
+            countDetectBodyVsBody = _collisionSystem.countDetectBodyVsBody;
+            _quadTree->Clear();
             addBodyCount = 0;
             _collisionSystem.IteratePtrs((ptr) => {
                 addBodyCount++;
-                //_quadTree->AddBody(ptr);
+                _quadTree->AddBody(ptr);
             });
         }
 
         public int addBodyCount = 0;
-
+        public int countDetectBodyVsBody;
         private void OnDrawGizmos(){
             if (_quadTree == null) return;
             _quadTree->DrawGizmos();
