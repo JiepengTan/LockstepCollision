@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lockstep {
     public unsafe class NativeFactory {
         static Dictionary<int, NativePool> pools = new Dictionary<int, NativePool>();
+
+        public static long MemSize => pools.Sum((a)=>a.Value.MemSize);
 
         public static NativePool GetPool(int size){
             if (pools.TryGetValue(size, out var pool)) {
@@ -19,6 +22,7 @@ namespace Lockstep {
     public unsafe class NativePool {
         private Stack<long> _allPtrs = new Stack<long>();
         private int _typeSize = -1;
+        public int MemSize => _typeSize * _allPtrs.Count;
 
         public NativePool(int typeSize){
             this._typeSize = typeSize;

@@ -41,12 +41,13 @@ namespace Lockstep.Collision2D {
 
         private void OnDestroy(){
             if (_quadTree != null) {
-                //QuadTreeFactory.FreeQuadTree(_quadTree);
-                //_quadTree = null;
+                QuadTreeFactory.FreeQuadTree(_quadTree);
+                _quadTree = null;
             }
         }
 
         public static System.Random random;
+        public float RandomMovePercent = 0.1f;
         private void OnStart(){
             random = new System.Random(0);
             _quadTree = QuadTreeFactory.AllocQuadTree();
@@ -60,7 +61,7 @@ namespace Lockstep.Collision2D {
                 body.transform.position = new Vector3(
                     random.Next(0, (int) (WorldSize.x * 1000)) * 0.001f, 0,
                     random.Next(0, (int) (WorldSize.y * 1000)) * 0.001f);
-                if (i % 20 == 0) {
+                if (i % (int)(1/RandomMovePercent) == 0) {
                     body.gameObject.AddComponent<RandomMove>();
                 }
 
@@ -83,6 +84,8 @@ namespace Lockstep.Collision2D {
         }
 
         private void OnUpdate(){
+            NativeFactoryMemSize = NativeFactory.MemSize;
+            NativeHelperMemSize = NativeHelper.MemSize;
             _collisionSystem.Step();
             countDetectBodyVsBody = _collisionSystem.countDetectBodyVsBody;
             Profiler.BeginSample("Recalc QuadTree");
@@ -100,6 +103,8 @@ namespace Lockstep.Collision2D {
         public int addBodyCount = 0;
         public int countDetectBodyVsBody;
 
+        public long NativeFactoryMemSize;
+        public long NativeHelperMemSize;
         private void OnDrawGizmos(){
             if (_quadTree == null) return;
             _quadTree->DrawGizmos();

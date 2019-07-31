@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Lockstep {
@@ -8,20 +9,28 @@ namespace Lockstep {
 
 #if DEBUG
         public static HashSet<long> _allocedPtrs = new HashSet<long>();
+        public static Dictionary<long, int> _prt2Size = new Dictionary<long, int>();
 #endif
+        public static long MemSize => _prt2Size.Sum((d) => d.Value);
         public static void Free(IntPtr ptr){
 #if DEBUG
             if (!_allocedPtrs.Contains((long) ptr)) {
                 throw new NullReferenceException("Try to free a block which did not allocated!");
             }
+            _prt2Size.Remove((long) ptr);
 #endif
 
             if (ptr == null) throw new NullReferenceException();
             Marshal.FreeHGlobal(ptr);
         }
 
-        public static IntPtr Alloc(int bytes){
-            return Marshal.AllocHGlobal(bytes);
+        public static IntPtr Alloc(int size){
+            var ptr = Marshal.AllocHGlobal(size);
+#if DEBUG
+            _allocedPtrs.Add((long) ptr);
+            _prt2Size.Add((long) ptr, size);
+#endif
+            return ptr;
         }
 
         public static void* Resize(void* src, int srcSize, int dstSize){
@@ -65,10 +74,7 @@ namespace Lockstep {
         }
 
         public static byte* AllocAndZero(int size){
-            var ptr = (byte*) (Marshal.AllocHGlobal(size).ToPointer());
-#if DEBUG
-            _allocedPtrs.Add((long) ptr);
-#endif
+            var ptr = (byte*) (Alloc(size).ToPointer());
             Zero(ptr, size);
             return ptr;
         }
