@@ -262,6 +262,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76e88646ea624a1188aec371e2598c3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  TwoD: 0
+  isDebug: 0
 --- !u!1 &1604290016
 GameObject:
   m_ObjectHideFlags: 0
@@ -397,5 +402,7 @@ MonoBehaviour:
   CSType: 1
   MaxBodies: 1000
   WorldSize: {x: 100, y: 100}
-  BodiesPerNode: 2
+  BodiesPerNode: 4
   MaxSplits: 12
+  addBodyCount: 0
+  countDetectBodyVsBody: 0

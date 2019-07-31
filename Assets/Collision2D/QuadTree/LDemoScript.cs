@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Lockstep.Math;
 using UnityEngine;
 using Peril.Physics;
@@ -45,17 +46,27 @@ namespace Lockstep.Collision2D {
             }
         }
 
+        public static System.Random random;
         private void OnStart(){
+            random = new System.Random(0);
             _quadTree = QuadTreeFactory.AllocQuadTree();
             *_quadTree = new QuadTree(new LRect(LFloat.zero, LFloat.zero,
                 WorldSize.x.ToLFloat(), WorldSize.y.ToLFloat()), BodiesPerNode, MaxSplits);
             _collisionSystem = new CollisionSystemQuadTree(_quadTree);
             var tempLst = new List<LDemoPhysicsBody>();
+            RandomMove.border = WorldSize;
             for (int i = 0; i < MaxBodies; i++) {
                 var body = GameObject.Instantiate<LDemoPhysicsBody>(DemoPhysicsBody);
-                body.transform.position = new Vector3(Random.Range(0, WorldSize.x), 0, Random.Range(0, WorldSize.y));
+                body.transform.position = new Vector3(
+                    random.Next(0, (int) (WorldSize.x * 1000)) * 0.001f, 0,
+                    random.Next(0, (int) (WorldSize.y * 1000)) * 0.001f);
+                if (i % 20 == 0) {
+                    body.gameObject.AddComponent<RandomMove>();
+                }
+
                 tempLst.Add(body);
             }
+
             GameObject.Destroy(DemoPhysicsBody.gameObject);
             //raw  35.43ms 38.52ms 39.05ms
             //LMath 40.7ms 38.9ms
@@ -77,10 +88,11 @@ namespace Lockstep.Collision2D {
             Profiler.BeginSample("Recalc QuadTree");
             addBodyCount = CollisionSystem.dirtyBodys.Count;
             foreach (var body in CollisionSystem.dirtyBodys) {
-                if(body.ColPtr == null) continue;
+                if (body.ColPtr == null) throw new Exception("CollisionBody have no unsafe CollisionProxy");
                 QuadTree.RemoveNode(body.ColPtr);
                 _quadTree->AddBody(body.ColPtr);
             }
+
             CollisionSystem.CleanDirtyBodies();
             Profiler.EndSample();
         }

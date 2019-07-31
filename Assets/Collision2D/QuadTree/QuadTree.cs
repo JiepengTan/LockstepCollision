@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Lockstep.Math;
 using UnityEngine;
@@ -82,6 +83,7 @@ namespace Lockstep.Collision2D {
             _curLevel = 0;
             _parent = null;
             _bodyCount = 0;
+            _debugId = curDebugId++;
             _bodies = QuadTreeFactory.AllocPtrBlock(_maxBodiesPerNode);
         }
 
@@ -91,6 +93,8 @@ namespace Lockstep.Collision2D {
             _curLevel = parent->_curLevel + 1;
         }
 
+        private int _debugId;
+        private static int curDebugId = 0;
         private LRect _bounds;
         private int _bodyCount;
         private int _maxBodiesPerNode;
@@ -122,12 +126,16 @@ namespace Lockstep.Collision2D {
                     _bodies = QuadTreeFactory.AllocPtrBlock(_maxBodiesPerNode);
                 }
 
+                CheckDebugInfo($"AddBody{body->Id}");
                 fixed (QuadTree* thisPtr = &this) {
                     body->ParentNode = thisPtr;
+                    body->_debugId = this._debugId;
                 }
 
+                //CheckDebugInfo(body);
                 _bodies[_bodyCount++] = body;
-                if (_bodyCount >= _maxBodiesPerNode && _curLevel < _maxLevel) {
+                if (_bodyCount >= _maxBodiesPerNode && _curLevel < _maxLevel && _bounds.width > 2) {
+                    CheckDebugInfo($"Split{body->Id}");
                     Split();
                 }
             }
@@ -172,6 +180,15 @@ namespace Lockstep.Collision2D {
                 _bodies[idx++] = _childD->_bodies[i];
             }
 
+            Debug.Assert(idx == _bodyCount,$"idx != _bodyCount {idx}{_bodyCount}");
+
+            fixed (QuadTree* thisPtr = &this) {
+                for (int i = 0; i < _bodyCount; i++) {
+                    _bodies[i]->ParentNode = thisPtr;
+                }
+            }
+
+            CheckDebugInfo($"Collaps _bodyCount:{_bodyCount}");
             //delete child
             FreeTree(ref _childA);
             FreeTree(ref _childB);
@@ -183,8 +200,24 @@ namespace Lockstep.Collision2D {
             }
         }
 
+        public static int DebugID = 2073;
+
+        void CheckDebugInfo(string info,Sphere2D* body){
+            if (body->_debugId == DebugID) {
+                int i = 0;
+                Debug.Log(info);
+            }
+        }
+
+        void CheckDebugInfo(string info){
+            if (_debugId == DebugID) {
+                int i = 0;
+                Debug.Log(info);
+            }
+        }
+
         public void RemoveBody(Sphere2D* body){
-            body->ParentNode = null;
+
             int i = 0;
             for (; i < _bodyCount; i++) {
                 if (_bodies[i] == body) {
@@ -194,7 +227,14 @@ namespace Lockstep.Collision2D {
                 }
             }
 
-            if (i == _bodyCount) return;
+            if (i == _bodyCount) {
+                int val = 0;
+                throw new Exception($"RemoveBody error : QuadTree have no that node _bodyCount{_bodyCount} remove{body->Id}");
+            }
+            CheckDebugInfo($"remove{body->Id}",body);
+
+            body->ParentNode = null;
+            body->_debugId = 0;
             --_bodyCount;
             var parent = _parent;
             while (parent != null) {
@@ -285,8 +325,8 @@ namespace Lockstep.Collision2D {
             return _bounds.Overlaps(rect);
         }
 
-        //TODO Free all child
         public void Clear(){
+            CheckDebugInfo("Clear");
             _parent = null;
             _bodyCount = 0;
             FreeTree(ref _childA);

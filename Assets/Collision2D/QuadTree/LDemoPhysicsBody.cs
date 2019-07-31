@@ -1,5 +1,8 @@
-﻿using Lockstep.Math;
+﻿using System.Collections.Generic;
+using System.Xml.Linq;
+using Lockstep.Math;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Lockstep.Collision2D {
     public unsafe class LDemoPhysicsBody : MonoBehaviour, ICollisionBody {
@@ -35,8 +38,7 @@ namespace Lockstep.Collision2D {
         public LVector2 Position => new LVector2(transform.position.x.ToLFloat(), transform.position.z.ToLFloat());
 
         public bool QuadTreeIgnore => false;
-        
-        
+
 
         private void Awake(){
             var collider = GetComponent<BoxCollider>();
@@ -45,20 +47,23 @@ namespace Lockstep.Collision2D {
             Y = transform.position.y.ToLFloat();
         }
 
+        static float moveSpd = 5;
         public bool isDebug = false;
+
+        
         private void Update(){
-            var curPos = transform.position.ToLVector2XZ();
+            var pos = transform.position;
+            var curPos = pos.ToLVector2XZ();
             if (Center != curPos) {
                 CollisionSystem.MarkDirty(this);
             }
-
             Center = curPos;
-            Y = transform.position.y.ToLFloat();
+            Y = pos.y.ToLFloat();
             if (ColPtr != null) {
                 ColPtr->Pos = Center;
             }
         }
-     
+
         private void OnDrawGizmos(){
             Gizmos.color = _gizmoColor;
             Gizmos.DrawWireCube(transform.position, Vector3.one * 1.25f);
@@ -66,7 +71,7 @@ namespace Lockstep.Collision2D {
 
         public void OnCollision(CollisionResult result, ICollisionBody other){
             _gizmoColor = result.Type == CollisionType.Exit ? Color.green : Color.red;
-            if (isDebug&& result.Type == CollisionType.Enter) {
+            if (isDebug && result.Type == CollisionType.Enter) {
                 Debug.LogError("Enter Collision");
             }
         }
