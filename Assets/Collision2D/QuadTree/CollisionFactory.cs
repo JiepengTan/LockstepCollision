@@ -20,10 +20,6 @@ namespace Lockstep.Collision2D {
         public static void Free(AABB2D* ptr){
             _aabbPool.Return(ptr);
         }
-
-        public static void Clear(){
-            _spherePool.Clear();
-            _aabbPool.Clear();
-        }
+        
     }
 }

@@ -40,10 +40,15 @@ namespace Lockstep.Collision2D {
         }
 
         private void OnDestroy(){
+            Debug.Log("Collision Quit :OnDestroy");
             if (_quadTree != null) {
+                _quadTree->Clear();
                 QuadTreeFactory.FreeQuadTree(_quadTree);
                 _quadTree = null;
             }
+            NativeFactory.Clear();
+            Debug.Log($"RemainMemSize: NativeHelper.MemSize {NativeHelper.MemSize}");
+            Debug.Assert(NativeHelper.MemSize == 0,$"NativeHelper.MemSize {NativeHelper.MemSize}");
         }
 
         public static System.Random random;
