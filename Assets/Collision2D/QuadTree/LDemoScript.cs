@@ -6,14 +6,13 @@ using UnityEngine.Profiling;
 using Random = UnityEngine.Random;
 
 namespace Lockstep.Collision2D {
-    public class LDemoScript : MonoBehaviour {
+    public unsafe class LDemoScript : MonoBehaviour {
         public enum CollisionSystemType {
             Brute,
             QuadTree
         }
 
         public LDemoPhysicsBody DemoPhysicsBody;
-
         [Header("CollisionSystem Settings")] public CollisionSystemType CSType;
         public int MaxBodies = 500;
 
@@ -21,9 +20,8 @@ namespace Lockstep.Collision2D {
         public int BodiesPerNode = 6;
         public int MaxSplits = 6;
 
-        public QuadTree _quadTree;
-        private List<IQuadTreeBody> _quadTreeBodies = new List<IQuadTreeBody>();
-        private CollisionSystemQuadTree _csQuad;
+        public QuadTree* _quadTree;
+        private CollisionSystemQuadTree _collisionSystem;
 
         private void Start(){
             //raw  35.43ms 38.52ms 39.05ms
@@ -39,10 +37,18 @@ namespace Lockstep.Collision2D {
             Profiler.EndSample();
         }
 
+        private void OnDestroy(){
+            if (_quadTree != null) {
+                //QuadTreeFactory.FreeQuadTree(_quadTree);
+                //_quadTree = null;
+            }
+        }
+
         private void OnStart(){
-            _quadTree = new QuadTree(new LRect(LFloat.zero, LFloat.zero,
+            _quadTree = QuadTreeFactory.AllocQuadTree();
+            *_quadTree = new QuadTree(new LRect(LFloat.zero, LFloat.zero,
                 WorldSize.x.ToLFloat(), WorldSize.y.ToLFloat()), BodiesPerNode, MaxSplits);
-            _csQuad = new CollisionSystemQuadTree(_quadTree);
+            _collisionSystem = new CollisionSystemQuadTree(_quadTree);
             var tempLst = new List<LDemoPhysicsBody>();
             for (int i = 0; i < MaxBodies; i++) {
                 var body = GameObject.Instantiate<LDemoPhysicsBody>(DemoPhysicsBody);
@@ -50,34 +56,32 @@ namespace Lockstep.Collision2D {
                 tempLst.Add(body);
             }
 
-
             Profiler.BeginSample("QuadInit");
             foreach (var body in tempLst) {
-                _csQuad.AddBody(body);
-                _quadTree.AddBody(body); // add body to QuadTree
-                _quadTreeBodies.Add(body); // cache bodies so we can refresh the tree in update
+                AABB2D* boxPtr = CollisionFactory.AllocAABB();
+                body.RefId = _collisionSystem.AddBody(body,boxPtr, body.Position, body.Extents);
+                _quadTree->AddBody(boxPtr); // add body to QuadTree
             }
 
             Profiler.EndSample();
         }
 
         private void OnUpdate(){
-            switch (CSType) {
-                case CollisionSystemType.QuadTree:
-                    _csQuad.Step();
-                    break;
-            }
+            _collisionSystem.Step();
 
-            // refresh QuadTree each frame if bodies can move
-            _quadTree.Clear();
-            foreach (var b in _quadTreeBodies) {
-                _quadTree.AddBody(b);
-            }
+            //_quadTree->Clear();
+            addBodyCount = 0;
+            _collisionSystem.IteratePtrs((ptr) => {
+                addBodyCount++;
+                //_quadTree->AddBody(ptr);
+            });
         }
+
+        public int addBodyCount = 0;
 
         private void OnDrawGizmos(){
             if (_quadTree == null) return;
-            _quadTree.DrawGizmos();
+            _quadTree->DrawGizmos();
         }
     }
 }
