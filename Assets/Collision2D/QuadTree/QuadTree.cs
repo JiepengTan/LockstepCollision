@@ -34,9 +34,10 @@ namespace Lockstep.Collision2D {
         public bool First;
     }
 
-    public interface ICollisionBody {
+    public unsafe interface ICollisionBody {
         int RefId { get; set; }
         bool Sleeping { get; }
+        Sphere2D* ColPtr { get; set; }
         LFloat Y { get; set; }
         LVector2 Center { get; set; }
         LVector2 Extents { get; }
@@ -81,7 +82,7 @@ namespace Lockstep.Collision2D {
             _curLevel = 0;
             _parent = null;
             _bodyCount = 0;
-            _bodies = QuadTreeFactory.AllocPtrBlock(_maxBodiesPerNode);  
+            _bodies = QuadTreeFactory.AllocPtrBlock(_maxBodiesPerNode);
         }
 
         private QuadTree(LRect bounds, QuadTree* parent)
@@ -89,6 +90,7 @@ namespace Lockstep.Collision2D {
             _parent = parent;
             _curLevel = parent->_curLevel + 1;
         }
+
         private LRect _bounds;
         private int _bodyCount;
         private int _maxBodiesPerNode;
@@ -102,24 +104,106 @@ namespace Lockstep.Collision2D {
         private QuadTree* _childD;
         private static List<long> _tempPtrList = new List<long>(64);
 
+        public bool HasSplit => _childA != null;
+
         public void AddBody(AABB2D* body){
             AddBody((Sphere2D*) body);
         }
 
         public void AddBody(Sphere2D* body){
+            if (body == null) return;
             if (_childA != null) {
+                _bodyCount++;
                 var child = GetQuadrant(body->Pos);
                 child->AddBody(body);
             }
             else {
                 if (_bodies == null) {
-                    _bodies = QuadTreeFactory.AllocPtrBlock(_maxBodiesPerNode);   
+                    _bodies = QuadTreeFactory.AllocPtrBlock(_maxBodiesPerNode);
+                }
+
+                fixed (QuadTree* thisPtr = &this) {
+                    body->ParentNode = thisPtr;
                 }
 
                 _bodies[_bodyCount++] = body;
                 if (_bodyCount >= _maxBodiesPerNode && _curLevel < _maxLevel) {
                     Split();
                 }
+            }
+        }
+
+
+        public static void RemoveNode(Sphere2D* body){
+            if (body == null) return;
+            if (body->ParentNode == null) NativeHelper.NullPointer();
+            body->ParentNode->RemoveBody(body);
+        }
+
+        public void Collapse(){
+            if (
+                _childA->HasSplit
+                || _childB->HasSplit
+                || _childC->HasSplit
+                || _childD->HasSplit
+            ) {
+                return;
+            }
+
+            if (_bodyCount >= _maxBodiesPerNode) {
+                return;
+            }
+
+            //Copy children's bodies
+            int idx = 0;
+            for (int i = 0; i < _childA->_bodyCount; i++) {
+                _bodies[idx++] = _childA->_bodies[i];
+            }
+
+            for (int i = 0; i < _childB->_bodyCount; i++) {
+                _bodies[idx++] = _childB->_bodies[i];
+            }
+
+            for (int i = 0; i < _childC->_bodyCount; i++) {
+                _bodies[idx++] = _childC->_bodies[i];
+            }
+
+            for (int i = 0; i < _childD->_bodyCount; i++) {
+                _bodies[idx++] = _childD->_bodies[i];
+            }
+
+            //delete child
+            FreeTree(ref _childA);
+            FreeTree(ref _childB);
+            FreeTree(ref _childC);
+            FreeTree(ref _childD);
+
+            if (_parent != null) {
+                _parent->Collapse();
+            }
+        }
+
+        public void RemoveBody(Sphere2D* body){
+            body->ParentNode = null;
+            int i = 0;
+            for (; i < _bodyCount; i++) {
+                if (_bodies[i] == body) {
+                    //swap last one
+                    _bodies[i] = _bodies[_bodyCount - 1];
+                    break;
+                }
+            }
+
+            if (i == _bodyCount) return;
+            --_bodyCount;
+            var parent = _parent;
+            while (parent != null) {
+                --(parent->_bodyCount);
+                parent = parent->_parent;
+            }
+
+            if (_parent != null && _parent->HasSplit && _parent->_bodyCount < _maxBodiesPerNode) {
+                _parent->Collapse();
             }
         }
 
@@ -139,7 +223,7 @@ namespace Lockstep.Collision2D {
             //no children
             if (_childA == null) {
                 for (int i = 0; i < _bodyCount; i++)
-                    bods.Add((long)(_bodies[i]));
+                    bods.Add((long) (_bodies[i]));
             }
             else {
                 if (_childA->ContainsCircle(point, radius))
@@ -157,7 +241,7 @@ namespace Lockstep.Collision2D {
             //no children
             if (_childA == null) {
                 for (int i = 0; i < _bodyCount; i++)
-                    bods.Add((long)(_bodies[i]));
+                    bods.Add((long) (_bodies[i]));
             }
             else {
                 if (_childA->ContainsRect(rect))
@@ -210,7 +294,7 @@ namespace Lockstep.Collision2D {
             FreeTree(ref _childC);
             FreeTree(ref _childD);
             if (_bodies != null) {
-                QuadTreeFactory.FreePtrBlock(_bodies,_maxBodiesPerNode);
+                QuadTreeFactory.FreePtrBlock(_bodies, _maxBodiesPerNode);
                 _bodies = null;
             }
         }
@@ -228,7 +312,7 @@ namespace Lockstep.Collision2D {
                 ptr = null;
             }
         }
-  
+
         private void Split(){
             var hx = _bounds.width / 2;
             var hz = _bounds.height / 2;

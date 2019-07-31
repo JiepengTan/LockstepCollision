@@ -8,12 +8,14 @@ namespace Lockstep.Collision2D {
         public int Id;
         public LVector2 Pos;
         public LFloat Radius;
+        public QuadTree* ParentNode;
 
         public Sphere2D(int typeid, int id, LVector2 pos, LFloat radius){
             this.TypeId = typeid;
             this.Id = id;
             this.Pos = pos;
             this.Radius = radius;
+            ParentNode = null;
         }
 
         public bool TestCollision(Sphere2D* shapePtr){

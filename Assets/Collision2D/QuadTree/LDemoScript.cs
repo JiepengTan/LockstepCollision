@@ -32,6 +32,7 @@ namespace Lockstep.Collision2D {
             //LMath 13.06ms 14.02ms  12.9ms
             //Unsafe LMath 7.0~7.5ms
             //LRect Simple 5.3~6.4ms
+            //QuadTree MarkDirty 2.4ms
             Profiler.BeginSample("QuadTreeUpdate");
             OnUpdate();
             Profiler.EndSample();
@@ -55,14 +56,15 @@ namespace Lockstep.Collision2D {
                 body.transform.position = new Vector3(Random.Range(0, WorldSize.x), 0, Random.Range(0, WorldSize.y));
                 tempLst.Add(body);
             }
+            GameObject.Destroy(DemoPhysicsBody.gameObject);
             //raw  35.43ms 38.52ms 39.05ms
             //LMath 40.7ms 38.9ms
             //UnsafeLMath 8.6ms 8.7ms
             Profiler.BeginSample("QuadInit");
             foreach (var body in tempLst) {
                 AABB2D* boxPtr = CollisionFactory.AllocAABB();
-                body.RefId = _collisionSystem.AddBody(body,boxPtr, body.Position, body.Extents);
-                body.ColPtr = (Sphere2D*)boxPtr;
+                body.RefId = _collisionSystem.AddBody(body, boxPtr, body.Position, body.Extents);
+                body.ColPtr = (Sphere2D*) boxPtr;
                 _quadTree->AddBody(boxPtr); // add body to QuadTree
             }
 
@@ -72,16 +74,20 @@ namespace Lockstep.Collision2D {
         private void OnUpdate(){
             _collisionSystem.Step();
             countDetectBodyVsBody = _collisionSystem.countDetectBodyVsBody;
-            _quadTree->Clear();
-            addBodyCount = 0;
-            _collisionSystem.IteratePtrs((ptr) => {
-                addBodyCount++;
-                _quadTree->AddBody(ptr);
-            });
+            Profiler.BeginSample("Recalc QuadTree");
+            addBodyCount = CollisionSystem.dirtyBodys.Count;
+            foreach (var body in CollisionSystem.dirtyBodys) {
+                if(body.ColPtr == null) continue;
+                QuadTree.RemoveNode(body.ColPtr);
+                _quadTree->AddBody(body.ColPtr);
+            }
+            CollisionSystem.CleanDirtyBodies();
+            Profiler.EndSample();
         }
 
         public int addBodyCount = 0;
         public int countDetectBodyVsBody;
+
         private void OnDrawGizmos(){
             if (_quadTree == null) return;
             _quadTree->DrawGizmos();

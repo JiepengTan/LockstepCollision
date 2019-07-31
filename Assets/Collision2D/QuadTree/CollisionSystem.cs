@@ -13,6 +13,7 @@ namespace Lockstep.Collision2D {
         private HashSet<int> _pairs = new HashSet<int>();
         private List<int> _pairCache = new List<int>();
         protected List<long> _shapePtrs = new List<long>();
+        public static HashSet<ICollisionBody> dirtyBodys = new HashSet<ICollisionBody>();
         private int _uniqueIndex;
 
         public const int MaxCollisionBodies = 10000;
@@ -48,6 +49,14 @@ namespace Lockstep.Collision2D {
             }
         }
 
+        public static void MarkDirty(ICollisionBody body){
+            dirtyBodys.Add(body);
+        }
+
+        public static void CleanDirtyBodies(){
+            dirtyBodys.Clear();
+        }
+
         public int countDetectBodyVsBody = 0;
         /// <summary>
         /// Process CollisionSystem by one step
@@ -59,6 +68,7 @@ namespace Lockstep.Collision2D {
             DetectBodyVsBody();
             Profiler.EndSample();
 
+            Profiler.BeginSample("FindColliderPair");
             foreach (var i in _pairs) {
                 var body1 = FindShapePtr(i / (MaxCollisionBodies + 1));
                 var body2 = FindShapePtr(i % (MaxCollisionBodies + 1));
@@ -77,6 +87,7 @@ namespace Lockstep.Collision2D {
             }
 
             _pairCache.Clear();
+            Profiler.EndSample();
         }
 
         public ICollisionBody FindCollisionBody(int refId){

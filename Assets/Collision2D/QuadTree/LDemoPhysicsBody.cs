@@ -5,7 +5,7 @@ namespace Lockstep.Collision2D {
     public unsafe class LDemoPhysicsBody : MonoBehaviour, ICollisionBody {
         private Color _gizmoColor = Color.green;
 
-        public Sphere2D* ColPtr;
+        public Sphere2D* ColPtr { get; set; }
         public Bounds Bounds;
         public bool TwoD;
 
@@ -47,14 +47,18 @@ namespace Lockstep.Collision2D {
 
         public bool isDebug = false;
         private void Update(){
+            var curPos = transform.position.ToLVector2XZ();
+            if (Center != curPos) {
+                CollisionSystem.MarkDirty(this);
+            }
 
-            Center = transform.position.ToLVector2XZ();
+            Center = curPos;
             Y = transform.position.y.ToLFloat();
             if (ColPtr != null) {
                 ColPtr->Pos = Center;
             }
         }
-
+     
         private void OnDrawGizmos(){
             Gizmos.color = _gizmoColor;
             Gizmos.DrawWireCube(transform.position, Vector3.one * 1.25f);
