@@ -23,15 +23,15 @@ namespace Lockstep.Collision2D {
             IteratePtrs(OnShapePtr);
         }
 
-        void OnShapePtr(Sphere2D* body1){
+        void OnShapePtr(Circle2D* body1){
             countDetectBodyVsBody++;
             Profiler.BeginSample("GetBodies");
-            var bodies = _quadTree->GetBodies(new LRect(body1->Pos,((AABB2D*)body1)->Extents));
+            var bodies = _quadTree->GetBodies(new LRect(body1->pos,((AABB2D*)body1)->size));
             Profiler.EndSample();
             Profiler.BeginSample("Test");
             var count = bodies.Count;
             for (int i = 0; i < count; i++) {
-                var body2 = (Sphere2D*) bodies[i];
+                var body2 = (Circle2D*) bodies[i];
                 if (body2 == null || body1 == body2) {
                     continue;
                 }

@@ -18,7 +18,7 @@ namespace Lockstep.Collision2D {
 
         public override bool TestWith(AABB shape){return Utils.TestCollision(this,shape);}
 
-        public override bool TestWith(OBB shape){return Utils.TestCollision(this,shape);}
+        public override bool TestWith(OBB2D shape){return Utils.TestCollision(this,shape);}
 
         public override bool TestWith(Circle shape){return Utils.TestCollision(shape,this);}
 

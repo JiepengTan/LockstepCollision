@@ -8,7 +8,7 @@ namespace Lockstep.Collision2D {
     public unsafe class LDemoPhysicsBody : MonoBehaviour, ICollisionBody {
         private Color _gizmoColor = Color.green;
 
-        public Sphere2D* ColPtr { get; set; }
+        public Circle2D* ColPtr { get; set; }
         public Bounds Bounds;
         public bool TwoD;
 
@@ -60,7 +60,7 @@ namespace Lockstep.Collision2D {
             Center = curPos;
             Y = pos.y.ToLFloat();
             if (ColPtr != null) {
-                ColPtr->Pos = Center;
+                ColPtr->pos = Center;
             }
         }
 

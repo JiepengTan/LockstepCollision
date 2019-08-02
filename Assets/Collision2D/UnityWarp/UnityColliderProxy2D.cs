@@ -20,7 +20,7 @@ namespace Lockstep.Collision2D {
                     DrawAABB(aabb, DebugGizomColor);
                 }
 
-                var obb = shape as OBB;
+                var obb = shape as OBB2D;
                 if (obb != null) {
                     DrawOBB(obb, DebugGizomColor);
                 }
@@ -44,13 +44,13 @@ namespace Lockstep.Collision2D {
             Debug.DrawLine(rb.ToVector2(), lb.ToVector2(), color);
         }
 
-        public static void DrawOBB(OBB obb, Color color){
-            var right = obb.size.x * obb.right;
-            var up = obb.size.y * obb.up;
-            var lb = obb.pos - up - right;
-            var lt = obb.pos + up - right;
-            var rt = obb.pos + up + right;
-            var rb = obb.pos - up + right;
+        public static void DrawOBB(OBB2D obb2D, Color color){
+            var right = obb2D.size.x * obb2D.right;
+            var up = obb2D.size.y * obb2D.up;
+            var lb = obb2D.pos - up - right;
+            var lt = obb2D.pos + up - right;
+            var rt = obb2D.pos + up + right;
+            var rb = obb2D.pos - up + right;
             Debug.DrawLine(lb.ToVector2(), lt.ToVector2(), color);
             Debug.DrawLine(lt.ToVector2(), rt.ToVector2(), color);
             Debug.DrawLine(rt.ToVector2(), rb.ToVector2(), color);

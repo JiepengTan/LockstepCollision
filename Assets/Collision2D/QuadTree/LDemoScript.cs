@@ -81,7 +81,7 @@ namespace Lockstep.Collision2D {
             foreach (var body in tempLst) {
                 AABB2D* boxPtr = CollisionFactory.AllocAABB();
                 body.RefId = _collisionSystem.AddBody(body, boxPtr, body.Position, body.Extents);
-                body.ColPtr = (Sphere2D*) boxPtr;
+                body.ColPtr = (Circle2D*) boxPtr;
                 _quadTree->AddBody(boxPtr); // add body to QuadTree
             }
 

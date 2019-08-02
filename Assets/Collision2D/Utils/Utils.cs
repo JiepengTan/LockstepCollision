@@ -2,154 +2,27 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using Lockstep.Math;
+using static Lockstep.Math.LMath;
+using Point2D = Lockstep.Math.LVector2;
 
 namespace Lockstep.Collision2D {
-    public static class Utils {
-        public static bool TestCollision(Circle a, OBB b){
+    public unsafe static class Utils {
+        public static bool TestCollision(Circle a, OBB2D b){
             return TestCircleOBB(a.pos, a.radius
                 , b.pos, b.radius, b.size, b.up
             );
         }
 
-        public static bool TestCircleOBB(LVector2 posA, LFloat rA, LVector2 posB, LFloat rB, LVector2 sizeB, LVector2 up){
-            var diff = posA - posB;
-            var allRadius = rA + rB;
-            //circle 判定CollisionHelper
-            if (diff.sqrMagnitude > allRadius * allRadius) {
-                return false;
-            }
-
-            //空间转换
-            var absX = LMath.Abs(LVector2.Dot(diff, new LVector2(up.y, -up.x)));
-            var absY = LMath.Abs(LVector2.Dot(diff, up));
-
-            var size = sizeB;
-            var radius = rA;
-
-            var x = LMath.Max(absX - size.x, LFloat.zero);
-            var y = LMath.Max(absY - size.y, LFloat.zero);
-            return x * x + y * y < radius * radius;
-        }
-
-        public static bool TestCollision(AABB a, OBB b){
+        public static bool TestCollision(AABB a, OBB2D b){
             return TestAABBOBB(a.pos, a.radius, a.size
                 , b.pos, b.radius, b.size, b.up
             );
         }
 
-        public static bool TestAABBOBB(LVector2 posA, LFloat rA, LVector2 sizeA, LVector2 posB, LFloat rB, LVector2 sizeB,
-            LVector2 upB){
-            var diff = posA - posB;
-            var allRadius = rA + rB;
-            //circle 判定
-            if (diff.sqrMagnitude > allRadius * allRadius) {
-                return false;
-            }
-
-            var absUPX = LMath.Abs(upB.x); //abs(up dot aabb.right)
-            var absUPY = LMath.Abs(upB.y); //abs(right dot aabb.right)
-            {
-                //轴 投影 AABBx
-                var distX = absUPX * sizeB.y + absUPY * sizeB.x;
-                if (LMath.Abs(diff.x) > distX + sizeA.x) {
-                    return false;
-                }
-
-                //轴 投影 AABBy
-                //absUPX is abs(right dot aabb.up)
-                //absUPY is abs(up dot aabb.up)
-                var distY = absUPY * sizeB.y + absUPX * sizeB.x;
-                if (LMath.Abs(diff.y) > distY + sizeA.y) {
-                    return false;
-                }
-            }
-
-            {
-                var right = new LVector2(upB.y, -upB.x);
-                var diffPObbX = LVector2.Dot(diff, right);
-                var diffPObbY = LVector2.Dot(diff, upB);
-
-                //absUPX is abs(aabb.up dot right )
-                //absUPY is abs(aabb.right dot right)
-                //轴 投影 OBBx
-                var distX = absUPX * sizeA.y + absUPY * sizeA.x;
-                if (LMath.Abs(diffPObbX) > distX + sizeB.x) {
-                    return false;
-                }
-
-                //absUPX is abs(aabb.right dot up )
-                //absUPY is abs(aabb.up dot up)
-                //轴 投影 OBBy
-                var distY = absUPY * sizeA.y + absUPX * sizeA.x;
-                if (LMath.Abs(diffPObbY) > distY + sizeB.y) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-
-        public static bool TestCollision(OBB a, OBB b){
+        public static bool TestCollision(OBB2D a, OBB2D b){
             return TestOBBOBB(a.pos, a.radius, a.size, a.up
                 , b.pos, b.radius, b.size, b.up
             );
-        }
-
-        public static bool TestOBBOBB(LVector2 posA, LFloat rA, LVector2 sizeA, LVector2 upA, LVector2 posB, LFloat rB,
-            LVector2 sizeB,
-            LVector2 upB){
-            var diff = posA - posB;
-            var allRadius = rA + rB;
-            //circle 判定
-            if (diff.sqrMagnitude > allRadius * allRadius) {
-                return false;
-            }
-
-            var rightA = new LVector2(upA.y, -upA.x);
-            var rightB = new LVector2(upB.y, -upB.x);
-
-            {
-                //轴投影到 A.right
-                var BuProjAr = LMath.Abs(LVector2.Dot(upB, rightA));
-                var BrProjAr = LMath.Abs(LVector2.Dot(rightB, rightA));
-                var DiffProjAr = LMath.Abs(LVector2.Dot(diff, rightA));
-                var distX = BuProjAr * sizeB.y + BrProjAr * sizeB.x;
-                if (DiffProjAr > distX + sizeA.x) {
-                    return false;
-                }
-
-                //轴投影到 A.up
-                var BuProjAu = LMath.Abs(LVector2.Dot(upB, upA));
-                var BrProjAu = LMath.Abs(LVector2.Dot(rightB, upA));
-                var DiffProjAu = LMath.Abs(LVector2.Dot(diff, upA));
-                var distY = BuProjAu * sizeB.y + BrProjAu * sizeB.x;
-                if (DiffProjAu > distY + sizeA.y) {
-                    return false;
-                }
-            }
-
-            {
-                //轴投影到 B.right
-                var AuProjBr = LMath.Abs(LVector2.Dot(upA, rightB));
-                var ArProjBr = LMath.Abs(LVector2.Dot(rightA, rightB));
-                var DiffProjBr = LMath.Abs(LVector2.Dot(diff, rightB));
-                var distX = AuProjBr * sizeA.y + ArProjBr * sizeA.x;
-                if (DiffProjBr > distX + sizeB.x) {
-                    return false;
-                }
-
-                //轴投影到 B.right
-                var AuProjBu = LMath.Abs(LVector2.Dot(upA, upB));
-                var ArProjBu = LMath.Abs(LVector2.Dot(rightA, upB));
-                var DiffProjBu = LMath.Abs(LVector2.Dot(diff, upB));
-                var distY = AuProjBu * sizeA.y + ArProjBu * sizeA.x;
-                if (DiffProjBu > distY + sizeB.x) {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         //Circle & Circle
@@ -159,48 +32,368 @@ namespace Lockstep.Collision2D {
             return diff.sqrMagnitude <= allRadius * allRadius;
         }
 
-        public static bool TestCircleCircle(LVector2 posA, LFloat rA, LVector2 posB, LFloat rB){
-            var diff = posA - posB;
-            var allRadius = rA + rB;
-            return diff.sqrMagnitude <= allRadius * allRadius;
-        }
-
         //Circle & AABB
         public static bool TestCollision(Circle a, AABB b){
             return TestCircleAABB(a.pos, a.radius, b.pos, b.radius, b.size);
         }
-
-        public static bool TestCircleAABB(LVector2 posA, LFloat rA, LVector2 posB, LFloat rB, LVector2 sizeB){
-            var diff = posA - posB;
-            var allRadius = rA + rB;
-            //circle 判定
-            if (diff.sqrMagnitude > allRadius * allRadius) {
-                return false;
-            }
-
-
-            var absX = LMath.Abs(diff.x);
-            var absY = LMath.Abs(diff.y);
-
-            //AABB & circle
-            var size = sizeB;
-            var radius = rA;
-
-            var x = LMath.Max(absX - size.x, LFloat.zero);
-            var y = LMath.Max(absY - size.y, LFloat.zero);
-            return x * x + y * y < radius * radius;
-        }
-
 
         //AABB & AABB
         public static bool TestCollision(AABB a, AABB b){
             return TestAABBAABB(a.pos, a.radius, a.size, b.pos, b.radius, b.size);
         }
 
-        public static bool TestAABBAABB(LVector2 posA, LFloat rA, LVector2 sizeA, LVector2 posB, LFloat rB, LVector2 sizeB){
+        //AABB & Tile
+        public static bool TestCollision(AABB a, Vector2Int tilePos){
+            return TestAABBAABB(
+                a.pos, a.radius, a.size, //AABB1
+                tilePos.ToLVector2() + LVector2.half, new LFloat(true, 707), LVector2.half //AABB2
+            );
+        }
+
+        public static bool TestCollision(Circle a, Vector2Int tilePos){
+            return TestCircleAABB(
+                a.pos, a.radius, //Circle1
+                tilePos.ToLVector2() + LVector2.half, new LFloat(true, 707), LVector2.half //AABB2
+            );
+        }
+
+
+        //https://bitlush.com/blog/circle-vs-polygon-collision-detection-in-c-sharp
+        public static bool TestCirclePolygon(LVector2 c, LFloat r, LVector2* _points, int vertexCount){
+            var radiusSquared = r * r;
+            var circleCenter = c;
+            var nearestDistance = LFloat.MaxValue;
+            int nearestVertex = -1;
+
+            for (var i = 0; i < vertexCount; i++) {
+                LVector2 axis = circleCenter - _points[i];
+                var distance = axis.sqrMagnitude - radiusSquared;
+                if (distance <= 0) {
+                    return true;
+                }
+
+                if (distance < nearestDistance) {
+                    nearestVertex = i;
+                    nearestDistance = distance;
+                }
+            }
+
+            LVector2 GetPoint(int index){
+                if (index < 0) {
+                    index += vertexCount;
+                }
+                else if (index >= vertexCount) {
+                    index -= vertexCount;
+                }
+
+                return _points[index];
+            }
+
+            var vertex = GetPoint(nearestVertex - 1);
+            for (var i = 0; i < 2; i++) {
+                var nextVertex = GetPoint(nearestVertex + i);
+                var edge = nextVertex - vertex;
+                var edgeLengthSquared = edge.sqrMagnitude;
+                if (edgeLengthSquared != 0) {
+                    LVector2 axis = circleCenter - vertex;
+                    var dot = LVector2.Dot(edge, axis);
+                    if (dot >= 0 && dot <= edgeLengthSquared) {
+                        LVector2 projection = vertex + (dot / edgeLengthSquared) * edge;
+                        axis = projection - circleCenter;
+                        if (axis.sqrMagnitude <= radiusSquared) {
+                            return true;
+                        }
+                        else {
+                            if (edge.x > 0) {
+                                if (axis.y > 0) {
+                                    return false;
+                                }
+                            }
+                            else if (edge.x < 0) {
+                                if (axis.y < 0) {
+                                    return false;
+                                }
+                            }
+                            else if (edge.y > 0) {
+                                if (axis.x < 0) {
+                                    return false;
+                                }
+                            }
+                            else {
+                                if (axis.x > 0) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                vertex = nextVertex;
+            }
+
+            return true;
+        }
+
+        //http://geomalgorithms.com/
+        static bool intersect2D_SegPoly(LVector2 P1, LVector2 P0, LVector2* V, int n, ref LVector2 IS0,
+            ref LVector2 IS1){
+            LFloat tE = LFloat.zero; // the maximum entering segment parameter
+            LFloat tL = LFloat.one; // the minimum leaving segment parameter
+            LFloat t, N, D; // intersect parameter t = N / D
+            LVector2 dS = P1 - P0; // the  segment direction vector
+            LVector2 e; // edge vector
+            // Vector ne;               // edge outward normal (not explicit in code)
+
+            for (int i = 0; i < n; i++) // process polygon edge V[i]V[i+1]
+            {
+                e = V[i + 1] - V[i];
+                N = Cross2D(e, P0 - V[i]); // = -dot(ne, S.P0 - V[i])
+                D = -Cross2D(e, dS); // = dot(ne, dS)
+                if (fabs(D) < SMALL_NUM) { // S is nearly parallel to this edge
+                    if (N < 0) // P0 is outside this edge, so
+                        return false; // S is outside the polygon
+                    else // S cannot cross this edge, so
+                        continue; // ignore this edge
+                }
+
+                t = N / D;
+                if (D < 0) { // segment S is entering across this edge
+                    if (t > tE) { // new max tE
+                        tE = t;
+                        if (tE > tL) // S enters after leaving polygon
+                            return false;
+                    }
+                }
+                else { // segment S is leaving across this edge
+                    if (t < tL) { // new min tL
+                        tL = t;
+                        if (tL < tE) // S leaves before entering polygon
+                            return false;
+                    }
+                }
+            }
+
+            // tE <= tL implies that there is a valid intersection subsegment
+            IS0 = P0 + tE * dS; // = P(tE) = point where S enters polygon
+            IS1 = P0 + tL * dS; // = P(tL) = point where S leaves polygon
+            return true;
+        }
+
+
+        public static bool TestRayPolygon(LVector2 o, LVector2 d, LVector2* ppsPtr, int size, out LFloat tmin){
+//var fo = o - c;
+//fo = fo.Rotate(deg);
+//var fd = d.Rotate(deg);
+//return TestRayAABB(fo, fd, -size, size, out tmin);
+            tmin = LFloat.zero;
+            return true;
+        }
+
+//https://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm
+        public static bool TestRayCircle(LVector2 cPos, LFloat cR, LVector2 rB, LVector2 rDir, ref LFloat t){
+            var d = rDir;
+            var f = rB - cPos;
+            var a = LVector2.Dot(d, d);
+            var b = 2 * LVector2.Dot(f, d);
+            var c = LVector2.Dot(f, f) - cR * cR;
+            var discriminant = b * b - 4 * a * c;
+            if (discriminant < 0) {
+// no intersection
+                return false;
+            }
+            else {
+                discriminant = LMath.Sqrt(discriminant);
+                var t1 = (-b - discriminant) / (2 * a);
+                var t2 = (-b + discriminant) / (2 * a);
+                if (t1 >= 0) {
+                    t = t1;
+                    return true;
+                }
+
+                if (t2 >= 0) {
+                    t = t2;
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        public static bool TestRayOBB(LVector2 o, LVector2 d, LVector2 c, LVector2 size, LFloat deg,
+            out LFloat tmin){
+            var fo = o - c;
+            fo = fo.Rotate(deg);
+            var fd = d.Rotate(deg);
+            return TestRayAABB(fo, fd, -size, size, out tmin);
+        }
+
+        public static bool TestRayAABB(LVector2 o, LVector2 d, LVector2 min, LVector2 max, out LFloat tmin){
+            tmin = LFloat.zero; // set to -FLT_MAX to get first hit on line
+            LFloat tmax = LFloat.FLT_MAX; // set to max distance ray can travel (for segment)
+
+// For all three slabs
+            for (int i = 0; i < 2; i++) {
+                if (Abs(d[i]) < LFloat.EPSILON) {
+// Ray is parallel to slab. No hit if origin not within slab
+                    if (o[i] < min[i] || o[i] > max[i]) return false;
+                }
+                else {
+// Compute intersection t value of ray with near and far plane of slab
+                    LFloat ood = LFloat.one / d[i];
+                    LFloat t1 = (min[i] - o[i]) * ood;
+                    LFloat t2 = (max[i] - o[i]) * ood;
+// Make t1 be intersection with near plane, t2 with far plane
+                    if (t1 > t2) {
+                        var temp = t1;
+                        t1 = t2;
+                        t2 = temp;
+                    }
+
+// Compute the intersection of slab intersections intervals
+                    tmin = Max(tmin, t1);
+                    tmax = Min(tmax, t2);
+// Exit with no collision as soon as slab intersection becomes empty
+                    if (tmin > tmax) return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static bool TestCircleOBB(LVector2 posA, LFloat rA, LVector2 posB, LFloat rB, LVector2 sizeB,
+            LVector2 up){
             var diff = posA - posB;
             var allRadius = rA + rB;
-            //circle 判定
+//circle 判定CollisionHelper
+            if (diff.sqrMagnitude > allRadius * allRadius) {
+                return false;
+            }
+
+//空间转换
+            var absX = LMath.Abs(LVector2.Dot(diff, new LVector2(up.y, -up.x)));
+            var absY = LMath.Abs(LVector2.Dot(diff, up));
+            var size = sizeB;
+            var radius = rA;
+            var x = LMath.Max(absX - size.x, LFloat.zero);
+            var y = LMath.Max(absY - size.y, LFloat.zero);
+            return x * x + y * y < radius * radius;
+        }
+
+        public static bool TestAABBOBB(LVector2 posA, LFloat rA, LVector2 sizeA, LVector2 posB, LFloat rB,
+            LVector2 sizeB,
+            LVector2 upB){
+            var diff = posA - posB;
+            var allRadius = rA + rB;
+//circle 判定
+            if (diff.sqrMagnitude > allRadius * allRadius) {
+                return false;
+            }
+
+            var absUPX = LMath.Abs(upB.x); //abs(up dot aabb.right)
+            var absUPY = LMath.Abs(upB.y); //abs(right dot aabb.right)
+            {
+//轴 投影 AABBx
+                var distX = absUPX * sizeB.y + absUPY * sizeB.x;
+                if (LMath.Abs(diff.x) > distX + sizeA.x) {
+                    return false;
+                }
+
+//轴 投影 AABBy
+//absUPX is abs(right dot aabb.up)
+//absUPY is abs(up dot aabb.up)
+                var distY = absUPY * sizeB.y + absUPX * sizeB.x;
+                if (LMath.Abs(diff.y) > distY + sizeA.y) {
+                    return false;
+                }
+            }
+            {
+                var right = new LVector2(upB.y, -upB.x);
+                var diffPObbX = LVector2.Dot(diff, right);
+                var diffPObbY = LVector2.Dot(diff, upB);
+
+//absUPX is abs(aabb.up dot right )
+//absUPY is abs(aabb.right dot right)
+//轴 投影 OBBx
+                var distX = absUPX * sizeA.y + absUPY * sizeA.x;
+                if (LMath.Abs(diffPObbX) > distX + sizeB.x) {
+                    return false;
+                }
+
+//absUPX is abs(aabb.right dot up )
+//absUPY is abs(aabb.up dot up)
+//轴 投影 OBBy
+                var distY = absUPY * sizeA.y + absUPX * sizeA.x;
+                if (LMath.Abs(diffPObbY) > distY + sizeB.y) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public static bool TestOBBOBB(LVector2 posA, LFloat rA, LVector2 sizeA, LVector2 upA, LVector2 posB,
+            LFloat rB,
+            LVector2 sizeB,
+            LVector2 upB){
+            var diff = posA - posB;
+            var allRadius = rA + rB;
+//circle 判定
+            if (diff.sqrMagnitude > allRadius * allRadius) {
+                return false;
+            }
+
+            var rightA = new LVector2(upA.y, -upA.x);
+            var rightB = new LVector2(upB.y, -upB.x);
+            {
+//轴投影到 A.right
+                var BuProjAr = LMath.Abs(LVector2.Dot(upB, rightA));
+                var BrProjAr = LMath.Abs(LVector2.Dot(rightB, rightA));
+                var DiffProjAr = LMath.Abs(LVector2.Dot(diff, rightA));
+                var distX = BuProjAr * sizeB.y + BrProjAr * sizeB.x;
+                if (DiffProjAr > distX + sizeA.x) {
+                    return false;
+                }
+
+//轴投影到 A.up
+                var BuProjAu = LMath.Abs(LVector2.Dot(upB, upA));
+                var BrProjAu = LMath.Abs(LVector2.Dot(rightB, upA));
+                var DiffProjAu = LMath.Abs(LVector2.Dot(diff, upA));
+                var distY = BuProjAu * sizeB.y + BrProjAu * sizeB.x;
+                if (DiffProjAu > distY + sizeA.y) {
+                    return false;
+                }
+            }
+            {
+//轴投影到 B.right
+                var AuProjBr = LMath.Abs(LVector2.Dot(upA, rightB));
+                var ArProjBr = LMath.Abs(LVector2.Dot(rightA, rightB));
+                var DiffProjBr = LMath.Abs(LVector2.Dot(diff, rightB));
+                var distX = AuProjBr * sizeA.y + ArProjBr * sizeA.x;
+                if (DiffProjBr > distX + sizeB.x) {
+                    return false;
+                }
+
+//轴投影到 B.right
+                var AuProjBu = LMath.Abs(LVector2.Dot(upA, upB));
+                var ArProjBu = LMath.Abs(LVector2.Dot(rightA, upB));
+                var DiffProjBu = LMath.Abs(LVector2.Dot(diff, upB));
+                var distY = AuProjBu * sizeA.y + ArProjBu * sizeA.x;
+                if (DiffProjBu > distY + sizeB.x) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public static bool TestCircleCircle(LVector2 posA, LFloat rA, LVector2 posB, LFloat rB){
+            var diff = posA - posB;
+            var allRadius = rA + rB;
+            return diff.sqrMagnitude <= allRadius * allRadius;
+        }
+
+        public static bool TestCircleAABB(LVector2 posA, LFloat rA, LVector2 posB, LFloat rB, LVector2 sizeB){
+            var diff = posA - posB;
+            var allRadius = rA + rB;
+//circle 判定
             if (diff.sqrMagnitude > allRadius * allRadius) {
                 return false;
             }
@@ -208,26 +401,94 @@ namespace Lockstep.Collision2D {
             var absX = LMath.Abs(diff.x);
             var absY = LMath.Abs(diff.y);
 
-            //AABB and AABB
+//AABB & circle
+            var size = sizeB;
+            var radius = rA;
+            var x = LMath.Max(absX - size.x, LFloat.zero);
+            var y = LMath.Max(absY - size.y, LFloat.zero);
+            return x * x + y * y < radius * radius;
+        }
+
+        public static bool TestAABBAABB(LVector2 posA, LFloat rA, LVector2 sizeA, LVector2 posB, LFloat rB,
+            LVector2 sizeB){
+            var diff = posA - posB;
+            var allRadius = rA + rB;
+//circle 判定
+            if (diff.sqrMagnitude > allRadius * allRadius) {
+                return false;
+            }
+
+            var absX = LMath.Abs(diff.x);
+            var absY = LMath.Abs(diff.y);
+
+//AABB and AABB
             var allSize = sizeA + sizeB;
             if (absX > allSize.x) return false;
             if (absY > allSize.y) return false;
             return true;
         }
 
-        //AABB & Tile
-        public static bool TestCollision(AABB a, Vector2Int tilePos){
-            return TestAABBAABB(
-                a.pos, a.radius, a.size, //AABB1
-                tilePos.ToLVector2() + LVector2.half, new LFloat(true,707), LVector2.half //AABB2
-            );
+        /// <summary>
+        /// 判定两线段是否相交 并求交点
+        /// https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect/565282#
+        /// </summary>
+        public static bool IntersectSegment(ref LVector2 seg1Src, ref LVector2 seg1Vec, ref LVector2 seg2Src,
+            ref LVector2 seg2Vec, out LVector2 interPoint){
+            interPoint = LVector2.zero;
+            long denom = (long) seg1Vec._x * seg2Vec._y - (long) seg2Vec._x * seg1Vec._y; //sacle 1000
+            if (denom == 0L)
+                return false; // Collinear
+            bool denomPositive = denom > 0L;
+            var s02_x = seg1Src._x - seg2Src._x;
+            var s02_y = seg1Src._y - seg2Src._y;
+            long s_numer = (long) seg1Vec._x * s02_y - (long) seg1Vec._y * s02_x; //scale 1000
+            if ((s_numer < 0L) == denomPositive)
+                return false; // No collision
+            long t_numer = seg2Vec._x * s02_y - seg2Vec._y * s02_x; //scale 1000
+            if ((t_numer < 0L) == denomPositive)
+                return false; // No collision
+            if (((s_numer > denom) == denomPositive) || ((t_numer > denom) == denomPositive))
+                return false; // No collision
+// Collision detected
+            var t = t_numer * 1000 / denom; //sacle 1000
+            interPoint._x = (int) (seg1Src._x + ((long) ((t * seg1Vec._x)) / 1000));
+            interPoint._y = (int) (seg1Src._y + ((long) ((t * seg1Vec._y)) / 1000));
+            return true;
         }
 
-        public static bool TestCollision(Circle a, Vector2Int tilePos){
-            return TestCircleAABB(
-                a.pos, a.radius, //Circle1
-                tilePos.ToLVector2() + LVector2.half, new LFloat(true,707), LVector2.half //AABB2
-            );
+        /// <summary>
+        ///  判定点是否在多边形内
+        /// https://stackoverflow.com/questions/217578/how-can-i-determine-whether-a-2d-point-is-within-a-polygon
+        /// </summary>
+        public static bool IsPointInPolygon(LVector2 p, LVector2[] polygon){
+            var minX = polygon[0]._x;
+            var maxX = polygon[0]._x;
+            var minY = polygon[0]._y;
+            var maxY = polygon[0]._y;
+            for (int i = 1; i < polygon.Length; i++) {
+                LVector2 q = polygon[i];
+                minX = Mathf.Min(q._x, minX);
+                maxX = Mathf.Max(q._x, maxX);
+                minY = Mathf.Min(q._y, minY);
+                maxY = Mathf.Max(q._y, maxY);
+            }
+
+            if (p._x < minX || p._x > maxX || p._y < minY || p._y > maxY) {
+                return false;
+            }
+
+// http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+            bool inside = false;
+            for (int i = 0, j = polygon.Length - 1; i < polygon.Length; j = i++) {
+                if ((polygon[i]._y > p._y) != (polygon[j]._y > p._y) &&
+                    p._x < (polygon[j]._x - polygon[i]._x) * (p._y - polygon[i]._y) /
+                    (polygon[j]._y - polygon[i]._y) +
+                    polygon[i]._x) {
+                    inside = !inside;
+                }
+            }
+
+            return inside;
         }
     }
 }

@@ -68,7 +68,7 @@ namespace Lockstep.Collision2D {
                         ShowAABB(aabb, i);
                     }
 
-                    var obb = shape as OBB;
+                    var obb = shape as OBB2D;
                     if (obb != null) {
                         ShowOBB(obb, i);
                     }
@@ -85,8 +85,8 @@ namespace Lockstep.Collision2D {
             ShowShape(aabb, idx, DrawProperty);
         }
 
-        void ShowOBB(OBB obb, int idx){
-            ShowShape(obb, idx, DrawProperty);
+        void ShowOBB(OBB2D obb2D, int idx){
+            ShowShape(obb2D, idx, DrawProperty);
         }
 
         public static void DrawProperty(Circle shape){
@@ -97,7 +97,7 @@ namespace Lockstep.Collision2D {
             shape.size = EditorGUILayoutExt.Vector2Field("Size", shape.size);
         }
 
-        public static void DrawProperty(OBB shape){
+        public static void DrawProperty(OBB2D shape){
             shape.size = EditorGUILayoutExt.Vector2Field("Size", shape.size);
             var deg = EditorGUILayoutExt.FloatField("Deg", shape.deg);
             if (deg != shape.deg) {

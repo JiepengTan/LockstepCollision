@@ -12,8 +12,12 @@ namespace Lockstep.Collision2D {
     }
 
     public enum EColliderType2D {
-        Shpere2D,
-        AABB2D,
+        Circle,
+        AABB,
+        OBB,
+        Segment,
+        Ray,
+        Polygon,
     }
 
 
@@ -38,7 +42,7 @@ namespace Lockstep.Collision2D {
     public unsafe interface ICollisionBody {
         int RefId { get; set; }
         bool Sleeping { get; }
-        Sphere2D* ColPtr { get; set; }
+        Circle2D* ColPtr { get; set; }
         LFloat Y { get; set; }
         LVector2 Center { get; set; }
         LVector2 Extents { get; }
@@ -101,7 +105,7 @@ namespace Lockstep.Collision2D {
         private int _maxLevel;
         private int _curLevel;
         private QuadTree* _parent;
-        private Sphere2D** _bodies;
+        private Circle2D** _bodies;
         private QuadTree* _childA;
         private QuadTree* _childB;
         private QuadTree* _childC;
@@ -111,14 +115,14 @@ namespace Lockstep.Collision2D {
         public bool HasSplit => _childA != null;
 
         public void AddBody(AABB2D* body){
-            AddBody((Sphere2D*) body);
+            AddBody((Circle2D*) body);
         }
 
-        public void AddBody(Sphere2D* body){
+        public void AddBody(Circle2D* body){
             if (body == null) return;
             if (_childA != null) {
                 _bodyCount++;
-                var child = GetQuadrant(body->Pos);
+                var child = GetQuadrant(body->pos);
                 child->AddBody(body);
             }
             else {
@@ -142,7 +146,7 @@ namespace Lockstep.Collision2D {
         }
 
 
-        public static void RemoveNode(Sphere2D* body){
+        public static void RemoveNode(Circle2D* body){
             if (body == null) return;
             if (body->ParentNode == null) NativeHelper.NullPointer();
             body->ParentNode->RemoveBody(body);
@@ -200,9 +204,9 @@ namespace Lockstep.Collision2D {
             }
         }
 
-        public static int DebugID = 2073;
+        public static int DebugID = 6958;
 
-        void CheckDebugInfo(string info,Sphere2D* body){
+        void CheckDebugInfo(string info,Circle2D* body){
             if (body->_debugId == DebugID) {
                 int i = 0;
                 Debug.Log(info);
@@ -216,7 +220,7 @@ namespace Lockstep.Collision2D {
             }
         }
 
-        public void RemoveBody(Sphere2D* body){
+        public void RemoveBody(Circle2D* body){
 
             int i = 0;
             for (; i < _bodyCount; i++) {
@@ -229,7 +233,8 @@ namespace Lockstep.Collision2D {
 
             if (i == _bodyCount) {
                 int val = 0;
-                throw new Exception($"RemoveBody error : QuadTree have no that node _bodyCount{_bodyCount} remove{body->Id}");
+                throw new Exception($"RemoveBody error : QuadTree have no that node _bodyCount{_bodyCount} " +
+                                    $"remove{body->Id} body->_debugId{body->_debugId} tree._debugId{_debugId}");
             }
             CheckDebugInfo($"remove{body->Id}",body);
 
@@ -379,7 +384,7 @@ namespace Lockstep.Collision2D {
 
             //assign QuadTrees
             for (int i = _bodyCount - 1; i >= 0; i--) {
-                var child = GetQuadrant(_bodies[i]->Pos);
+                var child = GetQuadrant(_bodies[i]->pos);
                 child->AddBody(_bodies[i]);
                 _bodies[i] = null;
             }

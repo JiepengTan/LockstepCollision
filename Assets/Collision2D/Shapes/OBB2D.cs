@@ -2,15 +2,13 @@ using Lockstep.Math;
 
 namespace Lockstep.Collision2D {
     [System.Serializable]
-    public class OBB : BaseShaper2D {
-        public LVector2 up;
-
-        public LVector2 right {
-            get { return new LVector2(up.y, -up.x); }
-        }
-        
+    public class OBB2D : BaseShaper2D {
         public LFloat deg;
         public LVector2 size;
+        public LVector2 up;
+
+        public LVector2 right => new LVector2(up.y, -up.x);
+
 
         //CCW 旋转角度
         public void Rotate(LFloat rdeg){
@@ -29,7 +27,7 @@ namespace Lockstep.Collision2D {
             up = new LVector2(-s, c);
         }
 
-        public OBB(LVector2 pos, LVector2 size, LVector2 up){
+        public OBB2D(LVector2 pos, LVector2 size, LVector2 up){
             this.pos = pos;
             this.size = size;
             radius = size.magnitude;
@@ -37,7 +35,7 @@ namespace Lockstep.Collision2D {
             this.deg = LMath.Atan2(-up.x, up.y);
         }
 
-        public OBB(LVector2 pos, LVector2 size, LFloat deg){
+        public OBB2D(LVector2 pos, LVector2 size, LFloat deg){
             this.pos = pos;
             this.size = size;
             radius = size.magnitude;
@@ -50,7 +48,7 @@ namespace Lockstep.Collision2D {
 
         public override bool TestWithShape(BaseShaper2D a){return a.TestWith(this);}
         public override bool TestWith(AABB shape){return Utils.TestCollision(shape,this);}
-        public override bool TestWith(OBB shape){return Utils.TestCollision(shape,this);}
+        public override bool TestWith(OBB2D shape){return Utils.TestCollision(shape,this);}
         public override bool TestWith(Circle shape){return Utils.TestCollision(shape,this);}
         public override void UpdatePosition(LVector2 pos){this.pos = pos;}
         public override void UpdateRotation(LFloat deg){ SetDeg(deg);}

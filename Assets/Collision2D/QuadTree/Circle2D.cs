@@ -3,25 +3,23 @@ using Lockstep.Math;
 
 namespace Lockstep.Collision2D {
     [StructLayout(LayoutKind.Sequential, Pack = NativeHelper.STRUCT_PACK)]
-    public unsafe struct Sphere2D {
+    public unsafe struct Circle2D {
         public int TypeId;
         public int Id;
-        public LVector2 Pos;
-        public LFloat Radius;
+        public LVector2 pos;
+        public LFloat radius;
         public QuadTree* ParentNode;
         public int _debugId;
 
-        public Sphere2D(int typeid, int id, LVector2 pos, LFloat radius){
+        public LFloat SqrRadius => radius * radius;
+        public Circle2D(int typeid, int id, LVector2 pos, LFloat radius){
             this.TypeId = typeid;
             this.Id = id;
-            this.Pos = pos;
-            this.Radius = radius;
+            this.pos = pos;
+            this.radius = radius;
             ParentNode = null;
             _debugId = 0;
         }
-
-        public bool TestCollision(Sphere2D* shapePtr){
-            return true;
-        }
+        public Circle2D( int id, LVector2 pos, LFloat radius):this((int) EColliderType2D.Circle,id,pos,radius){}
     }
 }

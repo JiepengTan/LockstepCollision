@@ -76,5 +76,7 @@ namespace Lockstep.Math
             return LMath.Acos(Dot(lhs, rhs));
         }
 
+        
+        
     }
 }

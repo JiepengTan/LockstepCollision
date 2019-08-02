@@ -55,7 +55,7 @@ namespace Lockstep.Collision2D {
             var degFloat = Random.Range(1.0f - degFloatRate, 1.0f + degFloatRate).ToLFloat();
             var sizeFloat1 = Random.Range(1.0f - sizeFloatRate, 1.0f + sizeFloatRate).ToLFloat();
             var sizeFloat2 = Random.Range(1.0f - sizeFloatRate, 1.0f + sizeFloatRate).ToLFloat();
-            var obb = comp.Collider as OBB;
+            var obb = comp.Collider as OBB2D;
             var aabb = comp.Collider as AABB;
             var circle = comp.Collider as Circle;
             var startDeg = comp.deg;

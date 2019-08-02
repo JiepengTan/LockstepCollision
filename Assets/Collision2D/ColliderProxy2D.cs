@@ -35,7 +35,7 @@ namespace Lockstep.Collision2D {
         }
 
         public void AddOBB(LVector2 offset, LVector2 pos, LVector2 size, LFloat deg){
-            allColliders.Add(new OBB(pos, size, deg));
+            allColliders.Add(new OBB2D(pos, size, deg));
             allOffsets.Add(offset);
         }
 
