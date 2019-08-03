@@ -57,7 +57,13 @@ namespace Lockstep.Collision2D {
             );
         }
 
+        //TODO
+        public static bool TestPolygonPolygon(LVector2* _points, int vertexCount, LVector2* _points2, int vertexCount2){
+            return false;
+        }
 
+        //http://www.kevlindev.com/geometry/2D/intersections/index.htm
+        //http://www.kevlindev.com/geometry/2D/intersections/index.htm
         //https://bitlush.com/blog/circle-vs-polygon-collision-detection-in-c-sharp
         public static bool TestCirclePolygon(LVector2 c, LFloat r, LVector2* _points, int vertexCount){
             var radiusSquared = r * r;
@@ -134,60 +140,75 @@ namespace Lockstep.Collision2D {
             return true;
         }
 
-        //http://geomalgorithms.com/
-        static bool intersect2D_SegPoly(LVector2 P1, LVector2 P0, LVector2* V, int n, ref LVector2 IS0,
-            ref LVector2 IS1){
-            LFloat tE = LFloat.zero; // the maximum entering segment parameter
-            LFloat tL = LFloat.one; // the minimum leaving segment parameter
-            LFloat t, N, D; // intersect parameter t = N / D
-            LVector2 dS = P1 - P0; // the  segment direction vector
-            LVector2 e; // edge vector
-            // Vector ne;               // edge outward normal (not explicit in code)
-
-            for (int i = 0; i < n; i++) // process polygon edge V[i]V[i+1]
-            {
-                e = V[i + 1] - V[i];
-                N = Cross2D(e, P0 - V[i]); // = -dot(ne, S.P0 - V[i])
-                D = -Cross2D(e, dS); // = dot(ne, dS)
-                if (fabs(D) < SMALL_NUM) { // S is nearly parallel to this edge
-                    if (N < 0) // P0 is outside this edge, so
-                        return false; // S is outside the polygon
-                    else // S cannot cross this edge, so
-                        continue; // ignore this edge
+        //https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect  
+        public static bool TestRayPolygon(LVector2 o, LVector2 dir, LVector2* points, int vertexCount){
+            for (var i = 0; i < vertexCount; i++) {
+                var b1 = points[i];
+                var b2 = points[(i + 1) % vertexCount];
+                var inter = TestRaySegment(o, dir, b1, b2);
+                if (inter >= 0) {
+                    return true;
                 }
+            }
 
-                t = N / D;
-                if (D < 0) { // segment S is entering across this edge
-                    if (t > tE) { // new max tE
-                        tE = t;
-                        if (tE > tL) // S enters after leaving polygon
-                            return false;
-                    }
-                }
-                else { // segment S is leaving across this edge
-                    if (t < tL) { // new min tL
-                        tL = t;
-                        if (tL < tE) // S leaves before entering polygon
-                            return false;
+            return false;
+        }
+        public static bool TestRayPolygon(LVector2 o, LVector2 dir, LVector2* points, int vertexCount,
+            ref LVector2 point){
+            LFloat t = LFloat.FLT_MAX;
+            for (var i = 0; i < vertexCount; i++) {
+                var b1 = points[i];
+                var b2 = points[(i + 1) % vertexCount];
+                var inter = TestRaySegment(o, dir, b1, b2);
+                if (inter >= 0) {
+                    if (inter < t) {
+                        t = inter;
                     }
                 }
             }
 
-            // tE <= tL implies that there is a valid intersection subsegment
-            IS0 = P0 + tE * dS; // = P(tE) = point where S enters polygon
-            IS1 = P0 + tL * dS; // = P(tL) = point where S leaves polygon
-            return true;
+            if (t < LFloat.FLT_MAX) {
+                point = o + dir * t;
+            }
+
+            return false;
         }
 
 
-        public static bool TestRayPolygon(LVector2 o, LVector2 d, LVector2* ppsPtr, int size, out LFloat tmin){
-//var fo = o - c;
-//fo = fo.Rotate(deg);
-//var fd = d.Rotate(deg);
-//return TestRayAABB(fo, fd, -size, size, out tmin);
-            tmin = LFloat.zero;
-            return true;
+        public static LFloat TestRaySegment(LVector2 o, LVector2 d1, LVector2 p2, LVector2 p3){
+            var diff = p2 - o;
+            var d2 = p3 - p2;
+
+            var demo = Cross2D(d1, d2); //det
+            if (LMath.Abs(demo) < LFloat.EPSILON) //parallel
+                return LFloat.negOne;
+
+            var t1 = Cross2D(d2, diff) / demo; // Cross2D(diff,-d2)
+            var t2 = Cross2D(d1, diff) / demo; //Dot(v1,pd0) == cross(d0,d1)
+
+            if (t1 >= 0 && (t2 >= 0 && t2 <= 1))
+                return t1;
+            return LFloat.negOne;
         }
+
+        public static LFloat TestSegmentSegment(LVector2 p0, LVector2 p1, LVector2 p2, LVector2 p3){
+            var diff = p2 - p0;
+            var d1 = p1 - p0;
+            var d2 = p3 - p2;
+
+
+            var demo = Cross2D(d1, d2); //det
+            if (LMath.Abs(demo) < LFloat.EPSILON) //parallel
+                return LFloat.negOne;
+
+            var t1 = Cross2D(d2, diff) / demo; // Cross2D(diff,-d2)
+            var t2 = Cross2D(d1, diff) / demo; //Dot(v1,pd0) == cross(d0,d1)
+
+            if ((t1 >= 0 && t1 <= 1) && (t2 >= 0 && t2 <= 1))
+                return t1; // return p0 + (p1-p0) * t1
+            return LFloat.negOne;
+        }
+        //http://geomalgorithms.com/
 
 //https://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm
         public static bool TestRayCircle(LVector2 cPos, LFloat cR, LVector2 rB, LVector2 rDir, ref LFloat t){
@@ -198,7 +219,7 @@ namespace Lockstep.Collision2D {
             var c = LVector2.Dot(f, f) - cR * cR;
             var discriminant = b * b - 4 * a * c;
             if (discriminant < 0) {
-// no intersection
+                // no intersection
                 return false;
             }
             else {
@@ -231,28 +252,28 @@ namespace Lockstep.Collision2D {
             tmin = LFloat.zero; // set to -FLT_MAX to get first hit on line
             LFloat tmax = LFloat.FLT_MAX; // set to max distance ray can travel (for segment)
 
-// For all three slabs
+            // For all three slabs
             for (int i = 0; i < 2; i++) {
                 if (Abs(d[i]) < LFloat.EPSILON) {
-// Ray is parallel to slab. No hit if origin not within slab
+                    // Ray is parallel to slab. No hit if origin not within slab
                     if (o[i] < min[i] || o[i] > max[i]) return false;
                 }
                 else {
-// Compute intersection t value of ray with near and far plane of slab
+                    // Compute intersection t value of ray with near and far plane of slab
                     LFloat ood = LFloat.one / d[i];
                     LFloat t1 = (min[i] - o[i]) * ood;
                     LFloat t2 = (max[i] - o[i]) * ood;
-// Make t1 be intersection with near plane, t2 with far plane
+                    // Make t1 be intersection with near plane, t2 with far plane
                     if (t1 > t2) {
                         var temp = t1;
                         t1 = t2;
                         t2 = temp;
                     }
 
-// Compute the intersection of slab intersections intervals
+                    // Compute the intersection of slab intersections intervals
                     tmin = Max(tmin, t1);
                     tmax = Min(tmax, t2);
-// Exit with no collision as soon as slab intersection becomes empty
+                    // Exit with no collision as soon as slab intersection becomes empty
                     if (tmin > tmax) return false;
                 }
             }

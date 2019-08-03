@@ -455,7 +455,7 @@ namespace Lockstep.Math
 
         public static LFloat Cross2D(LVector2 u, LVector2 v)
         {
-            return new LFloat(true,((long)u._y * v._x - (long)u._x * v._y) / LFloat.Precision);
+            return new LFloat(true,((long)u._x * v._y - (long)u._y * v._x) / LFloat.Precision);
         }
         public static LFloat Dot2D(LVector2 u, LVector2 v)
         {

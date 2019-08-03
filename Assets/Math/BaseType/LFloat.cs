@@ -12,6 +12,7 @@ namespace Lockstep.Math {
 
         public static readonly LFloat zero = new LFloat(true,0);
         public static readonly LFloat one = new LFloat(true,LFloat.Precision);
+        public static readonly LFloat negOne = new LFloat(true,-LFloat.Precision);
         public static readonly LFloat half = new LFloat(true,LFloat.Precision / 2);
         public static readonly LFloat FLT_MAX = new LFloat(true,int.MaxValue);
         public static readonly LFloat FLT_MIN = new LFloat(true,int.MinValue);
