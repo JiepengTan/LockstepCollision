@@ -207,22 +207,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 1023973052}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 74546b590c384eb692b46f312c9a6b76, type: 3}
+  m_Script: {fileID: 11500000, guid: eedfedaddb6d44914acf75372dd6e5b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   pos: {x: 0, y: 0, z: 0}
   objs: []
   mats: []
-  worldSize: 250
-  minNodeSize: 2
+  worldSize: 100
+  minNodeSize: 1
   loosenessval: 1.25
   testObj: {fileID: 0}
   mat: {fileID: 0}
   bound:
-    m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 0, y: 0, z: 0}
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
   percent: 0.2
-  count: 1000
+  count: 100
 --- !u!4 &1023973054
 Transform:
   m_ObjectHideFlags: 0

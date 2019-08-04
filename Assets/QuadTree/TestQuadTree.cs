@@ -2,17 +2,20 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using Lockstep.Math;
 using UnityEngine;
 using UnityEngine.Profiling;
 using Color = UnityEngine.Color;
 using Random = UnityEngine.Random;
 
 namespace TQuadTree1 {
-    public class TestOCTree1 : MonoBehaviour {
+
+
+    public class TestQuadTree : MonoBehaviour {
         public Vector3 pos;
 
         // Initial size (metres), initial centre position, minimum node size (metres), looseness
-        BoundsOctree<Collider> boundsTree;
+        BoundsQuadTree<Collider> boundsTree;
 
         public List<Collider> objs = new List<Collider>();
         public List<Material> mats = new List<Material>();
@@ -23,7 +26,7 @@ namespace TQuadTree1 {
 
         private void Start(){
             // Initial size (metres), initial centre position, minimum node size (metres), looseness
-            boundsTree = new BoundsOctree<Collider>(worldSize, pos, minNodeSize, loosenessval);
+            boundsTree = new BoundsQuadTree<Collider>(worldSize, pos, minNodeSize, loosenessval);
             // Initial size (metres), initial centre position, minimum node size (metres)
             //pointTree = new PointOctree<GameObject>(150, .pos, 1);
             for (int i = 0; i < count; i++) {
@@ -37,7 +40,7 @@ namespace TQuadTree1 {
                 if (i % Mathf.CeilToInt(1 / percent) == 0) {
                     StartCoroutine(RandomMove(obj, () => {
                         boundsTree.Remove(obj);
-                        boundsTree.Add(obj, obj.bounds);
+                        boundsTree.Add(obj, obj.bounds.ToRect());
                     }));
                 }
                 else if (i % Mathf.CeilToInt(1 / percent) == 1) {
@@ -47,7 +50,7 @@ namespace TQuadTree1 {
                     StartCoroutine(RandomMove(obj, null));
                 }
                 else {
-                    boundsTree.Add(obj, obj.bounds);
+                    boundsTree.Add(obj, obj.bounds.ToRect());
                 }
             }
 
@@ -58,7 +61,7 @@ namespace TQuadTree1 {
 
         public Transform testObj;
         public Material mat;
-        public Bounds bound;
+        public Rect bound;
         public float percent = 0.1f;
         public int count = 100;
 
@@ -76,7 +79,7 @@ namespace TQuadTree1 {
         private void CheckCollision(){
             for (int i = 0; i < objs.Count; i++) {
                 var obj = objs[i];
-                isCollide[i] = boundsTree.IsColliding(obj.bounds);
+                isCollide[i] = boundsTree.IsColliding(obj.bounds.ToRect());
             }
         }
 
@@ -101,7 +104,7 @@ namespace TQuadTree1 {
         void OnDrawGizmos(){
             if (boundsTree == null) return;
 
-            boundsTree.DrawAllBounds(); // Draw node boundaries
+            //boundsTree.DrawAllBounds(); // Draw node boundaries
             boundsTree.DrawAllObjects(); // Draw object boundaries
             boundsTree.DrawCollisionChecks(); // Draw the last *numCollisionsToSave* collision check boundaries
 
