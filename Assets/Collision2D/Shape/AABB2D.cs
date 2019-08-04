@@ -3,12 +3,11 @@ using Lockstep.Math;
 
 namespace Lockstep.Collision2D {
     [StructLayout(LayoutKind.Sequential, Pack = NativeHelper.STRUCT_PACK)]
-    public unsafe struct AABB2D {
-        public Circle2D BoundSphere;
+    public unsafe struct AABB2D :IShape2D{
+        public Circle BoundSphere;
 
         public int TypeId {
             get => BoundSphere.TypeId;
-            set => BoundSphere.TypeId = value;
         }
 
         public int Id {
@@ -29,8 +28,10 @@ namespace Lockstep.Collision2D {
         public LVector2 size;
 
         public AABB2D(int id, LVector2 pos, LVector2 size){
-            BoundSphere = new Circle2D((int) EColliderType2D.AABB, id, pos, size.magnitude);
+            BoundSphere = new Circle((int) EShape2D.AABB, id, pos, size.magnitude);
             this.size = size;
         }
+        public void UpdatePosition(LVector2 pos){this.pos = pos;}
+        public void UpdateRotation(LFloat deg){}
     }
 }

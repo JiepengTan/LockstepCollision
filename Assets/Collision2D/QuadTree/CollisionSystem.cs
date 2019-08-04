@@ -40,11 +40,11 @@ namespace Lockstep.Collision2D {
             return true; //bodyList.Remove(body);
         }
 
-        public delegate void OnShapePtr(Circle2D* shape);
+        public delegate void OnShapePtr(Circle* shape);
 
         public void IteratePtrs(OnShapePtr funcShapePtr){
             foreach (var ptrval in _shapePtrs) {
-                var ptr = (Circle2D*) ptrval;
+                var ptr = (Circle*) ptrval;
                 funcShapePtr(ptr);
             }
         }
@@ -58,6 +58,7 @@ namespace Lockstep.Collision2D {
         }
 
         public int countDetectBodyVsBody = 0;
+
         /// <summary>
         /// Process CollisionSystem by one step
         /// </summary>
@@ -96,14 +97,14 @@ namespace Lockstep.Collision2D {
             return null;
         }
 
-        public Circle2D* FindShapePtr(int refId){
+        public Circle* FindShapePtr(int refId){
             if (_id2Ptr.TryGetValue(refId, out var val))
-                return (Circle2D*) val;
+                return (Circle*) val;
             return null;
         }
 
 
-        public void NotifyCollisionEvent(Circle2D* shape1, Circle2D* shape2, ref CollisionResult result){
+        public void NotifyCollisionEvent(Circle* shape1, Circle* shape2, ref CollisionResult result){
             var body1 = FindCollisionBody(shape1->Id);
             var body2 = FindCollisionBody(shape2->Id);
             body2.OnCollision(result, body1);
@@ -115,19 +116,19 @@ namespace Lockstep.Collision2D {
         /// <summary>
         ///  Executes collision between two bodies
         /// </summary>
-        protected bool Test(Circle2D* body1, Circle2D* body2, bool removePair = true){
+        protected bool Test(Circle* body1, Circle* body2, bool removePair = true){
             var result = new CollisionResult();
             var paired = FindCollisionPair(body1, body2, removePair);
 
             if (TestCollisionShapes(body1, body2, ref result)) {
-                result.Type = paired ? CollisionType.Stay : CollisionType.Enter;
+                result.Type = paired ? ECollisionType.Stay : ECollisionType.Enter;
                 CacheCollisionPair(body1, body2);
                 NotifyCollisionEvent(body1, body2, ref result);
                 return true;
             }
             else {
                 if (paired) {
-                    result.Type = CollisionType.Exit;
+                    result.Type = ECollisionType.Exit;
                     NotifyCollisionEvent(body1, body2, ref result);
                 }
             }
@@ -135,24 +136,24 @@ namespace Lockstep.Collision2D {
             return false;
         }
 
-        private bool FindCollisionPair(Circle2D* a, Circle2D* b, bool remove = true){
+        private bool FindCollisionPair(Circle* a, Circle* b, bool remove = true){
             var idx = a->Id * (MaxCollisionBodies + 1) + b->Id;
             if (remove) return _pairs.Remove(idx);
             else return _pairs.Contains(idx);
         }
 
-        private void CacheCollisionPair(Circle2D* a, Circle2D* b){
+        private void CacheCollisionPair(Circle* a, Circle* b){
             var idx = a->Id * (MaxCollisionBodies + 1) + b->Id;
             _pairCache.Add(idx);
         }
 
-        private static bool TestCollisionShapes(Circle2D* a, Circle2D* b, ref CollisionResult result){
+        private static bool TestCollisionShapes(Circle* a, Circle* b, ref CollisionResult result){
             //var hasCollide = a->TestCollision(b);
-            var aabbA =(AABB2D*) a;
-            var aabbB =(AABB2D*) b;
+            var aabbA = (AABB2D*) a;
+            var aabbB = (AABB2D*) b;
             result.Collides = CollisionTest.TestAABBAABB(
-                aabbA->pos,aabbA->radius,aabbA->size,
-                aabbB->pos,aabbB->radius,aabbB->size
+                aabbA->pos, aabbA->radius, aabbA->size,
+                aabbB->pos, aabbB->radius, aabbB->size
             );
             return result.Collides;
         }
@@ -163,10 +164,9 @@ namespace Lockstep.Collision2D {
             IteratePtrs((ptr) => {
                 var body = FindCollisionBody(ptr->Id);
                 if (body == null) return;
-                var center = body.Center;
+                var center = body.Pos;
                 if (center == LVector2.zero) return;
-                center.y += 2;
-                Gizmos.DrawWireCube(center.ToVector3XZ(body.Y), (body.Extents * 2.ToLFloat()).ToVector3XZ(body.Y));
+                GizmosHelper.DrawGizmos((EShape2D) ptr->TypeId, ptr, Color.green);
             });
         }
     }

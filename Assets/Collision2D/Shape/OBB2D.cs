@@ -3,12 +3,11 @@ using Lockstep.Math;
 
 namespace Lockstep.Collision2D {
     [StructLayout(LayoutKind.Sequential, Pack = NativeHelper.STRUCT_PACK)]
-    public unsafe struct OBB2d {
-        public Circle2D BoundSphere;
+    public unsafe struct OBB2D :IShape2D{
+        public Circle BoundSphere;
 
         public int TypeId {
             get => BoundSphere.TypeId;
-            set => BoundSphere.TypeId = value;
         }
 
         public int Id {
@@ -50,21 +49,24 @@ namespace Lockstep.Collision2D {
             up = new LVector2(-s, c);
         }
 
-        public OBB2d(int id, LVector2 pos, LVector2 size, LVector2 up){
-            BoundSphere = new Circle2D((int) EColliderType2D.AABB, id, pos, size.magnitude);
+        public OBB2D(int id, LVector2 pos, LVector2 size, LVector2 up){
+            BoundSphere = new Circle((int) EShape2D.AABB, id, pos, size.magnitude);
             this.size = size;
             this.up = up;
             this.deg = LMath.Atan2(-up.x, up.y);
         }
 
-        public OBB2d(int id, LVector2 pos, LVector2 size, LFloat deg){
-            BoundSphere = new Circle2D((int) EColliderType2D.AABB, id, pos, size.magnitude);
+        public OBB2D(int id, LVector2 pos, LVector2 size, LFloat deg){
+            BoundSphere = new Circle((int) EShape2D.AABB, id, pos, size.magnitude);
             this.size = size;
             this.deg = deg;
             var rad = LMath.Deg2Rad * deg;
             var c = LMath.Cos(rad);
             var s = LMath.Sin(rad);
             up = new LVector2(-s, c);
-        }
+        }       
+        public void UpdatePosition(LVector2 pos){this.pos = pos;}
+
+        public void UpdateRotation(LFloat deg){SetDeg(deg);}
     }
 }

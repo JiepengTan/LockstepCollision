@@ -13,7 +13,7 @@ namespace Lockstep.Collision2D {
             QuadTree
         }
 
-        public LDemoPhysicsBody DemoPhysicsBody;
+        public PhysicsBody DemoPhysicsBody;
         [Header("CollisionSystem Settings")] public CollisionSystemType CSType;
         public int MaxBodies = 500;
 
@@ -59,10 +59,10 @@ namespace Lockstep.Collision2D {
             *_quadTree = new QuadTree(new LRect(LFloat.zero, LFloat.zero,
                 WorldSize.x.ToLFloat(), WorldSize.y.ToLFloat()), BodiesPerNode, MaxSplits);
             _collisionSystem = new CollisionSystemQuadTree(_quadTree);
-            var tempLst = new List<LDemoPhysicsBody>();
+            var tempLst = new List<PhysicsBody>();
             RandomMove.border = WorldSize;
             for (int i = 0; i < MaxBodies; i++) {
-                var body = GameObject.Instantiate<LDemoPhysicsBody>(DemoPhysicsBody);
+                var body = GameObject.Instantiate<PhysicsBody>(DemoPhysicsBody);
                 body.transform.position = new Vector3(
                     random.Next(0, (int) (WorldSize.x * 1000)) * 0.001f, 0,
                     random.Next(0, (int) (WorldSize.y * 1000)) * 0.001f);
@@ -79,10 +79,20 @@ namespace Lockstep.Collision2D {
             //UnsafeLMath 8.6ms 8.7ms
             Profiler.BeginSample("QuadInit");
             foreach (var body in tempLst) {
-                AABB2D* boxPtr = CollisionFactory.AllocAABB();
-                body.RefId = _collisionSystem.AddBody(body, boxPtr, body.Position, body.Extents);
-                body.ColPtr = (Circle2D*) boxPtr;
-                _quadTree->AddBody(boxPtr); // add body to QuadTree
+                var config = body.ColliderConfig;
+                foreach (var collider in config.allColliders) {
+                    var type = (EShape2D)collider.TypeId;
+                    switch (type) {
+                        case EShape2D.AABB: {
+                            AABB2D* boxPtr = CollisionFactory.AllocAABB();
+                            var shape = ((ShapeWrapAABB) collider).shape;
+                            body.RefId = _collisionSystem.AddBody(body, boxPtr, shape.pos, shape.size);
+                            body.ColPtr = (Circle*) boxPtr;
+                            _quadTree->AddBody(boxPtr); // add body to QuadTree
+                            break;
+                        }
+                    }
+                }
             }
 
             Profiler.EndSample();

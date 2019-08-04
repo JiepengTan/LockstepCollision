@@ -4,16 +4,16 @@ using UnityEditor;
 using Lockstep.Math;
 
 namespace Lockstep.Collision2D {
-    [CustomEditor(typeof(ColliderProxy2D))]
+    [CustomEditor(typeof(ColliderConfig))]
     public class EditorCollider2DMono : Editor {
-        public ColliderProxy2D owner;
+        public ColliderConfig owner;
 
         private int removeIdx = 0;
         private int addTypeID = 0;
 
         public override void OnInspectorGUI(){
             base.OnInspectorGUI();
-            owner = (ColliderProxy2D) target;
+            owner = (ColliderConfig) target;
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Type:");
@@ -32,7 +32,7 @@ namespace Lockstep.Collision2D {
             {
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("+")) {
-                    BaseShaper2D shape = null;
+                    IShape2D shape = null;
                     var type = (EShape2D) addTypeID;
                     if (type == EShape2D.Circle) {
                         owner.AddCircle(LVector2.zero, owner.transform.position.ToLVector3(), 1.ToLFloat());
@@ -57,47 +57,45 @@ namespace Lockstep.Collision2D {
             {
                 var count = owner.allOffsets.Count;
                 for (int i = 0; i < count; i++) {
-                    var shape = owner.allColliders[i];
-                    var circle = shape as Circle;
-                    if (circle != null) {
-                        ShowCircle(circle, i);
-                    }
-
-                    var aabb = shape as AABB;
-                    if (aabb != null) {
-                        ShowAABB(aabb, i);
-                    }
-
-                    var obb = shape as OBB2D;
-                    if (obb != null) {
-                        ShowOBB(obb, i);
+                    var shapeWrap = owner.allColliders[i];
+                    var shapeType = (EShape2D) shapeWrap.TypeId;
+                    switch (shapeType) {
+                        case EShape2D.Circle:
+                            ShowShape(ref ((ShapeWrapCircle) shapeWrap).shape, i);
+                            break;
+                        case EShape2D.AABB:
+                            ShowShape(ref ((ShapeWrapAABB) shapeWrap).shape, i);
+                            break;
+                        case EShape2D.OBB:
+                            ShowShape(ref ((ShapeWrapOBB) shapeWrap).shape, i);
+                            break;
                     }
                 }
             }
         }
 
 
-        void ShowCircle(Circle circle, int idx){
-            ShowShape(circle, idx, DrawProperty);
+        void ShowShape(ref Circle circle, int idx){
+            ShowShape(ref circle, idx, DrawProperty);
         }
 
-        void ShowAABB(AABB aabb, int idx){
-            ShowShape(aabb, idx, DrawProperty);
+        void ShowShape(ref AABB2D aabb, int idx){
+            ShowShape(ref aabb, idx, DrawProperty);
         }
 
-        void ShowOBB(OBB2D obb2D, int idx){
-            ShowShape(obb2D, idx, DrawProperty);
+        void ShowShape(ref OBB2D obb, int idx){
+            ShowShape(ref obb, idx, DrawProperty);
         }
 
-        public static void DrawProperty(Circle shape){
+        public static void DrawProperty(ref Circle shape){
             shape.radius = EditorGUILayoutExt.FloatField("Radius", shape.radius);
         }
 
-        public static void DrawProperty(AABB shape){
+        public static void DrawProperty(ref AABB2D shape){
             shape.size = EditorGUILayoutExt.Vector2Field("Size", shape.size);
         }
 
-        public static void DrawProperty(OBB2D shape){
+        public static void DrawProperty(ref OBB2D shape){
             shape.size = EditorGUILayoutExt.Vector2Field("Size", shape.size);
             var deg = EditorGUILayoutExt.FloatField("Deg", shape.deg);
             if (deg != shape.deg) {
@@ -105,15 +103,16 @@ namespace Lockstep.Collision2D {
             }
         }
 
-        void ShowShape<T>(T circle, int idx, System.Action<T> _Func) where T : BaseShaper2D{
+        delegate void FuncDrawProperty<T>(ref T shape) where T : IShape2D;
+
+        void ShowShape<T>(ref T circle, int idx, FuncDrawProperty<T> _Func) where T : IShape2D{
             GUILayout.BeginVertical();
             var offset = EditorGUILayoutExt.Vector2Field("Offset", owner.allOffsets[idx]);
             owner.allOffsets[idx] = offset;
             circle.UpdatePosition(owner.pos + offset);
-
             {
                 GUILayout.BeginHorizontal();
-                _Func(circle);
+                _Func(ref circle);
                 GUILayout.EndHorizontal();
             }
             GUILayout.EndVertical();

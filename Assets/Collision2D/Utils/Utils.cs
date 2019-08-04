@@ -7,60 +7,62 @@ using Point2D = Lockstep.Math.LVector2;
 
 namespace Lockstep.Collision2D {
     public unsafe static class Utils {
-        public static bool TestCollision(Circle a, OBB2D b){
-            return TestCircleOBB(a.pos, a.radius
-                , b.pos, b.radius, b.size, b.up
+        public static bool TestCollision(Circle* a, OBB2D* b){
+            return TestCircleOBB(a->pos, a->radius
+                , b->pos, b->radius, b->size, b->up
             );
         }
 
-        public static bool TestCollision(AABB a, OBB2D b){
-            return TestAABBOBB(a.pos, a.radius, a.size
-                , b.pos, b.radius, b.size, b.up
+        public static bool TestCollision(AABB2D* a, OBB2D* b){
+            return TestAABBOBB(a->pos, a->radius, a->size
+                , b->pos, b->radius, b->size, b->up
             );
         }
 
-        public static bool TestCollision(OBB2D a, OBB2D b){
-            return TestOBBOBB(a.pos, a.radius, a.size, a.up
-                , b.pos, b.radius, b.size, b.up
+        public static bool TestCollision(OBB2D* a, OBB2D* b){
+            return TestOBBOBB(a->pos, a->radius, a->size, a->up
+                , b->pos, b->radius, b->size, b->up
             );
         }
 
-        //Circle & Circle
-        public static bool TestCollision(Circle a, Circle b){
-            var diff = a.pos - b.pos;
-            var allRadius = a.radius + b.radius;
+        //Circle* & Circle
+        public static bool TestCollision(Circle* a, Circle* b){
+            var diff = a->pos - b->pos;
+            var allRadius = a->radius + b->radius;
             return diff.sqrMagnitude <= allRadius * allRadius;
         }
 
-        //Circle & AABB
-        public static bool TestCollision(Circle a, AABB b){
-            return TestCircleAABB(a.pos, a.radius, b.pos, b.radius, b.size);
+        //Circle* & AABB
+        public static bool TestCollision(Circle* a, AABB2D* b){
+            return TestCircleAABB(a->pos, a->radius, b->pos, b->radius, b->size);
         }
 
         //AABB & AABB
-        public static bool TestCollision(AABB a, AABB b){
-            return TestAABBAABB(a.pos, a.radius, a.size, b.pos, b.radius, b.size);
+        public static bool TestCollision(AABB2D* a, AABB2D* b){
+            return TestAABBAABB(a->pos, a->radius, a->size, b->pos, b->radius, b->size);
         }
 
         //AABB & Tile
-        public static bool TestCollision(AABB a, Vector2Int tilePos){
+        public static bool TestCollision(AABB2D* a, Vector2Int tilePos){
             return TestAABBAABB(
-                a.pos, a.radius, a.size, //AABB1
+                a->pos, a->radius, a->size, //AABB1
                 tilePos.ToLVector2() + LVector2.half, new LFloat(true, 707), LVector2.half //AABB2
             );
         }
 
-        public static bool TestCollision(Circle a, Vector2Int tilePos){
+        public static bool TestCollision(Circle* a, Vector2Int tilePos){
             return TestCircleAABB(
-                a.pos, a.radius, //Circle1
+                a->pos, a->radius, //Circle1
                 tilePos.ToLVector2() + LVector2.half, new LFloat(true, 707), LVector2.half //AABB2
             );
         }
-
         //TODO
         public static bool TestPolygonPolygon(LVector2* _points, int vertexCount, LVector2* _points2, int vertexCount2){
             return false;
         }
+
+
+
 
         //http://www.kevlindev.com/geometry/2D/intersections/index.htm
         //http://www.kevlindev.com/geometry/2D/intersections/index.htm
@@ -153,6 +155,7 @@ namespace Lockstep.Collision2D {
 
             return false;
         }
+
         public static bool TestRayPolygon(LVector2 o, LVector2 dir, LVector2* points, int vertexCount,
             ref LVector2 point){
             LFloat t = LFloat.FLT_MAX;

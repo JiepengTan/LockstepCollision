@@ -4,10 +4,10 @@ using System.Collections;
 using Lockstep.Math;
 using Random = UnityEngine.Random;
 
-#if UNITY_EDITOR
+#if false// UNITY_EDITOR
 namespace Lockstep.Collision2D {
     public class TestCollision2D : MonoBehaviour {
-        public List<UnityColliderProxy2D[]> allPairs = new List<UnityColliderProxy2D[]>();
+        public List<ColliderConfig[]> allPairs = new List<ColliderConfig[]>();
         [Header("移动距离")]
         public float gridGap = 9;
         public float moveDist = 4;
@@ -29,7 +29,7 @@ namespace Lockstep.Collision2D {
                     var shape2 = CreateShape(j, (i * count + j) * 2 + 1);
                     shape1.SetPosition(pos);
                     shape2.SetPosition(pos + new LVector3(true,moveDist, 0f, 0f));
-                    allPairs.Add(new UnityColliderProxy2D[2] {shape1  , shape2 });
+                    allPairs.Add(new ColliderConfig[2] {shape1  , shape2 });
                     StartCoroutine(
                         PingPongMove(shape1, shape1.pos, pos + new LVector3(true,moveDist, moveDist, 0f), rawMoveTime));
                     StartCoroutine(PingPongMove(shape2, shape2.pos, pos + new LVector3(true,0f, moveDist, 0f), rawMoveTime));
@@ -50,13 +50,13 @@ namespace Lockstep.Collision2D {
         }
 
 
-        IEnumerator PingPongMove(ColliderProxy2D comp, LVector3 sPos, LVector3 ePos, float time){
+        IEnumerator PingPongMove(ColliderConfig comp, LVector3 sPos, LVector3 ePos, float time){
             float timer = 0;
             var degFloat = Random.Range(1.0f - degFloatRate, 1.0f + degFloatRate).ToLFloat();
             var sizeFloat1 = Random.Range(1.0f - sizeFloatRate, 1.0f + sizeFloatRate).ToLFloat();
             var sizeFloat2 = Random.Range(1.0f - sizeFloatRate, 1.0f + sizeFloatRate).ToLFloat();
             var obb = comp.Collider as OBB2D;
-            var aabb = comp.Collider as AABB;
+            var aabb = comp.Collider as AABB2D;
             var circle = comp.Collider as Circle;
             var startDeg = comp.deg;
             var endDeg = startDeg + degFloat * (rawRotateDeg.ToLFloat());
@@ -106,9 +106,9 @@ namespace Lockstep.Collision2D {
         }
 
 
-        public UnityColliderProxy2D CreateShape(int itype, int idx){
+        public ColliderConfig CreateShape(int itype, int idx){
             var go = new GameObject("Pair" + idx / 2 + " :" + idx % 2);
-            var col = go.AddComponent<UnityColliderProxy2D>();
+            var col = go.AddComponent<ColliderConfig>();
             var type = (EShape2D) itype;
             switch (type) {
                 case EShape2D.Circle:

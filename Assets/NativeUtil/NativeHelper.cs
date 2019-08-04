@@ -13,6 +13,9 @@ namespace Lockstep {
 #endif
         public static long MemSize => _prt2Size.Sum((d) => d.Value);
         public static void Free(IntPtr ptr){
+            Free(ptr.ToPointer());
+        }
+        public static void Free(void* ptr){
 #if DEBUG
             if (!_allocedPtrs.Contains((long) ptr)) {
                 throw new NullReferenceException("Try to free a block which did not allocated!");
@@ -21,7 +24,7 @@ namespace Lockstep {
 #endif
 
             if (ptr == null) throw new NullReferenceException();
-            Marshal.FreeHGlobal(ptr);
+            Marshal.FreeHGlobal((IntPtr)ptr);
         }
 
         public static IntPtr Alloc(int size){

@@ -5,19 +5,20 @@ using Lockstep.Math;
 using UnityEngine;
 
 namespace Lockstep.Collision2D {
-    public enum CollisionType {
+    public enum ECollisionType {
         Enter,
         Stay,
         Exit
     }
 
-    public enum EColliderType2D {
+    public enum EShape2D {
         Circle,
         AABB,
         OBB,
         Segment,
         Ray,
         Polygon,
+        EnumCount,
     }
 
 
@@ -35,17 +36,16 @@ namespace Lockstep.Collision2D {
         public bool Collides;
         public LVector3 Normal;
         public LFloat Penetration;
-        public CollisionType Type;
+        public ECollisionType Type;
         public bool First;
     }
 
     public unsafe interface ICollisionBody {
         int RefId { get; set; }
         bool Sleeping { get; }
-        Circle2D* ColPtr { get; set; }
+        Circle* ColPtr { get; set; }
         LFloat Y { get; set; }
-        LVector2 Center { get; set; }
-        LVector2 Extents { get; }
+        LVector2 Pos { get; set; }
         void OnCollision(CollisionResult result, ICollisionBody other);
     }
 
@@ -105,7 +105,7 @@ namespace Lockstep.Collision2D {
         private int _maxLevel;
         private int _curLevel;
         private QuadTree* _parent;
-        private Circle2D** _bodies;
+        private Circle** _bodies;
         private QuadTree* _childA;
         private QuadTree* _childB;
         private QuadTree* _childC;
@@ -115,10 +115,10 @@ namespace Lockstep.Collision2D {
         public bool HasSplit => _childA != null;
 
         public void AddBody(AABB2D* body){
-            AddBody((Circle2D*) body);
+            AddBody((Circle*) body);
         }
 
-        public void AddBody(Circle2D* body){
+        public void AddBody(Circle* body){
             if (body == null) return;
             if (_childA != null) {
                 _bodyCount++;
@@ -146,7 +146,7 @@ namespace Lockstep.Collision2D {
         }
 
 
-        public static void RemoveNode(Circle2D* body){
+        public static void RemoveNode(Circle* body){
             if (body == null) return;
             if (body->ParentNode == null) NativeHelper.NullPointer();
             body->ParentNode->RemoveBody(body);
@@ -206,7 +206,7 @@ namespace Lockstep.Collision2D {
 
         public static int DebugID = 6958;
 
-        void CheckDebugInfo(string info,Circle2D* body){
+        void CheckDebugInfo(string info,Circle* body){
             if (body->_debugId == DebugID) {
                 int i = 0;
                 Debug.Log(info);
@@ -220,7 +220,7 @@ namespace Lockstep.Collision2D {
             }
         }
 
-        public void RemoveBody(Circle2D* body){
+        public void RemoveBody(Circle* body){
 
             int i = 0;
             for (; i < _bodyCount; i++) {
