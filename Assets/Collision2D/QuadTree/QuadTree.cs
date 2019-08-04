@@ -12,11 +12,11 @@ namespace Lockstep.Collision2D {
     }
 
     public enum EShape2D {
+        Segment,
+        Ray,
         Circle,
         AABB,
         OBB,
-        Segment,
-        Ray,
         Polygon,
         EnumCount,
     }

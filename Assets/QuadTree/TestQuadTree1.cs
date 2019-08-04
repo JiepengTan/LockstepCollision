@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Timers;
+using Lockstep.Collision2D;
 using Lockstep.Math;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -9,6 +11,8 @@ using Color = UnityEngine.Color;
 using Random = UnityEngine.Random;
 
 namespace TQuadTree1 {
+
+
     //Test 1000 count 
     //percent 0.4
     //world size 300
@@ -37,7 +41,7 @@ namespace TQuadTree1 {
             //pointTree = new PointOctree<GameObject>(150, .pos, 1);
             for (int i = 0; i < count; i++) {
                 var obj = GameObject.CreatePrimitive(PrimitiveType.Cube).GetComponent<Collider>();
-                
+
                 obj.transform.SetParent(transform, false);
 
                 obj.transform.position = new Vector3(Random.Range(-halfworldSize, halfworldSize), 0,
@@ -74,6 +78,7 @@ namespace TQuadTree1 {
         public int count = 100;
 
         private bool hasInit = false;
+
         private void Update(){
             if (!hasInit) {
                 hasInit = true;

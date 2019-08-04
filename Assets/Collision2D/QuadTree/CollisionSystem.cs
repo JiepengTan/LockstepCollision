@@ -132,7 +132,6 @@ namespace Lockstep.Collision2D {
                     NotifyCollisionEvent(body1, body2, ref result);
                 }
             }
-
             return false;
         }
 
