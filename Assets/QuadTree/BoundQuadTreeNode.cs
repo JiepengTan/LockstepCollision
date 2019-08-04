@@ -1,12 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace TQuadTree1 {
 // A node in a BoundsOctree
 // Copyright 2014 Nition, BSD licence (see LICENCE file). www.momentstudio.co.nz
-    public class BoundsQuadTreeNode<T> {
+    public class BoundsQuadTreeNode<T> where T : class {
         public BoundsQuadTreeNode<T> parent;
-
+#if UNITY_EDITOR
+        public Transform monoTrans;
+#endif
         // Centre of this node
         public Vector2 Center { get; private set; }
 
@@ -49,6 +53,8 @@ namespace TQuadTree1 {
             public Rect Bounds;
         }
 
+        public static int MonoID = 0;
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -58,6 +64,14 @@ namespace TQuadTree1 {
         /// <param name="centerVal">Centre position of this node.</param>
         public BoundsQuadTreeNode(BoundsQuadTreeNode<T> parent, float baseLengthVal, float minSizeVal,
             float loosenessVal, Vector2 centerVal){
+#if UNITY_EDITOR
+            monoTrans = new GameObject(MonoID++.ToString()).transform;
+            if (parent != null) {
+                monoTrans.SetParent(parent.monoTrans, false);
+            }
+
+            monoTrans.position = centerVal.ToVector3();
+#endif
             this.parent = parent;
             SetValues(baseLengthVal, minSizeVal, loosenessVal, centerVal);
         }
@@ -84,37 +98,11 @@ namespace TQuadTree1 {
         /// <param name="obj">Object to remove.</param>
         /// <returns>True if the object was removed successfully.</returns>
         public bool Remove(T obj){
-#if false
-            bool removed = false;
-
-            for (int i = 0; i < objects.Count; i++) {
-                if (objects[i].Obj.Equals(obj)) {
-                    removed = objects.Remove(objects[i]);
-                    break;
-                }
-            }
-
-            if (!removed && children != null) {
-                for (int i = 0; i < NUM_CHILDREN; i++) {
-                    removed = children[i].Remove(obj);
-                    if (removed) break;
-                }
-            }
-
-            if (removed && children != null) {
-                // Check if we should merge nodes now that we've removed an item
-                if (ShouldMerge()) {
-                    Merge();
-                }
-            }
-
-            return removed;
-#else
             if (obj2Node.TryGetValue(obj, out var val)) {
                 obj2Node.Remove(obj);
                 bool removed = false;
                 for (int i = 0; i < val.objects.Count; i++) {
-                    if (val.objects[i].Obj.Equals(obj)) {
+                    if (ReferenceEquals(val.objects[i].Obj, obj)) {
                         val.objects.RemoveAt(i);
                         removed = true;
                         break;
@@ -129,7 +117,6 @@ namespace TQuadTree1 {
             }
 
             return false;
-#endif
         }
 
 
@@ -139,7 +126,7 @@ namespace TQuadTree1 {
 
         public void UpdateObj(T obj, Rect bound){
             for (int i = 0; i < objects.Count; i++) {
-                if (objects[i].Obj.Equals(obj)) {
+                if (ReferenceEquals(objects[i].Obj, obj)) {
                     objects[i] = new OctreeObject() {Obj = obj, Bounds = bound};
                 }
             }
@@ -172,7 +159,7 @@ namespace TQuadTree1 {
         /// </summary>
         /// <param name="checkBounds">Bounds to check.</param>
         /// <returns>True if there was a collision.</returns>
-        public bool IsColliding(ref Rect checkBounds){
+        public bool IsColliding(T obj, ref Rect checkBounds){
             // Are the input bounds at least partially in this node?
             if (!bounds.Overlaps(checkBounds)) {
                 return false;
@@ -180,7 +167,8 @@ namespace TQuadTree1 {
 
             // Check against any objects in this node
             for (int i = 0; i < objects.Count; i++) {
-                if (objects[i].Bounds.Overlaps(checkBounds)) {
+                var o = objects[i];
+                if (!ReferenceEquals(o.Obj, obj) && o.Bounds.Overlaps(checkBounds)) {
                     return true;
                 }
             }
@@ -188,13 +176,35 @@ namespace TQuadTree1 {
             // Check children
             if (children != null) {
                 for (int i = 0; i < NUM_CHILDREN; i++) {
-                    if (children[i].IsColliding(ref checkBounds)) {
+                    if (children[i].IsColliding(obj, ref checkBounds)) {
                         return true;
                     }
                 }
             }
 
             return false;
+        }
+
+        public void CheckCollision(T obj, ref Rect checkBounds, Action<T> callback){
+            // Are the input bounds at least partially in this node?
+            if (!bounds.Overlaps(checkBounds)) {
+                return;
+            }
+
+            // Check against any objects in this node
+            for (int i = 0; i < objects.Count; i++) {
+                var o = objects[i];
+                if (!ReferenceEquals(o.Obj, obj) && o.Bounds.Overlaps(checkBounds)) {
+                    callback(o.Obj);
+                }
+            }
+
+            // Check children
+            if (children != null) {
+                for (int i = 0; i < NUM_CHILDREN; i++) {
+                    children[i].CheckCollision(obj, ref checkBounds, callback);
+                }
+            }
         }
 
         /// <summary>
@@ -317,6 +327,9 @@ namespace TQuadTree1 {
             }
 
             children = childQuadTrees;
+            foreach (var child in childQuadTrees) {
+                child.monoTrans.SetParent(monoTrans,false);
+            }
         }
 
         public Rect GetBounds(){
@@ -536,6 +549,12 @@ namespace TQuadTree1 {
                 if (objects.Count < NUM_OBJECTS_ALLOWED || (BaseLength / 2) < minSize) {
                     OctreeObject newObj = new OctreeObject {Obj = obj, Bounds = objBounds};
                     objects.Add(newObj);
+                    #if UNITY_EDITOR
+                    if (obj is Component) {
+                        ((Component)(object)obj).transform.SetParent(monoTrans,true);
+                    }
+                    #endif
+
                     obj2Node[obj] = this;
                     return; // We're done. No children yet
                 }
@@ -589,7 +608,7 @@ namespace TQuadTree1 {
             bool removed = false;
 
             for (int i = 0; i < objects.Count; i++) {
-                if (objects[i].Obj.Equals(obj)) {
+                if (ReferenceEquals(objects[i].Obj, obj)) {
                     removed = objects.Remove(objects[i]);
                     break;
                 }
@@ -643,6 +662,16 @@ namespace TQuadTree1 {
                     objects.Add(curObj);
                     obj2Node[curObj.Obj] = this;
                 }
+#if UNITY_EDITOR
+                var childCount = curChild.monoTrans.childCount;
+                for (int j = childCount-1; j >=0; j--) {
+                    var trans = curChild.monoTrans.GetChild(j);
+                    trans.SetParent(monoTrans,true);
+                    
+                }
+#endif
+                Debug.Assert(curChild.monoTrans.childCount == 0);
+                Object.Destroy(curChild.monoTrans.gameObject);
             }
 
             // Remove the child nodes (and the objects in them - they've been added elsewhere now)

@@ -21,12 +21,14 @@ namespace TQuadTree1 {
 
         public List<Collider> objs = new List<Collider>();
         public List<Material> mats = new List<Material>();
+        public List<Collider> updateObjs = new List<Collider>();
+        public List<Collider> staticObjs = new List<Collider>();
 
         public float worldSize = 150;
         public float minNodeSize = 1;
         public float loosenessval = 1.25f;
 
-        private float halfworldSize => worldSize / 2 -5;
+        private float halfworldSize => worldSize / 2 - 5;
 
         private void Start(){
             // Initial size (metres), initial centre position, minimum node size (metres), looseness
@@ -35,6 +37,7 @@ namespace TQuadTree1 {
             //pointTree = new PointOctree<GameObject>(150, .pos, 1);
             for (int i = 0; i < count; i++) {
                 var obj = GameObject.CreatePrimitive(PrimitiveType.Cube).GetComponent<Collider>();
+                
                 obj.transform.SetParent(transform, false);
 
                 obj.transform.position = new Vector3(Random.Range(-halfworldSize, halfworldSize), 0,
@@ -43,18 +46,18 @@ namespace TQuadTree1 {
 
                 var mat = new Material(obj.GetComponent<Renderer>().material);
                 obj.GetComponent<Renderer>().material = mat;
-                if (i % Mathf.CeilToInt(1 / percent) == 0) {
-                    StartCoroutine(RandomMove(obj, () => {
-                        boundsTree.UpdateObj(obj,obj.bounds.ToRect());
-                    }));
+                if (i < percent * count) {
+                    StartCoroutine(RandomMove(obj, null));
+                    updateObjs.Add(obj);
                 }
-                else if (i % Mathf.CeilToInt(1 / percent) == 1) {
+                else if (i < percent * count * 2) {
                     objs.Add(obj);
                     mats.Add(mat);
                     isCollide.Add(false);
                     StartCoroutine(RandomMove(obj, null));
                 }
                 else {
+                    staticObjs.Add(obj);
                     boundsTree.Add(obj, obj.bounds.ToRect());
                 }
             }
@@ -70,13 +73,32 @@ namespace TQuadTree1 {
         public float percent = 0.1f;
         public int count = 100;
 
+        private bool hasInit = false;
         private void Update(){
+            if (!hasInit) {
+                hasInit = true;
+                foreach (var obj in staticObjs) {
+                    boundsTree.UpdateObj(obj, obj.bounds.ToRect());
+                }
+            }
+
             //class version 1.41ms
             Profiler.BeginSample("CheckCollision");
             CheckCollision();
             Profiler.EndSample();
+            //0.32~0.42ms
+            Profiler.BeginSample("UpdateObj");
+            CheckUpdate();
+            Profiler.EndSample();
             for (int i = 0; i < objs.Count; i++) {
                 mats[i].color = isCollide[i] ? Color.red : Color.green;
+            }
+        }
+
+        private void CheckUpdate(){
+            for (int i = 0; i < updateObjs.Count; i++) {
+                var obj = updateObjs[i];
+                boundsTree.UpdateObj(obj, obj.bounds.ToRect());
             }
         }
 
@@ -85,9 +107,11 @@ namespace TQuadTree1 {
         private void CheckCollision(){
             for (int i = 0; i < objs.Count; i++) {
                 var obj = objs[i];
-                isCollide[i] = boundsTree.IsColliding(obj.bounds.ToRect());
+                isCollide[i] = false;
+                boundsTree.CheckCollision(obj, obj.bounds.ToRect(), (_obj) => { isCollide[i] = true; });
             }
         }
+
         //class version 1.81 ~2.23 ms
         public IEnumerator RandomMove(Collider obj, Action func){
             float timer = 0;

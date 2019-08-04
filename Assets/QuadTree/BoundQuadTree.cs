@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 // A Dynamic, Loose Octree for storing any objects that can be described with AABB bounds
@@ -36,7 +37,7 @@ namespace TQuadTree1 {
         }
     }
 
-    public class BoundsQuadTree<T> {
+    public class BoundsQuadTree<T> where T : class {
         // The total amount of objects currently in the tree
         public int Count { get; private set; }
 
@@ -168,13 +169,18 @@ namespace TQuadTree1 {
         /// </summary>
         /// <param name="checkBounds">bounds to check.</param>
         /// <returns>True if there was a collision.</returns>
-        public bool IsColliding(Rect checkBounds){
+        public bool IsColliding(T obj, Rect checkBounds){
             //#if UNITY_EDITOR
             // For debugging
             //AddCollisionCheck(checkBounds);
             //#endif
-            return rootNode.IsColliding(ref checkBounds);
+            return rootNode.IsColliding(obj, ref checkBounds);
         }
+
+        public void CheckCollision(T obj, Rect checkBounds, Action<T> callback){
+            rootNode.CheckCollision(obj, ref checkBounds, callback);
+        }
+
 
         /// <summary>
         /// Check if the specified ray intersects with anything in the tree. See also: GetColliding.
