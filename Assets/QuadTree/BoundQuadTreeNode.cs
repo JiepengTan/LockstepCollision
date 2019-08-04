@@ -5,6 +5,8 @@ namespace TQuadTree1 {
 // A node in a BoundsOctree
 // Copyright 2014 Nition, BSD licence (see LICENCE file). www.momentstudio.co.nz
     public class BoundsQuadTreeNode<T> {
+        public BoundsQuadTreeNode<T> parent;
+
         // Centre of this node
         public Vector2 Center { get; private set; }
 
@@ -38,8 +40,8 @@ namespace TQuadTree1 {
 
         // If there are already NUM_OBJECTS_ALLOWED in a node, we split it into children
         // A generally good number seems to be something around 8-15
-        const int NUM_OBJECTS_ALLOWED = NUM_CHILDREN;
-        const int NUM_CHILDREN = 4;
+        const int NUM_OBJECTS_ALLOWED = 4;
+        const int NUM_CHILDREN = BoundsQuadTree<T>.NUM_CHILDREN;
 
         // An object in the octree
         struct OctreeObject {
@@ -54,11 +56,12 @@ namespace TQuadTree1 {
         /// <param name="minSizeVal">Minimum size of nodes in this octree.</param>
         /// <param name="loosenessVal">Multiplier for baseLengthVal to get the actual size.</param>
         /// <param name="centerVal">Centre position of this node.</param>
-        public BoundsQuadTreeNode(float baseLengthVal, float minSizeVal, float loosenessVal, Vector2 centerVal){
+        public BoundsQuadTreeNode(BoundsQuadTreeNode<T> parent, float baseLengthVal, float minSizeVal,
+            float loosenessVal, Vector2 centerVal){
+            this.parent = parent;
             SetValues(baseLengthVal, minSizeVal, loosenessVal, centerVal);
         }
 
-        // #### PUBLIC METHODS ####
 
         /// <summary>
         /// Add an object.
@@ -81,6 +84,7 @@ namespace TQuadTree1 {
         /// <param name="obj">Object to remove.</param>
         /// <returns>True if the object was removed successfully.</returns>
         public bool Remove(T obj){
+#if false
             bool removed = false;
 
             for (int i = 0; i < objects.Count; i++) {
@@ -105,6 +109,48 @@ namespace TQuadTree1 {
             }
 
             return removed;
+#else
+            if (obj2Node.TryGetValue(obj, out var val)) {
+                obj2Node.Remove(obj);
+                bool removed = false;
+                for (int i = 0; i < val.objects.Count; i++) {
+                    if (val.objects[i].Obj.Equals(obj)) {
+                        val.objects.RemoveAt(i);
+                        removed = true;
+                        break;
+                    }
+                }
+
+                if (removed) {
+                    val.OnRemoved();
+                }
+
+                return removed;
+            }
+
+            return false;
+#endif
+        }
+
+
+        public bool ContainBound(Rect bound){
+            return Encapsulates(bounds, bound);
+        }
+
+        public void UpdateObj(T obj, Rect bound){
+            for (int i = 0; i < objects.Count; i++) {
+                if (objects[i].Obj.Equals(obj)) {
+                    objects[i] = new OctreeObject() {Obj = obj, Bounds = bound};
+                }
+            }
+        }
+
+        public void OnRemoved(){
+            if (ShouldMerge()) {
+                Merge();
+            }
+
+            parent?.OnRemoved();
         }
 
         /// <summary>
@@ -118,7 +164,7 @@ namespace TQuadTree1 {
                 return false;
             }
 
-            return SubRemove(obj, objBounds);
+            return false;
         }
 
         /// <summary>
@@ -286,7 +332,7 @@ namespace TQuadTree1 {
             float tintVal = depth / 7; // Will eventually get values > 1. Color rounds to 1 automatically
             Gizmos.color = new Color(tintVal, 0, 1.0f - tintVal);
 
-            Rect thisBounds = new Rect(Center, new Vector2(adjLength, adjLength));
+            Rect thisBounds = CreateRect(Center, new Vector2(adjLength, adjLength));
             Gizmos.DrawWireCube(thisBounds.center.ToVector3(), thisBounds.size.ToVector3());
 
             if (children != null) {
@@ -456,17 +502,24 @@ namespace TQuadTree1 {
 
             // Create the bounding box.
             Vector2 size = new Vector2(adjLength, adjLength);
-            bounds = new Rect(Center, size);
+            bounds = CreateRect(Center, size);
 
             float quarter = BaseLength / 4f;
             float childActualLength = (BaseLength / 2) * looseness;
             Vector2 childActualSize = new Vector2(childActualLength, childActualLength);
             childBounds = new Rect[NUM_CHILDREN];
-            childBounds[0] = new Rect(Center + new Vector2(-quarter, -quarter), childActualSize);
-            childBounds[1] = new Rect(Center + new Vector2(quarter, -quarter), childActualSize);
-            childBounds[2] = new Rect(Center + new Vector2(-quarter, quarter), childActualSize);
-            childBounds[3] = new Rect(Center + new Vector2(quarter, quarter), childActualSize);
+            childBounds[0] = CreateRect(Center + new Vector2(-quarter, -quarter), childActualSize);
+            childBounds[1] = CreateRect(Center + new Vector2(quarter, -quarter), childActualSize);
+            childBounds[2] = CreateRect(Center + new Vector2(-quarter, quarter), childActualSize);
+            childBounds[3] = CreateRect(Center + new Vector2(quarter, quarter), childActualSize);
         }
+
+        Rect CreateRect(Vector2 center, Vector2 size){
+            return new Rect(center - size / 2, size);
+        }
+
+
+        public static Dictionary<T, BoundsQuadTreeNode<T>> obj2Node = new Dictionary<T, BoundsQuadTreeNode<T>>();
 
         /// <summary>
         /// Private counterpart to the public Add method.
@@ -483,6 +536,7 @@ namespace TQuadTree1 {
                 if (objects.Count < NUM_OBJECTS_ALLOWED || (BaseLength / 2) < minSize) {
                     OctreeObject newObj = new OctreeObject {Obj = obj, Bounds = objBounds};
                     objects.Add(newObj);
+                    obj2Node[obj] = this;
                     return; // We're done. No children yet
                 }
 
@@ -521,6 +575,7 @@ namespace TQuadTree1 {
                 // Didn't fit in a child. We'll have to it to this node instead
                 OctreeObject newObj = new OctreeObject {Obj = obj, Bounds = objBounds};
                 objects.Add(newObj);
+                obj2Node[obj] = this;
             }
         }
 
@@ -562,14 +617,14 @@ namespace TQuadTree1 {
             float quarter = BaseLength / 4f;
             float newLength = BaseLength / 2;
             children = new BoundsQuadTreeNode<T>[NUM_CHILDREN];
-            children[0] = new BoundsQuadTreeNode<T>(newLength, minSize, looseness,
-                Center + new Vector2(-quarter,  -quarter));
-            children[1] = new BoundsQuadTreeNode<T>(newLength, minSize, looseness,
-                Center + new Vector2(quarter,  -quarter));
-            children[2] = new BoundsQuadTreeNode<T>(newLength, minSize, looseness,
-                Center + new Vector2(-quarter,  quarter));
-            children[3] = new BoundsQuadTreeNode<T>(newLength, minSize, looseness,
-                Center + new Vector2(quarter,  quarter));
+            children[0] = new BoundsQuadTreeNode<T>(this, newLength, minSize, looseness,
+                Center + new Vector2(-quarter, -quarter));
+            children[1] = new BoundsQuadTreeNode<T>(this, newLength, minSize, looseness,
+                Center + new Vector2(quarter, -quarter));
+            children[2] = new BoundsQuadTreeNode<T>(this, newLength, minSize, looseness,
+                Center + new Vector2(-quarter, quarter));
+            children[3] = new BoundsQuadTreeNode<T>(this, newLength, minSize, looseness,
+                Center + new Vector2(quarter, quarter));
         }
 
         /// <summary>
@@ -579,12 +634,14 @@ namespace TQuadTree1 {
         /// </summary>
         void Merge(){
             // Note: We know children != null or we wouldn't be merging
+            if (children == null) return;
             for (int i = 0; i < NUM_CHILDREN; i++) {
                 BoundsQuadTreeNode<T> curChild = children[i];
                 int numObjects = curChild.objects.Count;
                 for (int j = numObjects - 1; j >= 0; j--) {
                     OctreeObject curObj = curChild.objects[j];
                     objects.Add(curObj);
+                    obj2Node[curObj.Obj] = this;
                 }
             }
 

@@ -27,7 +27,7 @@ namespace TQuadTree1 {
             return new Vector2(vec.x, vec.z);
         }
 
-        public static Vector3 ToVector3(this Vector2 vec,int y = 1){
+        public static Vector3 ToVector3(this Vector2 vec, int y = 1){
             return new Vector3(vec.x, y, vec.y);
         }
 
@@ -77,10 +77,35 @@ namespace TQuadTree1 {
             initialSize = initialWorldSize;
             minSize = minNodeSize;
             looseness = Mathf.Clamp(loosenessVal, 1.0f, 2.0f);
-            rootNode = new BoundsQuadTreeNode<T>(initialSize, minSize, looseness, initialWorldPos);
+            rootNode = new BoundsQuadTreeNode<T>(null, initialSize, minSize, looseness, initialWorldPos);
         }
 
+        public void UpdateObj(T obj, Rect bound){
+            var node = GetNode(obj);
+            if (node == null) {
+                Add(obj, bound);
+            }
+            else {
+                if (!node.ContainBound(bound)) {
+                    Remove(obj);
+                    Add(obj, bound);
+                }
+                else {
+                    node.UpdateObj(obj, bound);
+                }
+            }
+        }
         // #### PUBLIC METHODS ####
+
+
+        // #### PUBLIC METHODS ####
+        public BoundsQuadTreeNode<T> GetNode(T obj){
+            if (BoundsQuadTreeNode<T>.obj2Node.TryGetValue(obj, out var val)) {
+                return val;
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Add an object.
@@ -91,6 +116,7 @@ namespace TQuadTree1 {
             // Add object or expand the octree until it can be added
             int count = 0; // Safety check against infinite/excessive growth
             while (!rootNode.Add(obj, objBounds)) {
+                Debug.LogError("Grow");
                 Grow(objBounds.center - rootNode.Center);
                 if (++count > 20) {
                     Debug.LogError("Aborted Add operation as it seemed to be going on forever (" + (count - 1) +
@@ -275,6 +301,7 @@ namespace TQuadTree1 {
             }
         }
 #endif
+        public const int NUM_CHILDREN = 4;
 
         /// <summary>
         /// Grow the octree to fit in all objects.
@@ -289,20 +316,20 @@ namespace TQuadTree1 {
             Vector2 newCenter = rootNode.Center + new Vector2(xDirection * half, yDirection * half);
 
             // Create a new, bigger octree root node
-            rootNode = new BoundsQuadTreeNode<T>(newLength, minSize, looseness, newCenter);
+            rootNode = new BoundsQuadTreeNode<T>(null, newLength, minSize, looseness, newCenter);
 
             if (oldRoot.HasAnyObjects()) {
                 // Create 7 new octree children to go with the old root as children of the new root
                 int rootPos = rootNode.BestFitChild(oldRoot.Center);
-                BoundsQuadTreeNode<T>[] children = new BoundsQuadTreeNode<T>[8];
-                for (int i = 0; i < 8; i++) {
+                BoundsQuadTreeNode<T>[] children = new BoundsQuadTreeNode<T>[NUM_CHILDREN];
+                for (int i = 0; i < NUM_CHILDREN; i++) {
                     if (i == rootPos) {
                         children[i] = oldRoot;
                     }
                     else {
                         xDirection = i % 2 == 0 ? -1 : 1;
                         yDirection = i > 1 ? -1 : 1;
-                        children[i] = new BoundsQuadTreeNode<T>(oldRoot.BaseLength, minSize, looseness,
+                        children[i] = new BoundsQuadTreeNode<T>(rootNode, oldRoot.BaseLength, minSize, looseness,
                             newCenter + new Vector2(xDirection * half, yDirection * half));
                     }
                 }
