@@ -9,6 +9,10 @@ using Color = UnityEngine.Color;
 using Random = UnityEngine.Random;
 
 namespace TQuadTree1 {
+    //Test 1000 count 
+    //percent 0.4
+    //world size 300
+    //loosensess val 2.0f
     public class TestQuadTree : MonoBehaviour {
         public Vector3 pos;
 
@@ -67,6 +71,7 @@ namespace TQuadTree1 {
         public int count = 100;
 
         private void Update(){
+            //class version 1.41ms
             Profiler.BeginSample("CheckCollision");
             CheckCollision();
             Profiler.EndSample();
@@ -83,7 +88,7 @@ namespace TQuadTree1 {
                 isCollide[i] = boundsTree.IsColliding(obj.bounds.ToRect());
             }
         }
-
+        //class version 1.81 ~2.23 ms
         public IEnumerator RandomMove(Collider obj, Action func){
             float timer = 0;
             Vector3 targetPos = new Vector3();

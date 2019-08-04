@@ -213,7 +213,7 @@ MonoBehaviour:
   pos: {x: 0, y: 0, z: 0}
   objs: []
   mats: []
-  worldSize: 250
+  worldSize: 300
   minNodeSize: 1
   loosenessval: 2
   testObj: {fileID: 0}
@@ -224,7 +224,7 @@ MonoBehaviour:
     y: 0
     width: 0
     height: 0
-  percent: 0.2
+  percent: 0.4
   count: 1000
 --- !u!4 &1023973054
 Transform:
