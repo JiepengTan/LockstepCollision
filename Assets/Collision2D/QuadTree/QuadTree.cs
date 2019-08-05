@@ -5,7 +5,7 @@ using Lockstep.Math;
 using UnityEngine;
 
 namespace Lockstep.Collision2D {
-    public enum ECollisionType {
+    public enum ECollisionEvent {
         Enter,
         Stay,
         Exit
@@ -36,7 +36,7 @@ namespace Lockstep.Collision2D {
         public bool Collides;
         public LVector3 Normal;
         public LFloat Penetration;
-        public ECollisionType Type;
+        public ECollisionEvent Type;
         public bool First;
     }
 

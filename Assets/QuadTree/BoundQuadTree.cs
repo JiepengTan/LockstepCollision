@@ -37,12 +37,16 @@ namespace TQuadTree1 {
         }
     }
 
-    public class BoundsQuadTree<T> where T : class {
+    public class BoundsQuadTree<T> where T : ColliderProxy {
         // The total amount of objects currently in the tree
         public int Count { get; private set; }
 
         // Root node of the octree
         BoundsQuadTreeNode<T> rootNode;
+
+        public delegate bool FuncCheckCanCollide(ColliderProxy a, ColliderProxy b);
+
+        public static FuncCheckCanCollide FuncCanCollide = (a, b) => true;
 
         // Should be a value between 1 and 2. A multiplier for the base size of a node.
         // 1.0 is a "normal" octree, while values > 1 have overlap
@@ -177,7 +181,7 @@ namespace TQuadTree1 {
             return rootNode.IsColliding(obj, ref checkBounds);
         }
 
-        public void CheckCollision(T obj, Rect checkBounds, Action<T> callback){
+        public void CheckCollision(T obj, Rect checkBounds, Action<T, T> callback){
             rootNode.CheckCollision(obj, ref checkBounds, callback);
         }
 

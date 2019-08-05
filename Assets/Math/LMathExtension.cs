@@ -1,3 +1,5 @@
+
+using Lockstep.Collision2D;
 #if UNITY_5_3_OR_NEWER
 using UnityEngine;
 #endif
@@ -56,6 +58,9 @@ namespace Lockstep.Math {
         }
         public static Vector3 ToVector3(this LVector3 vec){
             return new Vector3(vec.x.ToFloat(), vec.y.ToFloat(), vec.z.ToFloat());
+        }
+        public static Rect ToRect(this LRect vec){
+            return new Rect(vec.position.ToVector2(),vec.size.ToVector2());
         }
     }
 #endif

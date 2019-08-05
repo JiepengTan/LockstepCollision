@@ -2,27 +2,74 @@ using System.Collections.Generic;
 using Lockstep.Collision2D;
 using Lockstep.Math;
 using UnityEngine;
+using Random = System.Random;
 
 namespace TQuadTree1 {
     public class CBaseShape {
         public virtual int TypeId => (int) EShape2D.EnumCount;
         public int id;
+        public LFloat high;
     }
 
     public class CCircle : CBaseShape {
         public override int TypeId => (int) EShape2D.Circle;
         public LFloat radius;
+
+        public CCircle() : this(LFloat.zero){ }
+
+        public CCircle(LFloat radius){
+            this.radius = radius;
+        }
     }
 
     public class CAABB : CCircle {
         public override int TypeId => (int) EShape2D.AABB;
         public LVector2 size;
+
+        public CAABB() : base(){ }
+
+        public CAABB(LVector2 size){
+            this.size = size;
+            radius = size.magnitude;
+        }
     }
 
     public class COBB : CAABB {
         public override int TypeId => (int) EShape2D.OBB;
         public LFloat deg;
         public LVector2 up;
+
+        public COBB(LVector2 size, LFloat deg) : base(size){
+            this.deg = deg;
+            SetDeg(deg);
+        }
+
+        public COBB(LVector2 size, LVector2 up) : base(size){
+            SetUp(up);
+        }
+
+        //CCW 旋转角度
+        public void Rotate(LFloat rdeg){
+            deg += rdeg;
+            if (deg > 360 || deg < -360) {
+                deg = deg - (deg / 360 * 360);
+            }
+
+            SetDeg(deg);
+        }
+
+        public void SetUp(LVector2 up){
+            this.up = up;
+            this.deg = LMath.Atan2(-up.x, up.y);
+        }
+
+        public void SetDeg(LFloat rdeg){
+            deg = rdeg;
+            var rad = LMath.Deg2Rad * deg;
+            var c = LMath.Cos(rad);
+            var s = LMath.Sin(rad);
+            up = new LVector2(-s, c);
+        }
     }
 
     public class CPolygon : CCircle {
@@ -49,6 +96,16 @@ namespace TQuadTree1 {
         public LFloat y;
         public LFloat deg;
 
+        public CTransform2D(LVector2 pos, LFloat y) : this(pos, y, LFloat.zero){ }
+        public CTransform2D(LVector2 pos) : this(pos, LFloat.zero, LFloat.zero){ }
+
+        public CTransform2D(LVector2 pos, LFloat y, LFloat deg){
+            this.pos = pos;
+            this.y = y;
+            this.deg = deg;
+        }
+
+
         public void Reset(){
             pos = LVector2.zero;
             y = LFloat.zero;
@@ -67,45 +124,49 @@ namespace TQuadTree1 {
 
     public class ColliderPrefab {
         public List<ColliderPart> parts = new List<ColliderPart>();
-    }
-
-    public class ColliderProxy {
-        public int Id;
-        public int LayerType { get; private set; }
-        public ColliderPrefab Prefab;
-        public CTransform2D Transform2D;
-        public LFloat Y;
-        public LFloat Height;
-        public bool IsTrigger = true;
+        public CBaseShape collider => parts[0].collider;
+        public CTransform2D transform => parts[0].transform;
 
         public Rect GetBounds(){
+            //TODO
+            var col = collider;
+            var tran = transform;
+            var type = (EShape2D) col.TypeId;
+            switch (type) {
+                case EShape2D.Circle: {
+                    var radius = ((CCircle) col).radius;
+                    return LRect.CreateRect(tran.pos, new LVector2(radius, radius)).ToRect();
+                }
+                case EShape2D.AABB: {
+                    var halfSize = ((CAABB) col).size;
+                    return LRect.CreateRect(tran.pos, halfSize).ToRect();
+                }
+            }
+
+            Debug.LogError("No support type" + type);
+
             return new Rect();
         }
-
-        public void OnTriggerEnter(ColliderProxy other){ }
-        public void OnTriggerStay(ColliderProxy other){ }
-        public void OnTriggerExit(ColliderProxy other){ }
-        public void OnCollisionEnter(ColliderProxy other){ }
-        public void OnCollisionStay(ColliderProxy other){ }
-        public void OnCollisionExit(ColliderProxy other){ }
     }
 
     public class CollisionSystem {
         public uint[] _collisionMask = new uint[32];
 
-        public Vector3 pos;
-        public BoundsQuadTree<Collider> boundsTree;
+        public BoundsQuadTree<ColliderProxy> boundsTree;
         public float worldSize = 150;
         public float minNodeSize = 1;
         public float loosenessval = 1.25f;
+        public Vector3 pos;
 
-        private Dictionary<int, ColliderProxy> id2Proxy = new Dictionary<int, ColliderProxy>();
-        private HashSet<long> _pairs = new HashSet<long>();
-        private List<long> _pairCache = new List<long>();
+        private Dictionary<uint, ColliderProxy> id2Proxy = new Dictionary<uint, ColliderProxy>();
+        private HashSet<long> _curPairs = new HashSet<long>();
+        private HashSet<long> _prePairs = new HashSet<long>();
+        public const int LayerCount = 32;
 
-        public ColliderProxy GetCollider(int id){
+        public ColliderProxy GetCollider(uint id){
             return id2Proxy.TryGetValue(id, out var proxy) ? proxy : null;
         }
+
 
         public void DoStart(){
             //init _collisionMask//TODO read from file
@@ -114,79 +175,127 @@ namespace TQuadTree1 {
             }
 
             // Initial size (metres), initial centre position, minimum node size (metres), looseness
-            boundsTree = new BoundsQuadTree<Collider>(worldSize, pos, minNodeSize, loosenessval);
+            boundsTree = new BoundsQuadTree<ColliderProxy>(worldSize, pos, minNodeSize, loosenessval);
+            BoundsQuadTree<ColliderProxy>.FuncCanCollide = NeedCheck;
         }
 
-        public const int LayerCount = 32;
+        public void AddCollider(ColliderProxy collider){
+            boundsTree.Add(collider, collider.GetBounds());
+            id2Proxy[collider.Id] = collider;
+        }
+
+        private List<ColliderProxy> tempLst = new List<ColliderProxy>();
+
         //public List<>
         public void DoUpdate(){
-            //
-            for (int i = 0; i < LayerCount; i++) {
-                for (int j = i; j < LayerCount; j++) {
-                    
+            tempLst.Clear();
+            //deal layer
+            foreach (var pair in BoundsQuadTreeNode<ColliderProxy>.obj2Node) {
+                var val = pair.Key;
+                if (!val.IsStatic && val._isMoved) {
+                    val._isMoved = false;
+                    tempLst.Add(val);
                 }
             }
+
+            //swap
+            var temp = _prePairs;
+            _prePairs = _curPairs;
+            _curPairs = temp;
+            _curPairs.Clear();
+
+            foreach (var val in tempLst) {
+                val._isMoved = false;
+                var bound = val.GetBounds();
+                boundsTree.UpdateObj(val, bound);
+                boundsTree.CheckCollision(val, bound, OnQuadTreeCollision);
+            }
+
+            foreach (var pairId in _curPairs) {
+                _prePairs.Remove(pairId);
+            }
+
             //check stay leave event
-            foreach (var idPair in _pairs) {
-                var body1 = GetCollider((int) (idPair >> 32));
-                var body2 = GetCollider((int) (idPair & 0xffffffff));
-                if (body1 == null || body2 == null) {
+            foreach (var idPair in _prePairs) {
+                var a = GetCollider((uint) (idPair >> 32));
+                var b = GetCollider((uint) (idPair & 0xffffffff));
+                if (a == null || b == null) {
                     continue;
                 }
-                OnQuadTreeCollision(body1, body2, false);
+
+                bool isCollided = CollisionHelper.CheckCollision
+                    (a.Prefab, a.Transform2D, b.Prefab, b.Transform2D);
+                if (isCollided) {
+                    _curPairs.Add(idPair);
+                    NotifyCollisionEvent(a, b, ECollisionEvent.Stay);
+                }
+                else {
+                    NotifyCollisionEvent(a, b, ECollisionEvent.Exit);
+                }
             }
-            _pairs.Clear();
-            foreach (var t in _pairCache) {
-                _pairs.Add(t);
-            }
-            _pairCache.Clear();
         }
 
         bool NeedCheck(ColliderProxy a, ColliderProxy b){
-            return NeedCheck(a.LayerType, b.LayerType);
+            var val = _collisionMask[a.LayerType];
+            return (val & 1 << b.LayerType) != 0;
         }
 
-        bool NeedCheck(int layerType1, int layerType2){
-            var val = _collisionMask[layerType1];
-            return (val & 1 << layerType2) != 0;
+        public void OnQuadTreeCollision(ColliderProxy a, ColliderProxy b){
+            OnQuadTreeCollision(a, b, true);
         }
 
-        public void OnQuadTreeCollision(ColliderProxy a, ColliderProxy b, bool remove = true){
+        public void OnQuadTreeCollision(ColliderProxy a, ColliderProxy b, bool remove){
+            var pairId = (((long) a.Id) << 32) + b.Id;
+            if (_curPairs.Contains(pairId)) return;
             bool isCollided = CollisionHelper.CheckCollision
                 (a.Prefab, a.Transform2D, b.Prefab, b.Transform2D);
-            var paired = FindCollisionPair(a, b, remove);
-            ECollisionType type = ECollisionType.Stay;
             if (isCollided) {
-                type = paired ? ECollisionType.Stay : ECollisionType.Enter;
-                CacheCollisionPair(a, b);
+                _curPairs.Add(pairId);
+                var type = _prePairs.Contains(pairId) ? ECollisionEvent.Stay : ECollisionEvent.Enter;
                 NotifyCollisionEvent(a, b, type);
             }
-            else {
-                if (paired) {
-                    type = ECollisionType.Exit;
-                    NotifyCollisionEvent(a, b, type);
-                }
+        }
+
+        public void NotifyCollisionEvent(ColliderProxy a, ColliderProxy b, ECollisionEvent type){
+          
+            if (!a.IsStatic) { 
+                a.OnTriggerEvent?.Invoke(b, type);
+                TriggerEvent(a, b, type);
+            }
+
+            if (!b.IsStatic) {
+                b.OnTriggerEvent?.Invoke(a, type);
+                TriggerEvent(b, a, type);
             }
         }
 
-        public void NotifyCollisionEvent(ColliderProxy a, ColliderProxy b, ECollisionType type){
+        void TriggerEvent(ColliderProxy a, ColliderProxy other, ECollisionEvent type){
             switch (type) {
-                case ECollisionType.Exit: {
-                    a.OnTriggerExit(b);
-                    b.OnTriggerExit(a);
-                }
+                case ECollisionEvent.Enter: {
+                    a.OnTriggerEnter(other);
                     break;
+                }
+                case ECollisionEvent.Stay: {
+                    a.OnTriggerStay(other);
+                    break;
+                }
+                case ECollisionEvent.Exit: {
+                    a.OnTriggerExit(other);
+                    break;
+                }
             }
         }
 
-        private bool FindCollisionPair(ColliderProxy a, ColliderProxy b, bool remove = true){
-            var idx = ((long) a.Id) << 32 + b.Id;
-            return remove ? _pairs.Remove(idx) : _pairs.Contains(idx);
-        }
 
-        private void CacheCollisionPair(ColliderProxy a, ColliderProxy b){
-            var idx = ((long) a.Id) << 32 + b.Id;
-            _pairCache.Add(idx);
+        public void DrawGizmos(){
+            if (boundsTree == null) return;
+
+            boundsTree.DrawAllBounds(); // Draw node boundaries
+            boundsTree.DrawAllObjects(); // Draw object boundaries
+            boundsTree.DrawCollisionChecks(); // Draw the last *numCollisionsToSave* collision check boundaries
+
+            // pointTree.DrawAllBounds(); // Draw node boundaries
+            // pointTree.DrawAllObjects(); // Mark object positions
         }
     }
 }

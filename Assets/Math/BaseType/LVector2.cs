@@ -176,7 +176,17 @@ namespace Lockstep.Math {
             lhs._y = (int) (((long) (lhs._y * rhs._val)) / LFloat.Precision);
             return lhs;
         }
+        public static LVector2 operator *(int rhs, LVector2 lhs){
+            lhs._x = lhs._x * rhs;
+            lhs._y = lhs._y * rhs;
+            return lhs;
+        }
 
+        public static LVector2 operator *(LVector2 lhs, int rhs){
+            lhs._x = lhs._x * rhs;
+            lhs._y = lhs._y * rhs;
+            return lhs;
+        }
         public static LVector2 operator /(LVector2 lhs, LFloat rhs){
             lhs._x = (int) (((long) lhs._x * LFloat.Precision) / rhs._val);
             lhs._y = (int) (((long) lhs._y * LFloat.Precision) / rhs._val);

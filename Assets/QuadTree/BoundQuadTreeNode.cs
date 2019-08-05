@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using Lockstep.Collision;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using Plane = UnityEngine.Plane;
+using Ray = UnityEngine.Ray;
+using Rect = UnityEngine.Rect;
 
 namespace TQuadTree1 {
 // A node in a BoundsOctree
 // Copyright 2014 Nition, BSD licence (see LICENCE file). www.momentstudio.co.nz
-    public class BoundsQuadTreeNode<T> where T : class {
+    public class BoundsQuadTreeNode<T> where T : ColliderProxy {
         public BoundsQuadTreeNode<T> parent;
 #if UNITY_EDITOR
         public Transform monoTrans;
@@ -185,7 +189,7 @@ namespace TQuadTree1 {
             return false;
         }
 
-        public void CheckCollision(T obj, ref Rect checkBounds, Action<T> callback){
+        public void CheckCollision(T obj, ref Rect checkBounds, Action<T, T> callback){
             // Are the input bounds at least partially in this node?
             if (!bounds.Overlaps(checkBounds)) {
                 return;
@@ -194,8 +198,9 @@ namespace TQuadTree1 {
             // Check against any objects in this node
             for (int i = 0; i < objects.Count; i++) {
                 var o = objects[i];
-                if (!ReferenceEquals(o.Obj, obj) && o.Bounds.Overlaps(checkBounds)) {
-                    callback(o.Obj);
+                if (BoundsQuadTree<T>.FuncCanCollide(o.Obj, obj) && !ReferenceEquals(o.Obj, obj) &&
+                    o.Bounds.Overlaps(checkBounds)) {
+                    callback(obj, o.Obj);
                 }
             }
 
@@ -327,9 +332,11 @@ namespace TQuadTree1 {
             }
 
             children = childQuadTrees;
+#if UNITY_EDITOR
             foreach (var child in childQuadTrees) {
-                child.monoTrans.SetParent(monoTrans,false);
+                child.monoTrans.SetParent(monoTrans, false);
             }
+#endif
         }
 
         public Rect GetBounds(){
@@ -549,11 +556,9 @@ namespace TQuadTree1 {
                 if (objects.Count < NUM_OBJECTS_ALLOWED || (BaseLength / 2) < minSize) {
                     OctreeObject newObj = new OctreeObject {Obj = obj, Bounds = objBounds};
                     objects.Add(newObj);
-                    #if UNITY_EDITOR
-                    if (obj is Component) {
-                        ((Component)(object)obj).transform.SetParent(monoTrans,true);
-                    }
-                    #endif
+#if UNITY_EDITOR
+                    obj.UnityTransform?.SetParent(monoTrans, true);
+#endif
 
                     obj2Node[obj] = this;
                     return; // We're done. No children yet
@@ -664,14 +669,13 @@ namespace TQuadTree1 {
                 }
 #if UNITY_EDITOR
                 var childCount = curChild.monoTrans.childCount;
-                for (int j = childCount-1; j >=0; j--) {
+                for (int j = childCount - 1; j >= 0; j--) {
                     var trans = curChild.monoTrans.GetChild(j);
-                    trans.SetParent(monoTrans,true);
-                    
+                    trans.SetParent(monoTrans, true);
                 }
-#endif
                 Debug.Assert(curChild.monoTrans.childCount == 0);
                 Object.Destroy(curChild.monoTrans.gameObject);
+#endif
             }
 
             // Remove the child nodes (and the objects in them - they've been added elsewhere now)

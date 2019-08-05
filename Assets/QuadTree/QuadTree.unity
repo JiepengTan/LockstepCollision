@@ -211,21 +211,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pos: {x: 0, y: 0, z: 0}
-  objs: []
-  mats: []
-  worldSize: 300
+  worldSize: 150
   minNodeSize: 1
-  loosenessval: 2
-  testObj: {fileID: 0}
-  mat: {fileID: 0}
-  bound:
-    serializedVersion: 2
-    x: 0
-    y: 0
-    width: 0
-    height: 0
-  percent: 0.4
-  count: 1000
+  loosenessval: 1.25
+  percent: 0.1
+  count: 100
 --- !u!4 &1023973054
 Transform:
   m_ObjectHideFlags: 0

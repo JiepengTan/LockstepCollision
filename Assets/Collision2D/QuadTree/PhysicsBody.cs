@@ -49,8 +49,8 @@ namespace Lockstep.Collision2D {
 
 
         public virtual void OnCollision(CollisionResult result, ICollisionBody other){
-            _gizmoColor = result.Type == ECollisionType.Exit ? Color.green : Color.red;
-            if (isDebug && result.Type == ECollisionType.Enter) {
+            _gizmoColor = result.Type == ECollisionEvent.Exit ? Color.green : Color.red;
+            if (isDebug && result.Type == ECollisionEvent.Enter) {
                 Debug.LogError("Enter Collision");
             }
         }

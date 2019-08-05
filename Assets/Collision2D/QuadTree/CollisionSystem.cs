@@ -121,14 +121,14 @@ namespace Lockstep.Collision2D {
             var paired = FindCollisionPair(body1, body2, removePair);
 
             if (TestCollisionShapes(body1, body2, ref result)) {
-                result.Type = paired ? ECollisionType.Stay : ECollisionType.Enter;
+                result.Type = paired ? ECollisionEvent.Stay : ECollisionEvent.Enter;
                 CacheCollisionPair(body1, body2);
                 NotifyCollisionEvent(body1, body2, ref result);
                 return true;
             }
             else {
                 if (paired) {
-                    result.Type = ECollisionType.Exit;
+                    result.Type = ECollisionEvent.Exit;
                     NotifyCollisionEvent(body1, body2, ref result);
                 }
             }

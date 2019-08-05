@@ -4,7 +4,7 @@ namespace TQuadTree1 {
 
 
     public partial class CollisionHelper {
-        public enum ECollisionType {
+        public enum ECollisionPair {
             Seg_Seg         = 0x00,
             Seg_Ray         = 0x01,
             Seg_Circle      = 0x02,
@@ -34,29 +34,29 @@ namespace TQuadTree1 {
         }
 
         public delegate bool FuncCollisionDetected(CBaseShape col1, Transform2D trans1, CBaseShape col2,Transform2D trans2);
-        static FuncCollisionDetected[] _dealFuncs = new FuncCollisionDetected[(int)ECollisionType.Polygon_Polygon +1];
+        static FuncCollisionDetected[] _dealFuncs = new FuncCollisionDetected[(int)ECollisionPair.Polygon_Polygon +1];
         static CollisionHelper(){
-            _dealFuncs[(int)ECollisionType.Seg_Seg        ] = (col1, trans1, col2,trans2)=>CheckSeg_Seg        ((CSegment)col1,(CSegment )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Seg_Ray        ] = (col1, trans1, col2,trans2)=>CheckSeg_Ray        ((CSegment)col1,(CRay     )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Seg_Circle     ] = (col1, trans1, col2,trans2)=>CheckSeg_Circle     ((CSegment)col1,(CCircle  )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Seg_AABB       ] = (col1, trans1, col2,trans2)=>CheckSeg_AABB       ((CSegment)col1,(CAABB    )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Seg_OBB        ] = (col1, trans1, col2,trans2)=>CheckSeg_OBB        ((CSegment)col1,(COBB     )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Seg_Polygon    ] = (col1, trans1, col2,trans2)=>CheckSeg_Polygon    ((CSegment)col1,(CPolygon )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Ray_Ray        ] = (col1, trans1, col2,trans2)=>CheckRay_Ray        ((CRay    )col1,(CRay     )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Ray_Circle     ] = (col1, trans1, col2,trans2)=>CheckRay_Circle     ((CRay    )col1,(CCircle  )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Ray_AABB       ] = (col1, trans1, col2,trans2)=>CheckRay_AABB       ((CRay    )col1,(CAABB    )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Ray_OBB        ] = (col1, trans1, col2,trans2)=>CheckRay_OBB        ((CRay    )col1,(COBB     )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Ray_Polygon    ] = (col1, trans1, col2,trans2)=>CheckRay_Polygon    ((CRay    )col1,(CPolygon )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Circle_Circle  ] = (col1, trans1, col2,trans2)=>CheckCircle_Circle  ((CCircle )col1,(CCircle  )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Circle_AABB    ] = (col1, trans1, col2,trans2)=>CheckCircle_AABB    ((CCircle )col1,(CAABB    )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Circle_OBB     ] = (col1, trans1, col2,trans2)=>CheckCircle_OBB     ((CCircle )col1,(COBB     )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Circle_Polygon ] = (col1, trans1, col2,trans2)=>CheckCircle_Polygon ((CCircle )col1,(CPolygon )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.AABB_AABB      ] = (col1, trans1, col2,trans2)=>CheckAABB_AABB      ((CAABB   )col1,(CAABB    )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.AABB_OBB       ] = (col1, trans1, col2,trans2)=>CheckAABB_OBB       ((CAABB   )col1,(COBB     )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.AABB_Polygon   ] = (col1, trans1, col2,trans2)=>CheckAABB_Polygon   ((CAABB   )col1,(CPolygon )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.OBB_OBB        ] = (col1, trans1, col2,trans2)=>CheckOBB_OBB        ((COBB    )col1,(COBB     )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.OBB_Polygon    ] = (col1, trans1, col2,trans2)=>CheckOBB_Polygon    ((COBB    )col1,(CPolygon )col2,trans1,trans2);
-            _dealFuncs[(int)ECollisionType.Polygon_Polygon] = (col1, trans1, col2,trans2)=>CheckPolygon_Polygon((CPolygon)col1,(CPolygon )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Seg_Seg        ] = (col1, trans1, col2,trans2)=>CheckSeg_Seg        ((CSegment)col1,(CSegment )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Seg_Ray        ] = (col1, trans1, col2,trans2)=>CheckSeg_Ray        ((CSegment)col1,(CRay     )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Seg_Circle     ] = (col1, trans1, col2,trans2)=>CheckSeg_Circle     ((CSegment)col1,(CCircle  )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Seg_AABB       ] = (col1, trans1, col2,trans2)=>CheckSeg_AABB       ((CSegment)col1,(CAABB    )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Seg_OBB        ] = (col1, trans1, col2,trans2)=>CheckSeg_OBB        ((CSegment)col1,(COBB     )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Seg_Polygon    ] = (col1, trans1, col2,trans2)=>CheckSeg_Polygon    ((CSegment)col1,(CPolygon )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Ray_Ray        ] = (col1, trans1, col2,trans2)=>CheckRay_Ray        ((CRay    )col1,(CRay     )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Ray_Circle     ] = (col1, trans1, col2,trans2)=>CheckRay_Circle     ((CRay    )col1,(CCircle  )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Ray_AABB       ] = (col1, trans1, col2,trans2)=>CheckRay_AABB       ((CRay    )col1,(CAABB    )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Ray_OBB        ] = (col1, trans1, col2,trans2)=>CheckRay_OBB        ((CRay    )col1,(COBB     )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Ray_Polygon    ] = (col1, trans1, col2,trans2)=>CheckRay_Polygon    ((CRay    )col1,(CPolygon )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Circle_Circle  ] = (col1, trans1, col2,trans2)=>CheckCircle_Circle  ((CCircle )col1,(CCircle  )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Circle_AABB    ] = (col1, trans1, col2,trans2)=>CheckCircle_AABB    ((CCircle )col1,(CAABB    )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Circle_OBB     ] = (col1, trans1, col2,trans2)=>CheckCircle_OBB     ((CCircle )col1,(COBB     )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Circle_Polygon ] = (col1, trans1, col2,trans2)=>CheckCircle_Polygon ((CCircle )col1,(CPolygon )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.AABB_AABB      ] = (col1, trans1, col2,trans2)=>CheckAABB_AABB      ((CAABB   )col1,(CAABB    )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.AABB_OBB       ] = (col1, trans1, col2,trans2)=>CheckAABB_OBB       ((CAABB   )col1,(COBB     )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.AABB_Polygon   ] = (col1, trans1, col2,trans2)=>CheckAABB_Polygon   ((CAABB   )col1,(CPolygon )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.OBB_OBB        ] = (col1, trans1, col2,trans2)=>CheckOBB_OBB        ((COBB    )col1,(COBB     )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.OBB_Polygon    ] = (col1, trans1, col2,trans2)=>CheckOBB_Polygon    ((COBB    )col1,(CPolygon )col2,trans1,trans2);
+            _dealFuncs[(int)ECollisionPair.Polygon_Polygon] = (col1, trans1, col2,trans2)=>CheckPolygon_Polygon((CPolygon)col1,(CPolygon )col2,trans1,trans2);
         }
 
 
@@ -65,9 +65,10 @@ namespace TQuadTree1 {
             if (col1.TypeId > col2.TypeId) {
                 return CheckCollision(col2,trans2,col1,trans1);
             }
-            var id = col1.TypeId | col2.TypeId;
+            var id = col1.TypeId<<4 | col2.TypeId;
             if (id > _dealFuncs.Length)
                 return false;
+            var enumType = (ECollisionPair)id ;
             var func = _dealFuncs[id];
             if(func!= null){
                 return   func(col1, trans1, col2,trans2);

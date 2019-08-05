@@ -23,6 +23,10 @@ namespace Lockstep.Collision2D {
             this.yMax = y + size.y;
         }
 
+        public static LRect CreateRect(LVector2 center, LVector2 halfSize){
+            return new LRect(center - halfSize, halfSize * 2);
+        }
+
         public LFloat width {
             get => xMax - x;
             set => xMax = x + width;
