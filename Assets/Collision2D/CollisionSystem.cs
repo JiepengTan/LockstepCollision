@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Lockstep.Math;
 using Lockstep.UnsafeCollision2D;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -9,10 +10,10 @@ namespace Lockstep.Collision2D {
         public uint[] _collisionMask = new uint[32];
 
         public List<BoundsQuadTree> boundsTrees = new List<BoundsQuadTree>();
-        public float worldSize = 150;
-        public float minNodeSize = 1;
-        public float loosenessval = 1.25f;
-        public Vector3 pos;
+        public LFloat worldSize = 150.ToLFloat();
+        public LFloat minNodeSize = 1.ToLFloat();
+        public LFloat loosenessval = new LFloat(true,1250);
+        public LVector3 pos;
 
         private Dictionary<uint, ColliderProxy> id2Proxy = new Dictionary<uint, ColliderProxy>();
         private HashSet<long> _curPairs = new HashSet<long>();

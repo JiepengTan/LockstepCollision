@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Lockstep.Math;
+using Lockstep.UnsafeCollision2D;
 using UnityEngine;
 
 // A Dynamic, Loose Octree for storing any objects that can be described with AABB bounds
@@ -23,21 +25,21 @@ using UnityEngine;
 // they actually give much better performance than using Foreach, even in the compiled build.
 // Using a LINQ expression is worse again than Foreach.
 namespace Lockstep.Collision2D {
-    public static class RectExt {
-        public static Vector2 ToVector2XZ(this Vector3 vec){
-            return new Vector2(vec.x, vec.z);
+    public static partial class LRectExt {
+        public static LVector2 ToLVector2XZ(this LVector3 vec){
+            return new LVector2(vec.x, vec.z);
         }
 
-        public static Vector3 ToVector3(this Vector2 vec, int y = 1){
-            return new Vector3(vec.x, y, vec.y);
+        public static LVector3 ToLVector3(this LVector2 vec, int y = 1){
+            return new LVector3(vec.x, y.ToLFloat(), vec.y);
         }
 
-        public static Rect ToRect(this Bounds bound){
-            return new Rect(bound.min.ToVector2XZ(), bound.size.ToVector2XZ());
+        public static LRect ToLRect(this Bounds bound){
+            return new LRect(bound.min.ToLVector3().ToLVector2XZ(), bound.size.ToLVector3().ToLVector2XZ());
         }
     }
 
-    public class BoundsQuadTree  {
+    public partial class BoundsQuadTree  {
         // The total amount of objects currently in the tree
         public int Count { get; private set; }
 
@@ -52,17 +54,17 @@ namespace Lockstep.Collision2D {
 
         // Should be a value between 1 and 2. A multiplier for the base size of a node.
         // 1.0 is a "normal" octree, while values > 1 have overlap
-        readonly float looseness;
+        readonly LFloat looseness;
 
         // Size that the octree was on creation
-        readonly float initialSize;
+        readonly LFloat initialSize;
 
         // Minimum side length that a node can be - essentially an alternative to having a max depth
-        readonly float minSize;
+        readonly LFloat minSize;
         // For collision visualisation. Automatically removed in builds.
 #if UNITY_EDITOR
         const int numCollisionsToSave = 4;
-        readonly Queue<Rect> lastBoundsCollisionChecks = new Queue<Rect>();
+        readonly Queue<LRect> lastBoundsCollisionChecks = new Queue<LRect>();
         readonly Queue<Ray> lastRayCollisionChecks = new Queue<Ray>();
 #endif
 
@@ -73,7 +75,7 @@ namespace Lockstep.Collision2D {
         /// <param name="initialWorldPos">Position of the centre of the initial node.</param>
         /// <param name="minNodeSize">Nodes will stop splitting if the new nodes would be smaller than this (metres).</param>
         /// <param name="loosenessVal">Clamped between 1 and 2. Values > 1 let nodes overlap.</param>
-        public BoundsQuadTree(float initialWorldSize, Vector2 initialWorldPos, float minNodeSize, float loosenessVal){
+        public BoundsQuadTree(LFloat initialWorldSize, LVector2 initialWorldPos, LFloat minNodeSize, LFloat loosenessVal){
             if (minNodeSize > initialWorldSize) {
                 Debug.LogWarning("Minimum node size must be at least as big as the initial world size. Was: " +
                                  minNodeSize + " Adjusted to: " + initialWorldSize);
@@ -83,11 +85,11 @@ namespace Lockstep.Collision2D {
             Count = 0;
             initialSize = initialWorldSize;
             minSize = minNodeSize;
-            looseness = Mathf.Clamp(loosenessVal, 1.0f, 2.0f);
+            looseness = LMath.Clamp(loosenessVal, 1.ToLFloat(), 2.ToLFloat());
             rootNode = new BoundsQuadTreeNode(null, initialSize, minSize, looseness, initialWorldPos);
         }
 
-        public void UpdateObj(ColliderProxy obj, Rect bound){
+        public void UpdateObj(ColliderProxy obj, LRect bound){
             var node = GetNode(obj);
             if (node == null) {
                 Add(obj, bound);
@@ -119,7 +121,7 @@ namespace Lockstep.Collision2D {
         /// </summary>
         /// <param name="obj">Object to add.</param>
         /// <param name="objBounds">3D bounding box around the object.</param>
-        public void Add(ColliderProxy obj, Rect objBounds){
+        public void Add(ColliderProxy obj, LRect objBounds){
             // Add object or expand the octree until it can be added
             int count = 0; // Safety check against infinite/excessive growth
             while (!rootNode.Add(obj, objBounds)) {
@@ -158,7 +160,7 @@ namespace Lockstep.Collision2D {
         /// <param name="obj">Object to remove.</param>
         /// <param name="objBounds">3D bounding box around the object.</param>
         /// <returns>True if the object was removed successfully.</returns>
-        public bool Remove(ColliderProxy obj, Rect objBounds){
+        public bool Remove(ColliderProxy obj, LRect objBounds){
             bool removed = rootNode.Remove(obj, objBounds);
 
             // See if we can shrink the octree down now that we've removed the item
@@ -175,7 +177,7 @@ namespace Lockstep.Collision2D {
         /// </summary>
         /// <param name="checkBounds">bounds to check.</param>
         /// <returns>True if there was a collision.</returns>
-        public bool IsColliding(ColliderProxy obj, Rect checkBounds){
+        public bool IsColliding(ColliderProxy obj, LRect checkBounds){
             //#if UNITY_EDITOR
             // For debugging
             //AddCollisionCheck(checkBounds);
@@ -183,24 +185,10 @@ namespace Lockstep.Collision2D {
             return rootNode.IsColliding(obj, ref checkBounds);
         }
 
-        public void CheckCollision(ColliderProxy obj, Rect checkBounds){
+        public void CheckCollision(ColliderProxy obj, LRect checkBounds){
             rootNode.CheckCollision(obj, ref checkBounds);
         }
 
-
-        /// <summary>
-        /// Check if the specified ray intersects with anything in the tree. See also: GetColliding.
-        /// </summary>
-        /// <param name="checkRay">ray to check.</param>
-        /// <param name="maxDistance">distance to check.</param>
-        /// <returns>True if there was a collision.</returns>
-        public bool IsColliding(Ray checkRay, float maxDistance){
-            //#if UNITY_EDITOR
-            // For debugging
-            AddCollisionCheck(checkRay);
-            //#endif
-            return rootNode.IsColliding(ref checkRay, maxDistance);
-        }
 
         /// <summary>
         /// Returns an array of objects that intersect with the specified bounds, if any. Otherwise returns an empty array. See also: IsColliding.
@@ -208,7 +196,7 @@ namespace Lockstep.Collision2D {
         /// <param name="collidingWith">list to store intersections.</param>
         /// <param name="checkBounds">bounds to check.</param>
         /// <returns>Objects that intersect with the specified bounds.</returns>
-        public void GetColliding(List<ColliderProxy> collidingWith, Rect checkBounds){
+        public void GetColliding(List<ColliderProxy> collidingWith, LRect checkBounds){
             //#if UNITY_EDITOR
             // For debugging
             //AddCollisionCheck(checkBounds);
@@ -216,30 +204,8 @@ namespace Lockstep.Collision2D {
             rootNode.GetColliding(ref checkBounds, collidingWith);
         }
 
-        /// <summary>
-        /// Returns an array of objects that intersect with the specified ray, if any. Otherwise returns an empty array. See also: IsColliding.
-        /// </summary>
-        /// <param name="collidingWith">list to store intersections.</param>
-        /// <param name="checkRay">ray to check.</param>
-        /// <param name="maxDistance">distance to check.</param>
-        /// <returns>Objects that intersect with the specified ray.</returns>
-        public void GetColliding(List<ColliderProxy> collidingWith, Ray checkRay, float maxDistance = float.PositiveInfinity){
-            //#if UNITY_EDITOR
-            // For debugging
-            //AddCollisionCheck(checkRay);
-            //#endif
-            rootNode.GetColliding(ref checkRay, collidingWith, maxDistance);
-        }
 
-        public List<ColliderProxy> GetWithinFrustum(Camera cam){
-            var planes = GeometryUtility.CalculateFrustumPlanes(cam);
-
-            var list = new List<ColliderProxy>();
-            rootNode.GetWithinFrustum(planes, list);
-            return list;
-        }
-
-        public Rect GetMaxBounds(){
+        public LRect GetMaxBounds(){
             return rootNode.GetBounds();
         }
 
@@ -248,7 +214,7 @@ namespace Lockstep.Collision2D {
         /// Must be called from OnDrawGizmos externally. See also: DrawAllObjects.
         /// </summary>
         public void DrawAllBounds(){
-            rootNode.BoundQuadTreeNode();
+            rootNode.DrawBoundQuadTreeNode(0);
         }
 
         /// <summary>
@@ -259,73 +225,20 @@ namespace Lockstep.Collision2D {
             rootNode.DrawAllObjects();
         }
 
-        // Intended for debugging. Must be called from OnDrawGizmos externally
-        // See also DrawAllBounds and DrawAllObjects
-        /// <summary>
-        /// Visualises collision checks from IsColliding and GetColliding.
-        /// Collision visualisation code is automatically removed from builds so that collision checks aren't slowed down.
-        /// </summary>
-#if UNITY_EDITOR
-        public void DrawCollisionChecks(){
-            int count = 0;
-            foreach (Rect collisionCheck in lastBoundsCollisionChecks) {
-                Gizmos.color = new Color(1.0f, 1.0f - ((float) count / numCollisionsToSave), 1.0f);
-                Gizmos.DrawCube(collisionCheck.center.ToVector3(), collisionCheck.size.ToVector3());
-                count++;
-            }
 
-            foreach (Ray collisionCheck in lastRayCollisionChecks) {
-                Gizmos.color = new Color(1.0f, 1.0f - ((float) count / numCollisionsToSave), 1.0f);
-                Gizmos.DrawRay(collisionCheck.origin, collisionCheck.direction);
-                count++;
-            }
-
-            Gizmos.color = Color.white;
-        }
-#endif
-
-        // #### PRIVATE METHODS ####
-
-        /// <summary>
-        /// Used for visualising collision checks with DrawCollisionChecks.
-        /// Automatically removed from builds so that collision checks aren't slowed down.
-        /// </summary>
-        /// <param name="checkBounds">bounds that were passed in to check for collisions.</param>
-#if UNITY_EDITOR
-        void AddCollisionCheck(Rect checkBounds){
-            lastBoundsCollisionChecks.Enqueue(checkBounds);
-            if (lastBoundsCollisionChecks.Count > numCollisionsToSave) {
-                lastBoundsCollisionChecks.Dequeue();
-            }
-        }
-#endif
-
-        /// <summary>
-        /// Used for visualising collision checks with DrawCollisionChecks.
-        /// Automatically removed from builds so that collision checks aren't slowed down.
-        /// </summary>
-        /// <param name="checkRay">ray that was passed in to check for collisions.</param>
-#if UNITY_EDITOR
-        void AddCollisionCheck(Ray checkRay){
-            lastRayCollisionChecks.Enqueue(checkRay);
-            if (lastRayCollisionChecks.Count > numCollisionsToSave) {
-                lastRayCollisionChecks.Dequeue();
-            }
-        }
-#endif
         public const int NUM_CHILDREN = 4;
 
         /// <summary>
         /// Grow the octree to fit in all objects.
         /// </summary>
         /// <param name="direction">Direction to grow.</param>
-        void Grow(Vector2 direction){
+        void Grow(LVector2 direction){
             int xDirection = direction.x >= 0 ? 1 : -1;
             int yDirection = direction.y >= 0 ? 1 : -1;
             BoundsQuadTreeNode oldRoot = rootNode;
-            float half = rootNode.BaseLength / 2;
-            float newLength = rootNode.BaseLength * 2;
-            Vector2 newCenter = rootNode.Center + new Vector2(xDirection * half, yDirection * half);
+            LFloat half = rootNode.BaseLength / 2;
+            LFloat newLength = rootNode.BaseLength * 2;
+            LVector2 newCenter = rootNode.Center + new LVector2(xDirection * half, yDirection * half);
 
             // Create a new, bigger octree root node
             rootNode = new BoundsQuadTreeNode(null, newLength, minSize, looseness, newCenter);
@@ -342,7 +255,7 @@ namespace Lockstep.Collision2D {
                         xDirection = i % 2 == 0 ? -1 : 1;
                         yDirection = i > 1 ? -1 : 1;
                         children[i] = new BoundsQuadTreeNode(rootNode, oldRoot.BaseLength, minSize, looseness,
-                            newCenter + new Vector2(xDirection * half, yDirection * half));
+                            newCenter + new LVector2(xDirection * half, yDirection * half));
                     }
                 }
 

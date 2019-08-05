@@ -9,7 +9,7 @@ namespace Lockstep.Collision2D {
         public CBaseShape collider => parts[0].collider;
         public CTransform2D transform => parts[0].transform;
 
-        public Rect GetBounds(){
+        public LRect GetBounds(){
             //TODO
             var col = collider;
             var tran = transform;
@@ -17,21 +17,21 @@ namespace Lockstep.Collision2D {
             switch (type) {
                 case EShape2D.Circle: {
                     var radius = ((CCircle) col).radius;
-                    return LRect.CreateRect(tran.pos, new LVector2(radius, radius)).ToRect();
+                    return LRect.CreateRect(tran.pos, new LVector2(radius, radius));
                 }
                 case EShape2D.AABB: {
                     var halfSize = ((CAABB) col).size;
-                    return LRect.CreateRect(tran.pos, halfSize).ToRect();
+                    return LRect.CreateRect(tran.pos, halfSize);
                 }
                 case EShape2D.OBB: {
                     var radius = ((COBB) col).radius;
-                    return LRect.CreateRect(tran.pos, new LVector2(radius, radius)).ToRect();
+                    return LRect.CreateRect(tran.pos, new LVector2(radius, radius));
                 }
             }
 
             Debug.LogError("No support type" + type);
 
-            return new Rect();
+            return new LRect();
         }
     }
 }

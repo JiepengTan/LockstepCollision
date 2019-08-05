@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 using Lockstep.Collision;
+using Lockstep.Math;
+using Lockstep.UnsafeCollision2D;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using Plane = UnityEngine.Plane;
@@ -15,28 +17,28 @@ using Rect = UnityEngine.Rect;
 namespace Lockstep.Collision2D {
 // A node in a BoundsOctree
 // Copyright 2014 Nition, BSD licence (see LICENCE file). www.momentstudio.co.nz
-    public class BoundsQuadTreeNode   {
+    public partial class BoundsQuadTreeNode   {
         public BoundsQuadTreeNode parent;
 #if SHOW_NODES
         public Transform monoTrans;
 #endif
         // Centre of this node
-        public Vector2 Center { get; private set; }
+        public LVector2 Center { get; private set; }
 
         // Length of this node if it has a looseness of 1.0
-        public float BaseLength { get; private set; }
+        public LFloat BaseLength { get; private set; }
 
         // Looseness value for this node
-        float looseness;
+        LFloat looseness;
 
         // Minimum size for a node in this octree
-        float minSize;
+        LFloat minSize;
 
         // Actual length of sides, taking the looseness value into account
-        float adjLength;
+        LFloat adjLength;
 
         // Bounding box that represents this node
-        Rect bounds = default(Rect);
+        LRect bounds = default(LRect);
 
         // Objects in this node
         readonly List<OctreeObject> objects = new List<OctreeObject>();
@@ -49,7 +51,7 @@ namespace Lockstep.Collision2D {
         }
 
         // Bounds of potential children to this node. These are actual size (with looseness taken into account), not base size
-        Rect[] childBounds;
+        LRect[] childBounds;
 
         // If there are already NUM_OBJECTS_ALLOWED in a node, we split it into children
         // A generally good number seems to be something around 8-15
@@ -59,7 +61,7 @@ namespace Lockstep.Collision2D {
         // An object in the octree
         struct OctreeObject {
             public ColliderProxy Obj;
-            public Rect Bounds;
+            public LRect Bounds;
         }
 
         public static int MonoID = 0;
@@ -71,15 +73,15 @@ namespace Lockstep.Collision2D {
         /// <param name="minSizeVal">Minimum size of nodes in this octree.</param>
         /// <param name="loosenessVal">Multiplier for baseLengthVal to get the actual size.</param>
         /// <param name="centerVal">Centre position of this node.</param>
-        public BoundsQuadTreeNode(BoundsQuadTreeNode parent, float baseLengthVal, float minSizeVal,
-            float loosenessVal, Vector2 centerVal){
+        public BoundsQuadTreeNode(BoundsQuadTreeNode parent, LFloat baseLengthVal, LFloat minSizeVal,
+            LFloat loosenessVal, LVector2 centerVal){
 #if SHOW_NODES
             monoTrans = new GameObject(MonoID++.ToString()).transform;
             if (parent != null) {
                 monoTrans.SetParent(parent.monoTrans, false);
             }
 
-            monoTrans.position = centerVal.ToVector3();
+            monoTrans.position = centerVal.ToLVector3().ToVector3();
 #endif
             this.parent = parent;
             SetValues(baseLengthVal, minSizeVal, loosenessVal, centerVal);
@@ -92,7 +94,7 @@ namespace Lockstep.Collision2D {
         /// <param name="obj">Object to add.</param>
         /// <param name="objBounds">3D bounding box around the object.</param>
         /// <returns>True if the object fits entirely within this node.</returns>
-        public bool Add(ColliderProxy obj, Rect objBounds){
+        public bool Add(ColliderProxy obj, LRect objBounds){
             if (!Encapsulates(bounds, objBounds)) {
                 return false;
             }
@@ -129,11 +131,11 @@ namespace Lockstep.Collision2D {
         }
 
 
-        public bool ContainBound(Rect bound){
+        public bool ContainBound(LRect bound){
             return Encapsulates(bounds, bound);
         }
 
-        public void UpdateObj(ColliderProxy obj, Rect bound){
+        public void UpdateObj(ColliderProxy obj, LRect bound){
             for (int i = 0; i < objects.Count; i++) {
                 if (ReferenceEquals(objects[i].Obj, obj)) {
                     objects[i] = new OctreeObject() {Obj = obj, Bounds = bound};
@@ -155,7 +157,7 @@ namespace Lockstep.Collision2D {
         /// <param name="obj">Object to remove.</param>
         /// <param name="objBounds">3D bounding box around the object.</param>
         /// <returns>True if the object was removed successfully.</returns>
-        public bool Remove(ColliderProxy obj, Rect objBounds){
+        public bool Remove(ColliderProxy obj, LRect objBounds){
             if (!Encapsulates(bounds, objBounds)) {
                 return false;
             }
@@ -168,7 +170,7 @@ namespace Lockstep.Collision2D {
         /// </summary>
         /// <param name="checkBounds">Bounds to check.</param>
         /// <returns>True if there was a collision.</returns>
-        public bool IsColliding(ColliderProxy obj, ref Rect checkBounds){
+        public bool IsColliding(ColliderProxy obj, ref LRect checkBounds){
             // Are the input bounds at least partially in this node?
             if (!bounds.Overlaps(checkBounds)) {
                 return false;
@@ -194,7 +196,7 @@ namespace Lockstep.Collision2D {
             return false;
         }
 
-        public void CheckCollision(ColliderProxy obj, ref Rect checkBounds){
+        public void CheckCollision(ColliderProxy obj, ref LRect checkBounds){
             // Are the input bounds at least partially in this node?
             if (!bounds.Overlaps(checkBounds)) {
                 return;
@@ -219,45 +221,14 @@ namespace Lockstep.Collision2D {
             }
         }
 
-        /// <summary>
-        /// Check if the specified ray intersects with anything in the tree. See also: GetColliding.
-        /// </summary>
-        /// <param name="checkRay">Ray to check.</param>
-        /// <param name="maxDistance">Distance to check.</param>
-        /// <returns>True if there was a collision.</returns>
-        public bool IsColliding(ref Ray checkRay, float maxDistance = float.PositiveInfinity){
-            // Is the input ray at least partially in this node?
-            float distance;
-            //if (!bounds.IntersectRay(checkRay, out distance) || distance > maxDistance) {
-            //    return false;
-            //}
-//
-            //// Check against any objects in this node
-            //for (int i = 0; i < objects.Count; i++) {
-            //    if (objects[i].Bounds.IntersectRay(checkRay, out distance) && distance <= maxDistance) {
-            //        return true;
-            //    }
-            //}
-//
-            //// Check children
-            //if (children != null) {
-            //    for (int i = 0; i < NUM_CHILDREN; i++) {
-            //        if (children[i].IsColliding(ref checkRay, maxDistance)) {
-            //            return true;
-            //        }
-            //    }
-            //}
-//
-            return false;
-        }
-
+ 
         /// <summary>
         /// Returns an array of objects that intersect with the specified bounds, if any. Otherwise returns an empty array. See also: IsColliding.
         /// </summary>
         /// <param name="checkBounds">Bounds to check. Passing by ref as it improves performance with structs.</param>
         /// <param name="result">List result.</param>
         /// <returns>Objects that intersect with the specified bounds.</returns>
-        public void GetColliding(ref Rect checkBounds, List<ColliderProxy> result){
+        public void GetColliding(ref LRect checkBounds, List<ColliderProxy> result){
             // Are the input bounds at least partially in this node?
             if (!bounds.Overlaps(checkBounds)) {
                 return;
@@ -278,56 +249,7 @@ namespace Lockstep.Collision2D {
             }
         }
 
-        /// <summary>
-        /// Returns an array of objects that intersect with the specified ray, if any. Otherwise returns an empty array. See also: IsColliding.
-        /// </summary>
-        /// <param name="checkRay">Ray to check. Passing by ref as it improves performance with structs.</param>
-        /// <param name="maxDistance">Distance to check.</param>
-        /// <param name="result">List result.</param>
-        /// <returns>Objects that intersect with the specified ray.</returns>
-        public void GetColliding(ref Ray checkRay, List<ColliderProxy> result, float maxDistance = float.PositiveInfinity){
-            float distance;
-            // Is the input ray at least partially in this node?
-            //if (!bounds.IntersectRay(checkRay, out distance) || distance > maxDistance) {
-            //    return;
-            //}
-//
-            //// Check against any objects in this node
-            //for (int i = 0; i < objects.Count; i++) {
-            //    if (objects[i].Bounds.IntersectRay(checkRay, out distance) && distance <= maxDistance) {
-            //        result.Add(objects[i].Obj);
-            //    }
-            //}
-//
-            //// Check children
-            //if (children != null) {
-            //    for (int i = 0; i < NUM_CHILDREN; i++) {
-            //        children[i].GetColliding(ref checkRay, result, maxDistance);
-            //    }
-            //}
-        }
-
-        public void GetWithinFrustum(Plane[] planes, List<ColliderProxy> result){
-            // Is the input node inside the frustum?
-            //if (!GeometryUtility.TestPlanesAABB(planes, bounds)) {
-            //    return;
-            //}
-//
-            //// Check against any objects in this node
-            //for (int i = 0; i < objects.Count; i++) {
-            //    if (GeometryUtility.TestPlanesAABB(planes, objects[i].Bounds)) {
-            //        result.Add(objects[i].Obj);
-            //    }
-            //}
-//
-            //// Check children
-            //if (children != null) {
-            //    for (int i = 0; i < NUM_CHILDREN; i++) {
-            //        children[i].GetWithinFrustum(planes, result);
-            //    }
-            //}
-        }
-
+  
         /// <summary>
         /// Set the 8 children of this octree.
         /// </summary>
@@ -346,52 +268,11 @@ namespace Lockstep.Collision2D {
 #endif
         }
 
-        public Rect GetBounds(){
+        public LRect GetBounds(){
             return bounds;
         }
 
-        /// <summary>
-        /// Draws node boundaries visually for debugging.
-        /// Must be called from OnDrawGizmos externally. See also: DrawAllObjects.
-        /// </summary>
-        /// <param name="depth">Used for recurcive calls to this method.</param>
-        public void BoundQuadTreeNode(float depth = 0){
-            float tintVal = depth / 7; // Will eventually get values > 1. Color rounds to 1 automatically
-            Gizmos.color = new Color(tintVal, 0, 1.0f - tintVal);
 
-            Rect thisBounds = CreateRect(Center, new Vector2(adjLength, adjLength));
-            Gizmos.DrawWireCube(thisBounds.center.ToVector3(), thisBounds.size.ToVector3());
-
-            if (children != null) {
-                depth++;
-                for (int i = 0; i < NUM_CHILDREN; i++) {
-                    children[i].BoundQuadTreeNode(depth);
-                }
-            }
-
-            Gizmos.color = Color.white;
-        }
-
-        /// <summary>
-        /// Draws the bounds of all objects in the tree visually for debugging.
-        /// Must be called from OnDrawGizmos externally. See also: DrawAllBounds.
-        /// </summary>
-        public void DrawAllObjects(){
-            float tintVal = BaseLength / 20;
-            Gizmos.color = new Color(0, 1.0f - tintVal, tintVal, 0.25f);
-
-            foreach (OctreeObject obj in objects) {
-                Gizmos.DrawCube(obj.Bounds.center.ToVector3(), obj.Bounds.size.ToVector3());
-            }
-
-            if (children != null) {
-                for (int i = 0; i < NUM_CHILDREN; i++) {
-                    children[i].DrawAllObjects();
-                }
-            }
-
-            Gizmos.color = Color.white;
-        }
 
         /// <summary>
         /// We can shrink the octree if:
@@ -402,7 +283,7 @@ namespace Lockstep.Collision2D {
         /// </summary>
         /// <param name="minLength">Minimum dimensions of a node in this octree.</param>
         /// <returns>The new root, or the existing one if we didn't shrink.</returns>
-        public BoundsQuadTreeNode ShrinkIfPossible(float minLength){
+        public BoundsQuadTreeNode ShrinkIfPossible(LFloat minLength){
             if (BaseLength < (2 * minLength)) {
                 return this;
             }
@@ -474,7 +355,7 @@ namespace Lockstep.Collision2D {
         /// </summary>
         /// <param name="objBounds">The object's bounds.</param>
         /// <returns>One of the eight child octants.</returns>
-        public int BestFitChild(Vector2 objBoundsCenter){
+        public int BestFitChild(LVector2 objBoundsCenter){
             return (objBoundsCenter.x <= Center.x ? 0 : 1) + (objBoundsCenter.y <= Center.y ? 0 : 2);
         }
 
@@ -520,7 +401,7 @@ namespace Lockstep.Collision2D {
         /// <param name="minSizeVal">Minimum size of nodes in this octree.</param>
         /// <param name="loosenessVal">Multiplier for baseLengthVal to get the actual size.</param>
         /// <param name="centerVal">Centre position of this node.</param>
-        void SetValues(float baseLengthVal, float minSizeVal, float loosenessVal, Vector2 centerVal){
+        void SetValues(LFloat baseLengthVal, LFloat minSizeVal, LFloat loosenessVal, LVector2 centerVal){
             BaseLength = baseLengthVal;
             minSize = minSizeVal;
             looseness = loosenessVal;
@@ -528,21 +409,21 @@ namespace Lockstep.Collision2D {
             adjLength = looseness * baseLengthVal;
 
             // Create the bounding box.
-            Vector2 size = new Vector2(adjLength, adjLength);
-            bounds = CreateRect(Center, size);
+            LVector2 size = new LVector2(adjLength, adjLength);
+            bounds = CreateLRect(Center, size);
 
-            float quarter = BaseLength / 4f;
-            float childActualLength = (BaseLength / 2) * looseness;
-            Vector2 childActualSize = new Vector2(childActualLength, childActualLength);
-            childBounds = new Rect[NUM_CHILDREN];
-            childBounds[0] = CreateRect(Center + new Vector2(-quarter, -quarter), childActualSize);
-            childBounds[1] = CreateRect(Center + new Vector2(quarter, -quarter), childActualSize);
-            childBounds[2] = CreateRect(Center + new Vector2(-quarter, quarter), childActualSize);
-            childBounds[3] = CreateRect(Center + new Vector2(quarter, quarter), childActualSize);
+            LFloat quarter = BaseLength / 4;
+            LFloat childActualLength = (BaseLength / 2) * looseness;
+            LVector2 childActualSize = new LVector2(childActualLength, childActualLength);
+            childBounds = new LRect[NUM_CHILDREN];
+            childBounds[0] = CreateLRect(Center + new LVector2(-quarter, -quarter), childActualSize);
+            childBounds[1] = CreateLRect(Center + new LVector2(quarter, -quarter), childActualSize);
+            childBounds[2] = CreateLRect(Center + new LVector2(-quarter, quarter), childActualSize);
+            childBounds[3] = CreateLRect(Center + new LVector2(quarter, quarter), childActualSize);
         }
 
-        Rect CreateRect(Vector2 center, Vector2 size){
-            return new Rect(center - size / 2, size);
+        LRect CreateLRect(LVector2 center, LVector2 size){
+            return new LRect(center - size / 2, size);
         }
 
 
@@ -553,7 +434,7 @@ namespace Lockstep.Collision2D {
         /// </summary>
         /// <param name="obj">Object to add.</param>
         /// <param name="objBounds">3D bounding box around the object.</param>
-        void SubAdd(ColliderProxy obj, Rect objBounds){
+        void SubAdd(ColliderProxy obj, LRect objBounds){
             // We know it fits at this level if we've got this far
 
             // We always put things in the deepest possible child
@@ -611,12 +492,12 @@ namespace Lockstep.Collision2D {
         }
 
         /// <summary>
-        /// Private counterpart to the public <see cref="Remove(ColliderProxy, Rect)"/> method.
+        /// Private counterpart to the public <see cref="Remove(ColliderProxy, LRect)"/> method.
         /// </summary>
         /// <param name="obj">Object to remove.</param>
         /// <param name="objBounds">3D bounding box around the object.</param>
         /// <returns>True if the object was removed successfully.</returns>
-        bool SubRemove(ColliderProxy obj, Rect objBounds){
+        bool SubRemove(ColliderProxy obj, LRect objBounds){
             bool removed = false;
 
             for (int i = 0; i < objects.Count; i++) {
@@ -645,17 +526,17 @@ namespace Lockstep.Collision2D {
         /// Splits the octree into eight children.
         /// </summary>
         void Split(){
-            float quarter = BaseLength / 4f;
-            float newLength = BaseLength / 2;
+            LFloat quarter = BaseLength / 4;
+            LFloat newLength = BaseLength / 2;
             children = new BoundsQuadTreeNode[NUM_CHILDREN];
             children[0] = new BoundsQuadTreeNode(this, newLength, minSize, looseness,
-                Center + new Vector2(-quarter, -quarter));
+                Center + new LVector2(-quarter, -quarter));
             children[1] = new BoundsQuadTreeNode(this, newLength, minSize, looseness,
-                Center + new Vector2(quarter, -quarter));
+                Center + new LVector2(quarter, -quarter));
             children[2] = new BoundsQuadTreeNode(this, newLength, minSize, looseness,
-                Center + new Vector2(-quarter, quarter));
+                Center + new LVector2(-quarter, quarter));
             children[3] = new BoundsQuadTreeNode(this, newLength, minSize, looseness,
-                Center + new Vector2(quarter, quarter));
+                Center + new LVector2(quarter, quarter));
         }
 
         /// <summary>
@@ -696,7 +577,7 @@ namespace Lockstep.Collision2D {
         /// <param name="outerBounds">Outer bounds.</param>
         /// <param name="innerBounds">Inner bounds.</param>
         /// <returns>True if innerBounds is fully encapsulated by outerBounds.</returns>
-        static bool Encapsulates(Rect outerBounds, Rect innerBounds){
+        static bool Encapsulates(LRect outerBounds, LRect innerBounds){
             return outerBounds.Contains(innerBounds.min) && outerBounds.Contains(innerBounds.max);
         }
 

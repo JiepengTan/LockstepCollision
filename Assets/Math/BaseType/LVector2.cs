@@ -192,7 +192,11 @@ namespace Lockstep.Math {
             lhs._y = (int) (((long) lhs._y * LFloat.Precision) / rhs._val);
             return lhs;
         }
-
+        public static LVector2 operator /(LVector2 lhs, int rhs){
+            lhs._x = lhs._x / rhs;
+            lhs._y = lhs._y / rhs;
+            return lhs;
+        }
         public static bool operator ==(LVector2 a, LVector2 b){
             return a._x == b._x && a._y == b._y;
         }

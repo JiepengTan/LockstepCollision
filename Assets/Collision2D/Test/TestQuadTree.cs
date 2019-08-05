@@ -37,10 +37,10 @@ namespace Lockstep.Collision2D {
         private void Start(){
             // Initial size (metres), initial centre position, minimum node size (metres), looseness
             collisionSystem = new CollisionSystem() {
-                worldSize = worldSize,
-                pos = pos,
-                minNodeSize = minNodeSize,
-                loosenessval = loosenessval
+                worldSize = worldSize.ToLFloat(),
+                pos = pos.ToLVector3(),
+                minNodeSize = minNodeSize.ToLFloat(),
+                loosenessval = loosenessval.ToLFloat()
             };
             collisionSystem.DoStart(InterestingMasks);
             //init prefab 

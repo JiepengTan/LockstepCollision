@@ -18,7 +18,7 @@ namespace Lockstep.Collision2D {
         public bool IsStatic = false;
 
 
-        private Rect _bound;
+        private LRect _bound;
 
         public FuncOnTriggerEvent OnTriggerEvent;
 
@@ -70,8 +70,8 @@ namespace Lockstep.Collision2D {
         }
 
 
-        public Rect GetBounds(){
-            return new Rect(_bound.position + pos.ToVector2(), _bound.size);
+        public LRect GetBounds(){
+            return new LRect(_bound.position + pos, _bound.size);
         }
 
         public virtual void OnTriggerEnter(ColliderProxy other){ }
