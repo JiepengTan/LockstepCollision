@@ -18,7 +18,7 @@ namespace TQuadTree1 {
     public class TestQuadTree : MonoBehaviour {
         public Vector3 pos;
 
-        CollisionSystem collisionSystem;
+        ICollisionSystem collisionSystem;
         public float worldSize = 150;
         public float minNodeSize = 1;
         public float loosenessval = 1.25f;
@@ -29,7 +29,11 @@ namespace TQuadTree1 {
 
         public float percent = 0.1f;
         public int count = 100;
-
+        public int[][] InterestingMasks = new int[][] {
+            new int[]{} ,
+            new int[]{},
+            new int[]{0,1}
+        };
         private void Start(){
             // Initial size (metres), initial centre position, minimum node size (metres), looseness
             collisionSystem = new CollisionSystem() {
@@ -38,57 +42,100 @@ namespace TQuadTree1 {
                 minNodeSize = minNodeSize,
                 loosenessval = loosenessval
             };
-            collisionSystem.DoStart();
+            collisionSystem.DoStart(InterestingMasks);
             //init prefab 
             const int size = 4;
+
+            void CreatePrefab(CBaseShape collider){
+                var prefab = new ColliderPrefab();
+                prefab.parts.Add(new ColliderPart() {
+                    transform = new CTransform2D(LVector2.zero),
+                    collider = collider
+                });
+                prefabs.Add(prefab);
+            }
             for (int i = 1; i < size; i++) {
                 for (int j = 1; j < size; j++) {
-                    var prefab = new ColliderPrefab();
-                    prefab.parts.Add(new ColliderPart() {
-                        transform = new CTransform2D(LVector2.zero),
-                        collider = new CAABB(new LVector2(i, j))
-                    });
-                    prefabs.Add(prefab);
+                    CreatePrefab(new CAABB(new LVector2(i, j)));
+                    CreatePrefab(new COBB(new LVector2(i, j), LFloat.zero));
+                    CreatePrefab(new CCircle(((i + j) * 0.5f).ToLFloat()));
                 }
             }
 
             for (int i = 0; i < count; i++) {
-                var prefab = prefabs[Random.Range(0, prefabs.Count)];
-                var colInfo = (CAABB) prefab.collider;
-                var obj = GameObject.CreatePrimitive(PrimitiveType.Cube).GetComponent<Collider>();
-
-                obj.transform.SetParent(transform, false);
-                obj.transform.position = new Vector3(Random.Range(-halfworldSize, halfworldSize), 0,
-                    Random.Range(-halfworldSize, halfworldSize));
-                obj.transform.localScale = new Vector3(colInfo.size.x.ToFloat() * 2, 1, colInfo.size.y.ToFloat() * 2);
-
-                var proxy = new ColliderProxy();
-                proxy.Init(prefab, obj.transform.position.ToLVector2XZ());
-                proxy.UnityTransform = obj.transform;
-                var mono = obj.gameObject.AddComponent<ColliderProxyMono>();
-                mono.proxy = proxy;
+                int layerType = 0;
+                var rawColor = Color.white;
+                bool isStatic = true;
                 if (i < percent * count * 2) {
-                    obj.gameObject.AddComponent<RandomMove>().halfworldSize = halfworldSize;
-                    proxy.LayerType = 1;
-                    mono.rawColor = Color.yellow;
+                    layerType = 1;
+                    isStatic = false;
+                    rawColor = Color.yellow;
                     if (i < percent * count) {
-                        mono.rawColor = Color.green;
-                        proxy.LayerType = 2;
+                        rawColor = Color.green;
+                        layerType = 2;
                     }
                 }
-                else {
-                    proxy.IsStatic = true;
-                    proxy.LayerType = 0;
-                }
 
+                var proxy = CreateType(layerType, isStatic, rawColor);
                 collisionSystem.AddCollider(proxy);
             }
         }
 
+        Dictionary<EShape2D, PrimitiveType> type2PType = new Dictionary<EShape2D, PrimitiveType>() {
+            {EShape2D.Circle, PrimitiveType.Cylinder},
+            {EShape2D.AABB, PrimitiveType.Cube},
+            {EShape2D.OBB, PrimitiveType.Cube},
+        };
+
+        private ColliderProxy CreateType(int layerType, bool isStatic, Color rawColor){
+            var prefab = prefabs[Random.Range(0, prefabs.Count)];
+            var type = (EShape2D) prefab.collider.TypeId;
+            var obj = GameObject.CreatePrimitive(type2PType[type]).GetComponent<Collider>();
+            obj.transform.SetParent(transform, false);
+            obj.transform.position = new Vector3(Random.Range(-halfworldSize, halfworldSize), 0,
+                Random.Range(-halfworldSize, halfworldSize));
+            switch (type) {
+                case EShape2D.Circle: {
+                    var colInfo = (CCircle) prefab.collider;
+                    obj.transform.localScale =
+                        new Vector3(colInfo.radius.ToFloat() * 2, 1, colInfo.radius.ToFloat() * 2);
+                    break;
+                }
+                case EShape2D.AABB: {
+                    var colInfo = (CAABB) prefab.collider;
+                    obj.transform.localScale =
+                        new Vector3(colInfo.size.x.ToFloat() * 2, 1, colInfo.size.y.ToFloat() * 2);
+                    break;
+                }
+                case EShape2D.OBB: {
+                    var colInfo = (COBB) prefab.collider;
+                    obj.transform.localScale =
+                        new Vector3(colInfo.size.x.ToFloat() * 2, 1, colInfo.size.y.ToFloat() * 2);
+                    break;
+                }
+            }
+
+            var proxy = new ColliderProxy();
+            proxy.Init(prefab, obj.transform.position.ToLVector2XZ());
+            proxy.UnityTransform = obj.transform;
+            var mono = obj.gameObject.AddComponent<ColliderProxyMono>();
+            mono.proxy = proxy;
+            if (!isStatic) {
+                var mover = obj.gameObject.AddComponent<RandomMove>();
+                mover.halfworldSize = halfworldSize;
+                mover.isNeedRotate = type == EShape2D.OBB;
+            }
+
+            proxy.IsStatic = isStatic;
+            proxy.LayerType = layerType;
+            mono.rawColor = rawColor;
+            return proxy;
+        }
+
         public int showTreeId = 0;
+
         private void Update(){
-            
-            collisionSystem.showTreeId = showTreeId;
+            collisionSystem.ShowTreeId = showTreeId;
             collisionSystem.DoUpdate();
             ////class version 1.41ms
             //Profiler.BeginSample("CheckCollision");

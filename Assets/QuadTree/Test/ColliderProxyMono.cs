@@ -7,6 +7,7 @@ namespace TQuadTree1 {
         public ColliderProxy proxy;
 
         public Vector2 prePos;
+        public float preDeg;
         public bool hasInit = false;
 
         private Material mat;
@@ -15,6 +16,7 @@ namespace TQuadTree1 {
         private void Start(){
             mat = new Material(GetComponent<Renderer>().material);
             GetComponent<Renderer>().material = mat;
+            preDeg = 0;
         }
 
         public void Update(){
@@ -31,10 +33,16 @@ namespace TQuadTree1 {
                 proxy.pos = curPos.ToLVector2();
             }
 
+            var curDeg = transform.localRotation.eulerAngles.y;
+            if (Mathf.Abs(curDeg - preDeg) > 0.1f) {
+                preDeg = curDeg;
+                proxy.deg = curDeg.ToLFloat();
+            }
+            
             if (IsDebug) {
                 int i = 0;
             }
-            mat.color = hasCollided ? rawColor * 0.5f :rawColor;
+            mat.color = hasCollided ? rawColor * 0.2f :rawColor;
             if (hasCollided) {
                 hasCollided = false;
             }

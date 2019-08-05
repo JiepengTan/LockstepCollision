@@ -142,6 +142,10 @@ namespace TQuadTree1 {
                     var halfSize = ((CAABB) col).size;
                     return LRect.CreateRect(tran.pos, halfSize).ToRect();
                 }
+                case EShape2D.OBB: {
+                    var radius = ((COBB) col).radius;
+                    return LRect.CreateRect(tran.pos, new LVector2(radius, radius)).ToRect();
+                }
             }
 
             Debug.LogError("No support type" + type);
@@ -172,13 +176,10 @@ namespace TQuadTree1 {
 
         int[] allTypes => new int[] {0, 1, 2};
 
-        public int[][] intrestingMasks = new int[][] {
-            new int[]{} ,
-            new int[]{},
-            new int[]{0,1}
-        };
+        public int[][] InterestingMasks;
         
-        public void DoStart(){
+        public void DoStart(int[][] interestingMasks){
+            this.InterestingMasks = interestingMasks;
             //init _collisionMask//TODO read from file
             for (int i = 0; i < _collisionMask.Length; i++) {
                 _collisionMask[i] = (uint) (~(1 << i));
@@ -236,7 +237,7 @@ namespace TQuadTree1 {
             foreach (var val in tempLst) {
                 val._isMoved = false;
                 var bound = val.GetBounds();
-                var targetLayers = intrestingMasks[val.LayerType];
+                var targetLayers = IntrestingMasks[val.LayerType];
                 foreach (var layerType in targetLayers) {
                     var boundsTree = GetBoundTree(layerType);
                     boundsTree.CheckCollision(val, bound);
@@ -319,9 +320,10 @@ namespace TQuadTree1 {
             }
         }
 
-        public int showTreeId = 0;
+        public int ShowTreeId { get; set; }
+
         public void DrawGizmos(){
-            var boundsTree = GetBoundTree(showTreeId);
+            var boundsTree = GetBoundTree(ShowTreeId);
             if (boundsTree == null) return;
             boundsTree.DrawAllBounds(); // Draw node boundaries
             boundsTree.DrawAllObjects(); // Draw object boundaries

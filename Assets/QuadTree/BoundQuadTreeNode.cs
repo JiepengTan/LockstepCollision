@@ -1,4 +1,9 @@
-﻿using System;
+﻿//#define SHOW_TREE_NODES
+#if SHOW_TREE_NODES && UNITY_EDITOR
+#define SHOW_NODES
+#endif
+
+using System;
 using System.Collections.Generic;
 using Lockstep.Collision;
 using UnityEngine;
@@ -12,7 +17,7 @@ namespace TQuadTree1 {
 // Copyright 2014 Nition, BSD licence (see LICENCE file). www.momentstudio.co.nz
     public class BoundsQuadTreeNode   {
         public BoundsQuadTreeNode parent;
-#if UNITY_EDITOR
+#if SHOW_NODES
         public Transform monoTrans;
 #endif
         // Centre of this node
@@ -68,7 +73,7 @@ namespace TQuadTree1 {
         /// <param name="centerVal">Centre position of this node.</param>
         public BoundsQuadTreeNode(BoundsQuadTreeNode parent, float baseLengthVal, float minSizeVal,
             float loosenessVal, Vector2 centerVal){
-#if UNITY_EDITOR
+#if SHOW_NODES
             monoTrans = new GameObject(MonoID++.ToString()).transform;
             if (parent != null) {
                 monoTrans.SetParent(parent.monoTrans, false);
@@ -334,7 +339,7 @@ namespace TQuadTree1 {
             }
 
             children = childQuadTrees;
-#if UNITY_EDITOR
+#if SHOW_NODES
             foreach (var child in childQuadTrees) {
                 child.monoTrans.SetParent(monoTrans, false);
             }
@@ -558,7 +563,7 @@ namespace TQuadTree1 {
                 if (objects.Count < NUM_OBJECTS_ALLOWED || (BaseLength / 2) < minSize) {
                     OctreeObject newObj = new OctreeObject {Obj = obj, Bounds = objBounds};
                     objects.Add(newObj);
-#if UNITY_EDITOR
+#if SHOW_NODES
                     obj.UnityTransform?.SetParent(monoTrans, true);
 #endif
 
@@ -669,7 +674,7 @@ namespace TQuadTree1 {
                     objects.Add(curObj);
                     obj2Node[curObj.Obj] = this;
                 }
-#if UNITY_EDITOR
+#if SHOW_NODES
                 var childCount = curChild.monoTrans.childCount;
                 for (int j = childCount - 1; j >= 0; j--) {
                     var trans = curChild.monoTrans.GetChild(j);

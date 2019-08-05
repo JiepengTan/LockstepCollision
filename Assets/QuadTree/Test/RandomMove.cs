@@ -8,9 +8,12 @@ namespace TQuadTree1 {
         public float spd = 3;
         public float updateInterval = 50;
         private float timer = 0;
+        public bool isNeedRotate = false;
 
+        public float rotateSpd = 60;
         void Start(){
             spd = spd * Random.Range(1.0f, 2.0f);
+            rotateSpd = rotateSpd * Random.Range(1.0f, 2.0f);
             UpdateTargetPos();
         }
 
@@ -28,6 +31,11 @@ namespace TQuadTree1 {
 
             if ((transform.position - targetPos).sqrMagnitude < 1) {
                 UpdateTargetPos();
+            }
+
+            if (isNeedRotate) {
+                var deg = transform.localRotation.eulerAngles.y;
+                transform.localRotation = Quaternion.Euler(0,deg + Time.deltaTime * rotateSpd,0);
             }
 
             transform.position += (targetPos - transform.position).normalized * Time.deltaTime * spd;
