@@ -237,7 +237,7 @@ namespace TQuadTree1 {
             foreach (var val in tempLst) {
                 val._isMoved = false;
                 var bound = val.GetBounds();
-                var targetLayers = IntrestingMasks[val.LayerType];
+                var targetLayers = InterestingMasks[val.LayerType];
                 foreach (var layerType in targetLayers) {
                     var boundsTree = GetBoundTree(layerType);
                     boundsTree.CheckCollision(val, bound);
