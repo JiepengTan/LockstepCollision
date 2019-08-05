@@ -8,16 +8,15 @@
  - AABB
  - Circle
  - OBB 
- - 
-
-### **TODO**
  - Polygon
- - RayCast
- - Segment
+ - Ray
+ - QuadTree SpacePatition
+
+
+<p align="center"> <img src="https://github.com/JiepengTan/JiepengTan.github.io/blob/master/assets/img/blog/LockstepPlatform/Collison0.4.0.gif" width="512"/></p>
 
 
 <p align="center"> <img src="https://github.com/JiepengTan/JiepengTan.github.io/blob/master/assets/img/blog/LockstepPlatform/lockstep_collision_2d.gif" width="512"/></p>
-
 
 ## **Collision3D**
 
