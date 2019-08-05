@@ -1,4 +1,4 @@
-﻿//#define SHOW_TREE_NODES
+﻿#define SHOW_TREE_NODES//层级显示所有节点
 #if SHOW_TREE_NODES && UNITY_EDITOR
 #define SHOW_NODES
 #endif

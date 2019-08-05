@@ -1,0 +1,37 @@
+using System.Collections.Generic;
+using Lockstep.Math;
+using Lockstep.UnsafeCollision2D;
+using UnityEngine;
+
+namespace Lockstep.Collision2D {
+    public class ColliderPrefab {
+        public List<ColliderPart> parts = new List<ColliderPart>();
+        public CBaseShape collider => parts[0].collider;
+        public CTransform2D transform => parts[0].transform;
+
+        public Rect GetBounds(){
+            //TODO
+            var col = collider;
+            var tran = transform;
+            var type = (EShape2D) col.TypeId;
+            switch (type) {
+                case EShape2D.Circle: {
+                    var radius = ((CCircle) col).radius;
+                    return LRect.CreateRect(tran.pos, new LVector2(radius, radius)).ToRect();
+                }
+                case EShape2D.AABB: {
+                    var halfSize = ((CAABB) col).size;
+                    return LRect.CreateRect(tran.pos, halfSize).ToRect();
+                }
+                case EShape2D.OBB: {
+                    var radius = ((COBB) col).radius;
+                    return LRect.CreateRect(tran.pos, new LVector2(radius, radius)).ToRect();
+                }
+            }
+
+            Debug.LogError("No support type" + type);
+
+            return new Rect();
+        }
+    }
+}
