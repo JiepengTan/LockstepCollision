@@ -34,7 +34,7 @@ namespace TQuadTree1 {
             if (IsDebug) {
                 int i = 0;
             }
-            mat.color = hasCollided ? Color.red :rawColor;
+            mat.color = hasCollided ? rawColor * 0.5f :rawColor;
             if (hasCollided) {
                 hasCollided = false;
             }

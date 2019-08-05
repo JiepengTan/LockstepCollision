@@ -18,7 +18,6 @@ namespace TQuadTree1 {
     public class TestQuadTree : MonoBehaviour {
         public Vector3 pos;
 
-        // Initial size (metres), initial centre position, minimum node size (metres), looseness
         CollisionSystem collisionSystem;
         public float worldSize = 150;
         public float minNodeSize = 1;
@@ -70,20 +69,26 @@ namespace TQuadTree1 {
                 mono.proxy = proxy;
                 if (i < percent * count * 2) {
                     obj.gameObject.AddComponent<RandomMove>().halfworldSize = halfworldSize;
+                    proxy.LayerType = 1;
+                    mono.rawColor = Color.yellow;
                     if (i < percent * count) {
                         mono.rawColor = Color.green;
+                        proxy.LayerType = 2;
                     }
                 }
                 else {
                     proxy.IsStatic = true;
+                    proxy.LayerType = 0;
                 }
 
                 collisionSystem.AddCollider(proxy);
             }
         }
 
-
+        public int showTreeId = 0;
         private void Update(){
+            
+            collisionSystem.showTreeId = showTreeId;
             collisionSystem.DoUpdate();
             ////class version 1.41ms
             //Profiler.BeginSample("CheckCollision");

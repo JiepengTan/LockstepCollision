@@ -37,16 +37,18 @@ namespace TQuadTree1 {
         }
     }
 
-    public class BoundsQuadTree<T> where T : ColliderProxy {
+    public class BoundsQuadTree  {
         // The total amount of objects currently in the tree
         public int Count { get; private set; }
 
         // Root node of the octree
-        BoundsQuadTreeNode<T> rootNode;
+        BoundsQuadTreeNode rootNode;
 
         public delegate bool FuncCheckCanCollide(ColliderProxy a, ColliderProxy b);
+        public delegate void FuncOnCollide(ColliderProxy a, ColliderProxy b);
 
         public static FuncCheckCanCollide FuncCanCollide = (a, b) => true;
+        public static FuncOnCollide funcOnCollide = (a, b) => { };
 
         // Should be a value between 1 and 2. A multiplier for the base size of a node.
         // 1.0 is a "normal" octree, while values > 1 have overlap
@@ -82,10 +84,10 @@ namespace TQuadTree1 {
             initialSize = initialWorldSize;
             minSize = minNodeSize;
             looseness = Mathf.Clamp(loosenessVal, 1.0f, 2.0f);
-            rootNode = new BoundsQuadTreeNode<T>(null, initialSize, minSize, looseness, initialWorldPos);
+            rootNode = new BoundsQuadTreeNode(null, initialSize, minSize, looseness, initialWorldPos);
         }
 
-        public void UpdateObj(T obj, Rect bound){
+        public void UpdateObj(ColliderProxy obj, Rect bound){
             var node = GetNode(obj);
             if (node == null) {
                 Add(obj, bound);
@@ -104,8 +106,8 @@ namespace TQuadTree1 {
 
 
         // #### PUBLIC METHODS ####
-        public BoundsQuadTreeNode<T> GetNode(T obj){
-            if (BoundsQuadTreeNode<T>.obj2Node.TryGetValue(obj, out var val)) {
+        public BoundsQuadTreeNode GetNode(ColliderProxy obj){
+            if (BoundsQuadTreeNode.obj2Node.TryGetValue(obj, out var val)) {
                 return val;
             }
 
@@ -117,7 +119,7 @@ namespace TQuadTree1 {
         /// </summary>
         /// <param name="obj">Object to add.</param>
         /// <param name="objBounds">3D bounding box around the object.</param>
-        public void Add(T obj, Rect objBounds){
+        public void Add(ColliderProxy obj, Rect objBounds){
             // Add object or expand the octree until it can be added
             int count = 0; // Safety check against infinite/excessive growth
             while (!rootNode.Add(obj, objBounds)) {
@@ -138,7 +140,7 @@ namespace TQuadTree1 {
         /// </summary>
         /// <param name="obj">Object to remove.</param>
         /// <returns>True if the object was removed successfully.</returns>
-        public bool Remove(T obj){
+        public bool Remove(ColliderProxy obj){
             bool removed = rootNode.Remove(obj);
 
             // See if we can shrink the octree down now that we've removed the item
@@ -156,7 +158,7 @@ namespace TQuadTree1 {
         /// <param name="obj">Object to remove.</param>
         /// <param name="objBounds">3D bounding box around the object.</param>
         /// <returns>True if the object was removed successfully.</returns>
-        public bool Remove(T obj, Rect objBounds){
+        public bool Remove(ColliderProxy obj, Rect objBounds){
             bool removed = rootNode.Remove(obj, objBounds);
 
             // See if we can shrink the octree down now that we've removed the item
@@ -173,7 +175,7 @@ namespace TQuadTree1 {
         /// </summary>
         /// <param name="checkBounds">bounds to check.</param>
         /// <returns>True if there was a collision.</returns>
-        public bool IsColliding(T obj, Rect checkBounds){
+        public bool IsColliding(ColliderProxy obj, Rect checkBounds){
             //#if UNITY_EDITOR
             // For debugging
             //AddCollisionCheck(checkBounds);
@@ -181,8 +183,8 @@ namespace TQuadTree1 {
             return rootNode.IsColliding(obj, ref checkBounds);
         }
 
-        public void CheckCollision(T obj, Rect checkBounds, Action<T, T> callback){
-            rootNode.CheckCollision(obj, ref checkBounds, callback);
+        public void CheckCollision(ColliderProxy obj, Rect checkBounds){
+            rootNode.CheckCollision(obj, ref checkBounds);
         }
 
 
@@ -206,7 +208,7 @@ namespace TQuadTree1 {
         /// <param name="collidingWith">list to store intersections.</param>
         /// <param name="checkBounds">bounds to check.</param>
         /// <returns>Objects that intersect with the specified bounds.</returns>
-        public void GetColliding(List<T> collidingWith, Rect checkBounds){
+        public void GetColliding(List<ColliderProxy> collidingWith, Rect checkBounds){
             //#if UNITY_EDITOR
             // For debugging
             //AddCollisionCheck(checkBounds);
@@ -221,7 +223,7 @@ namespace TQuadTree1 {
         /// <param name="checkRay">ray to check.</param>
         /// <param name="maxDistance">distance to check.</param>
         /// <returns>Objects that intersect with the specified ray.</returns>
-        public void GetColliding(List<T> collidingWith, Ray checkRay, float maxDistance = float.PositiveInfinity){
+        public void GetColliding(List<ColliderProxy> collidingWith, Ray checkRay, float maxDistance = float.PositiveInfinity){
             //#if UNITY_EDITOR
             // For debugging
             //AddCollisionCheck(checkRay);
@@ -229,10 +231,10 @@ namespace TQuadTree1 {
             rootNode.GetColliding(ref checkRay, collidingWith, maxDistance);
         }
 
-        public List<T> GetWithinFrustum(Camera cam){
+        public List<ColliderProxy> GetWithinFrustum(Camera cam){
             var planes = GeometryUtility.CalculateFrustumPlanes(cam);
 
-            var list = new List<T>();
+            var list = new List<ColliderProxy>();
             rootNode.GetWithinFrustum(planes, list);
             return list;
         }
@@ -320,18 +322,18 @@ namespace TQuadTree1 {
         void Grow(Vector2 direction){
             int xDirection = direction.x >= 0 ? 1 : -1;
             int yDirection = direction.y >= 0 ? 1 : -1;
-            BoundsQuadTreeNode<T> oldRoot = rootNode;
+            BoundsQuadTreeNode oldRoot = rootNode;
             float half = rootNode.BaseLength / 2;
             float newLength = rootNode.BaseLength * 2;
             Vector2 newCenter = rootNode.Center + new Vector2(xDirection * half, yDirection * half);
 
             // Create a new, bigger octree root node
-            rootNode = new BoundsQuadTreeNode<T>(null, newLength, minSize, looseness, newCenter);
+            rootNode = new BoundsQuadTreeNode(null, newLength, minSize, looseness, newCenter);
 
             if (oldRoot.HasAnyObjects()) {
                 // Create 7 new octree children to go with the old root as children of the new root
                 int rootPos = rootNode.BestFitChild(oldRoot.Center);
-                BoundsQuadTreeNode<T>[] children = new BoundsQuadTreeNode<T>[NUM_CHILDREN];
+                BoundsQuadTreeNode[] children = new BoundsQuadTreeNode[NUM_CHILDREN];
                 for (int i = 0; i < NUM_CHILDREN; i++) {
                     if (i == rootPos) {
                         children[i] = oldRoot;
@@ -339,7 +341,7 @@ namespace TQuadTree1 {
                     else {
                         xDirection = i % 2 == 0 ? -1 : 1;
                         yDirection = i > 1 ? -1 : 1;
-                        children[i] = new BoundsQuadTreeNode<T>(rootNode, oldRoot.BaseLength, minSize, looseness,
+                        children[i] = new BoundsQuadTreeNode(rootNode, oldRoot.BaseLength, minSize, looseness,
                             newCenter + new Vector2(xDirection * half, yDirection * half));
                     }
                 }

@@ -10,8 +10,8 @@ using Rect = UnityEngine.Rect;
 namespace TQuadTree1 {
 // A node in a BoundsOctree
 // Copyright 2014 Nition, BSD licence (see LICENCE file). www.momentstudio.co.nz
-    public class BoundsQuadTreeNode<T> where T : ColliderProxy {
-        public BoundsQuadTreeNode<T> parent;
+    public class BoundsQuadTreeNode   {
+        public BoundsQuadTreeNode parent;
 #if UNITY_EDITOR
         public Transform monoTrans;
 #endif
@@ -37,7 +37,7 @@ namespace TQuadTree1 {
         readonly List<OctreeObject> objects = new List<OctreeObject>();
 
         // Child nodes, if any
-        BoundsQuadTreeNode<T>[] children = null;
+        BoundsQuadTreeNode[] children = null;
 
         bool HasChildren {
             get { return children != null; }
@@ -48,12 +48,12 @@ namespace TQuadTree1 {
 
         // If there are already NUM_OBJECTS_ALLOWED in a node, we split it into children
         // A generally good number seems to be something around 8-15
-        const int NUM_OBJECTS_ALLOWED = 4;
-        const int NUM_CHILDREN = BoundsQuadTree<T>.NUM_CHILDREN;
+        const int NUM_OBJECTS_ALLOWED = 6;
+        const int NUM_CHILDREN = BoundsQuadTree.NUM_CHILDREN;
 
         // An object in the octree
         struct OctreeObject {
-            public T Obj;
+            public ColliderProxy Obj;
             public Rect Bounds;
         }
 
@@ -66,7 +66,7 @@ namespace TQuadTree1 {
         /// <param name="minSizeVal">Minimum size of nodes in this octree.</param>
         /// <param name="loosenessVal">Multiplier for baseLengthVal to get the actual size.</param>
         /// <param name="centerVal">Centre position of this node.</param>
-        public BoundsQuadTreeNode(BoundsQuadTreeNode<T> parent, float baseLengthVal, float minSizeVal,
+        public BoundsQuadTreeNode(BoundsQuadTreeNode parent, float baseLengthVal, float minSizeVal,
             float loosenessVal, Vector2 centerVal){
 #if UNITY_EDITOR
             monoTrans = new GameObject(MonoID++.ToString()).transform;
@@ -87,7 +87,7 @@ namespace TQuadTree1 {
         /// <param name="obj">Object to add.</param>
         /// <param name="objBounds">3D bounding box around the object.</param>
         /// <returns>True if the object fits entirely within this node.</returns>
-        public bool Add(T obj, Rect objBounds){
+        public bool Add(ColliderProxy obj, Rect objBounds){
             if (!Encapsulates(bounds, objBounds)) {
                 return false;
             }
@@ -101,7 +101,7 @@ namespace TQuadTree1 {
         /// </summary>
         /// <param name="obj">Object to remove.</param>
         /// <returns>True if the object was removed successfully.</returns>
-        public bool Remove(T obj){
+        public bool Remove(ColliderProxy obj){
             if (obj2Node.TryGetValue(obj, out var val)) {
                 obj2Node.Remove(obj);
                 bool removed = false;
@@ -128,7 +128,7 @@ namespace TQuadTree1 {
             return Encapsulates(bounds, bound);
         }
 
-        public void UpdateObj(T obj, Rect bound){
+        public void UpdateObj(ColliderProxy obj, Rect bound){
             for (int i = 0; i < objects.Count; i++) {
                 if (ReferenceEquals(objects[i].Obj, obj)) {
                     objects[i] = new OctreeObject() {Obj = obj, Bounds = bound};
@@ -150,7 +150,7 @@ namespace TQuadTree1 {
         /// <param name="obj">Object to remove.</param>
         /// <param name="objBounds">3D bounding box around the object.</param>
         /// <returns>True if the object was removed successfully.</returns>
-        public bool Remove(T obj, Rect objBounds){
+        public bool Remove(ColliderProxy obj, Rect objBounds){
             if (!Encapsulates(bounds, objBounds)) {
                 return false;
             }
@@ -163,7 +163,7 @@ namespace TQuadTree1 {
         /// </summary>
         /// <param name="checkBounds">Bounds to check.</param>
         /// <returns>True if there was a collision.</returns>
-        public bool IsColliding(T obj, ref Rect checkBounds){
+        public bool IsColliding(ColliderProxy obj, ref Rect checkBounds){
             // Are the input bounds at least partially in this node?
             if (!bounds.Overlaps(checkBounds)) {
                 return false;
@@ -189,7 +189,7 @@ namespace TQuadTree1 {
             return false;
         }
 
-        public void CheckCollision(T obj, ref Rect checkBounds, Action<T, T> callback){
+        public void CheckCollision(ColliderProxy obj, ref Rect checkBounds){
             // Are the input bounds at least partially in this node?
             if (!bounds.Overlaps(checkBounds)) {
                 return;
@@ -198,16 +198,18 @@ namespace TQuadTree1 {
             // Check against any objects in this node
             for (int i = 0; i < objects.Count; i++) {
                 var o = objects[i];
-                if (BoundsQuadTree<T>.FuncCanCollide(o.Obj, obj) && !ReferenceEquals(o.Obj, obj) &&
-                    o.Bounds.Overlaps(checkBounds)) {
-                    callback(obj, o.Obj);
+                if (!ReferenceEquals(o.Obj, obj) 
+                    &&BoundsQuadTree.FuncCanCollide(o.Obj, obj)
+                    &&o.Bounds.Overlaps(checkBounds)
+                    ) {
+                    BoundsQuadTree.funcOnCollide(obj, o.Obj);
                 }
             }
 
             // Check children
             if (children != null) {
                 for (int i = 0; i < NUM_CHILDREN; i++) {
-                    children[i].CheckCollision(obj, ref checkBounds, callback);
+                    children[i].CheckCollision(obj, ref checkBounds);
                 }
             }
         }
@@ -250,7 +252,7 @@ namespace TQuadTree1 {
         /// <param name="checkBounds">Bounds to check. Passing by ref as it improves performance with structs.</param>
         /// <param name="result">List result.</param>
         /// <returns>Objects that intersect with the specified bounds.</returns>
-        public void GetColliding(ref Rect checkBounds, List<T> result){
+        public void GetColliding(ref Rect checkBounds, List<ColliderProxy> result){
             // Are the input bounds at least partially in this node?
             if (!bounds.Overlaps(checkBounds)) {
                 return;
@@ -278,7 +280,7 @@ namespace TQuadTree1 {
         /// <param name="maxDistance">Distance to check.</param>
         /// <param name="result">List result.</param>
         /// <returns>Objects that intersect with the specified ray.</returns>
-        public void GetColliding(ref Ray checkRay, List<T> result, float maxDistance = float.PositiveInfinity){
+        public void GetColliding(ref Ray checkRay, List<ColliderProxy> result, float maxDistance = float.PositiveInfinity){
             float distance;
             // Is the input ray at least partially in this node?
             //if (!bounds.IntersectRay(checkRay, out distance) || distance > maxDistance) {
@@ -300,7 +302,7 @@ namespace TQuadTree1 {
             //}
         }
 
-        public void GetWithinFrustum(Plane[] planes, List<T> result){
+        public void GetWithinFrustum(Plane[] planes, List<ColliderProxy> result){
             // Is the input node inside the frustum?
             //if (!GeometryUtility.TestPlanesAABB(planes, bounds)) {
             //    return;
@@ -325,7 +327,7 @@ namespace TQuadTree1 {
         /// Set the 8 children of this octree.
         /// </summary>
         /// <param name="childQuadTrees">The 8 new child nodes.</param>
-        public void SetChildren(BoundsQuadTreeNode<T>[] childQuadTrees){
+        public void SetChildren(BoundsQuadTreeNode[] childQuadTrees){
             if (childQuadTrees.Length != NUM_CHILDREN) {
                 Debug.LogError("Child octree array must be length 8. Was length: " + childQuadTrees.Length);
                 return;
@@ -395,7 +397,7 @@ namespace TQuadTree1 {
         /// </summary>
         /// <param name="minLength">Minimum dimensions of a node in this octree.</param>
         /// <returns>The new root, or the existing one if we didn't shrink.</returns>
-        public BoundsQuadTreeNode<T> ShrinkIfPossible(float minLength){
+        public BoundsQuadTreeNode ShrinkIfPossible(float minLength){
             if (BaseLength < (2 * minLength)) {
                 return this;
             }
@@ -539,14 +541,14 @@ namespace TQuadTree1 {
         }
 
 
-        public static Dictionary<T, BoundsQuadTreeNode<T>> obj2Node = new Dictionary<T, BoundsQuadTreeNode<T>>();
+        public static Dictionary<ColliderProxy, BoundsQuadTreeNode> obj2Node = new Dictionary<ColliderProxy, BoundsQuadTreeNode>();
 
         /// <summary>
         /// Private counterpart to the public Add method.
         /// </summary>
         /// <param name="obj">Object to add.</param>
         /// <param name="objBounds">3D bounding box around the object.</param>
-        void SubAdd(T obj, Rect objBounds){
+        void SubAdd(ColliderProxy obj, Rect objBounds){
             // We know it fits at this level if we've got this far
 
             // We always put things in the deepest possible child
@@ -604,12 +606,12 @@ namespace TQuadTree1 {
         }
 
         /// <summary>
-        /// Private counterpart to the public <see cref="Remove(T, Rect)"/> method.
+        /// Private counterpart to the public <see cref="Remove(ColliderProxy, Rect)"/> method.
         /// </summary>
         /// <param name="obj">Object to remove.</param>
         /// <param name="objBounds">3D bounding box around the object.</param>
         /// <returns>True if the object was removed successfully.</returns>
-        bool SubRemove(T obj, Rect objBounds){
+        bool SubRemove(ColliderProxy obj, Rect objBounds){
             bool removed = false;
 
             for (int i = 0; i < objects.Count; i++) {
@@ -640,14 +642,14 @@ namespace TQuadTree1 {
         void Split(){
             float quarter = BaseLength / 4f;
             float newLength = BaseLength / 2;
-            children = new BoundsQuadTreeNode<T>[NUM_CHILDREN];
-            children[0] = new BoundsQuadTreeNode<T>(this, newLength, minSize, looseness,
+            children = new BoundsQuadTreeNode[NUM_CHILDREN];
+            children[0] = new BoundsQuadTreeNode(this, newLength, minSize, looseness,
                 Center + new Vector2(-quarter, -quarter));
-            children[1] = new BoundsQuadTreeNode<T>(this, newLength, minSize, looseness,
+            children[1] = new BoundsQuadTreeNode(this, newLength, minSize, looseness,
                 Center + new Vector2(quarter, -quarter));
-            children[2] = new BoundsQuadTreeNode<T>(this, newLength, minSize, looseness,
+            children[2] = new BoundsQuadTreeNode(this, newLength, minSize, looseness,
                 Center + new Vector2(-quarter, quarter));
-            children[3] = new BoundsQuadTreeNode<T>(this, newLength, minSize, looseness,
+            children[3] = new BoundsQuadTreeNode(this, newLength, minSize, looseness,
                 Center + new Vector2(quarter, quarter));
         }
 
@@ -660,7 +662,7 @@ namespace TQuadTree1 {
             // Note: We know children != null or we wouldn't be merging
             if (children == null) return;
             for (int i = 0; i < NUM_CHILDREN; i++) {
-                BoundsQuadTreeNode<T> curChild = children[i];
+                BoundsQuadTreeNode curChild = children[i];
                 int numObjects = curChild.objects.Count;
                 for (int j = numObjects - 1; j >= 0; j--) {
                     OctreeObject curObj = curChild.objects[j];
@@ -673,6 +675,7 @@ namespace TQuadTree1 {
                     var trans = curChild.monoTrans.GetChild(j);
                     trans.SetParent(monoTrans, true);
                 }
+
                 Debug.Assert(curChild.monoTrans.childCount == 0);
                 Object.Destroy(curChild.monoTrans.gameObject);
 #endif
@@ -699,7 +702,7 @@ namespace TQuadTree1 {
         bool ShouldMerge(){
             int totalObjects = objects.Count;
             if (children != null) {
-                foreach (BoundsQuadTreeNode<T> child in children) {
+                foreach (BoundsQuadTreeNode child in children) {
                     if (child.children != null) {
                         // If any of the *children* have children, there are definitely too many to merge,
                         // or the child woudl have been merged already

@@ -10,7 +10,7 @@ namespace TQuadTree1 {
         public Transform UnityTransform;
 #endif
         public uint Id;
-        public int LayerType { get; private set; }
+        public int LayerType { get; set; }
         public ColliderPrefab Prefab;
         public CTransform2D Transform2D;
         public LFloat Height;
@@ -22,7 +22,7 @@ namespace TQuadTree1 {
 
         public FuncOnTriggerEvent OnTriggerEvent;
 
-        private BoundsQuadTree<ColliderProxy> _quadTree;
+        private BoundsQuadTree _quadTree;
 
         private static uint autoIncId = 0;
 

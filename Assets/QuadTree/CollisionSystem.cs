@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Lockstep.Collision2D;
 using Lockstep.Math;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Random = System.Random;
 
 namespace TQuadTree1 {
@@ -149,10 +150,10 @@ namespace TQuadTree1 {
         }
     }
 
-    public class CollisionSystem {
+    public class CollisionSystem : ICollisionSystem {
         public uint[] _collisionMask = new uint[32];
 
-        public BoundsQuadTree<ColliderProxy> boundsTree;
+        public List<BoundsQuadTree> boundsTrees = new List<BoundsQuadTree>();
         public float worldSize = 150;
         public float minNodeSize = 1;
         public float loosenessval = 1.25f;
@@ -162,35 +163,52 @@ namespace TQuadTree1 {
         private HashSet<long> _curPairs = new HashSet<long>();
         private HashSet<long> _prePairs = new HashSet<long>();
         public const int LayerCount = 32;
+        private List<ColliderProxy> tempLst = new List<ColliderProxy>();
 
         public ColliderProxy GetCollider(uint id){
             return id2Proxy.TryGetValue(id, out var proxy) ? proxy : null;
         }
 
 
+        int[] allTypes => new int[] {0, 1, 2};
+
+        public int[][] intrestingMasks = new int[][] {
+            new int[]{} ,
+            new int[]{},
+            new int[]{0,1}
+        };
+        
         public void DoStart(){
             //init _collisionMask//TODO read from file
             for (int i = 0; i < _collisionMask.Length; i++) {
-                _collisionMask[i] = 0xffffffff;
+                _collisionMask[i] = (uint) (~(1 << i));
+            }
+            // Initial size (metres), initial centre position, minimum node size (metres), looseness
+            foreach (var type in allTypes) {
+                var boundsTree = new BoundsQuadTree(worldSize, pos, minNodeSize, loosenessval);
+                boundsTrees.Add(boundsTree);
             }
 
-            // Initial size (metres), initial centre position, minimum node size (metres), looseness
-            boundsTree = new BoundsQuadTree<ColliderProxy>(worldSize, pos, minNodeSize, loosenessval);
-            BoundsQuadTree<ColliderProxy>.FuncCanCollide = NeedCheck;
+            BoundsQuadTree.FuncCanCollide = NeedCheck;
+            BoundsQuadTree.funcOnCollide = OnQuadTreeCollision;
+        }
+
+        public BoundsQuadTree GetBoundTree(int layer){
+            if (layer > boundsTrees.Count || layer < 0) return null;
+            return boundsTrees[layer];
         }
 
         public void AddCollider(ColliderProxy collider){
-            boundsTree.Add(collider, collider.GetBounds());
+            GetBoundTree(collider.LayerType).Add(collider, collider.GetBounds());
             id2Proxy[collider.Id] = collider;
         }
 
-        private List<ColliderProxy> tempLst = new List<ColliderProxy>();
 
         //public List<>
         public void DoUpdate(){
             tempLst.Clear();
             //deal layer
-            foreach (var pair in BoundsQuadTreeNode<ColliderProxy>.obj2Node) {
+            foreach (var pair in BoundsQuadTreeNode.obj2Node) {
                 var val = pair.Key;
                 if (!val.IsStatic && val._isMoved) {
                     val._isMoved = false;
@@ -203,14 +221,30 @@ namespace TQuadTree1 {
             _prePairs = _curPairs;
             _curPairs = temp;
             _curPairs.Clear();
-
+            ////class version 1.41ms
+            Profiler.BeginSample("UpdateObj");
             foreach (var val in tempLst) {
                 val._isMoved = false;
                 var bound = val.GetBounds();
+                var boundsTree = GetBoundTree(val.LayerType);
                 boundsTree.UpdateObj(val, bound);
-                boundsTree.CheckCollision(val, bound, OnQuadTreeCollision);
             }
 
+            Profiler.EndSample();
+            ////0.32~0.42ms
+            Profiler.BeginSample("CheckCollision");
+            foreach (var val in tempLst) {
+                val._isMoved = false;
+                var bound = val.GetBounds();
+                var targetLayers = intrestingMasks[val.LayerType];
+                foreach (var layerType in targetLayers) {
+                    var boundsTree = GetBoundTree(layerType);
+                    boundsTree.CheckCollision(val, bound);
+                }
+            }
+
+            Profiler.EndSample();
+            Profiler.BeginSample("CheckLastFrameCollison");
             foreach (var pairId in _curPairs) {
                 _prePairs.Remove(pairId);
             }
@@ -233,18 +267,18 @@ namespace TQuadTree1 {
                     NotifyCollisionEvent(a, b, ECollisionEvent.Exit);
                 }
             }
+
+            Profiler.EndSample();
         }
 
         bool NeedCheck(ColliderProxy a, ColliderProxy b){
             var val = _collisionMask[a.LayerType];
-            return (val & 1 << b.LayerType) != 0;
+            var val2 = 1 << b.LayerType;
+            var needCheck = (val & val2) != 0;
+            return needCheck;
         }
 
         public void OnQuadTreeCollision(ColliderProxy a, ColliderProxy b){
-            OnQuadTreeCollision(a, b, true);
-        }
-
-        public void OnQuadTreeCollision(ColliderProxy a, ColliderProxy b, bool remove){
             var pairId = (((long) a.Id) << 32) + b.Id;
             if (_curPairs.Contains(pairId)) return;
             bool isCollided = CollisionHelper.CheckCollision
@@ -257,15 +291,14 @@ namespace TQuadTree1 {
         }
 
         public void NotifyCollisionEvent(ColliderProxy a, ColliderProxy b, ECollisionEvent type){
-          
-            if (!a.IsStatic) { 
+            if (!a.IsStatic) {
                 a.OnTriggerEvent?.Invoke(b, type);
-                TriggerEvent(a, b, type);
+                //TriggerEvent(a, b, type);
             }
 
             if (!b.IsStatic) {
                 b.OnTriggerEvent?.Invoke(a, type);
-                TriggerEvent(b, a, type);
+                //TriggerEvent(b, a, type);
             }
         }
 
@@ -286,10 +319,10 @@ namespace TQuadTree1 {
             }
         }
 
-
+        public int showTreeId = 0;
         public void DrawGizmos(){
+            var boundsTree = GetBoundTree(showTreeId);
             if (boundsTree == null) return;
-
             boundsTree.DrawAllBounds(); // Draw node boundaries
             boundsTree.DrawAllObjects(); // Draw object boundaries
             boundsTree.DrawCollisionChecks(); // Draw the last *numCollisionsToSave* collision check boundaries

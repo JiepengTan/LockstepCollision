@@ -10,6 +10,7 @@ namespace TQuadTree1 {
         private float timer = 0;
 
         void Start(){
+            spd = spd * Random.Range(1.0f, 2.0f);
             UpdateTargetPos();
         }
 

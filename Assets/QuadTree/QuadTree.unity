@@ -211,11 +211,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pos: {x: 0, y: 0, z: 0}
-  worldSize: 150
+  worldSize: 300
   minNodeSize: 1
   loosenessval: 1.25
-  percent: 0.1
-  count: 100
+  percent: 0.4
+  count: 1000
+  showTreeId: 0
 --- !u!4 &1023973054
 Transform:
   m_ObjectHideFlags: 0
