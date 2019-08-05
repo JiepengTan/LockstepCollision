@@ -6,13 +6,15 @@ using UnityEngine.Profiling;
 using Random = System.Random;
 
 namespace Lockstep.Collision2D {
+    public delegate void FuncGlobalOnTriggerEvent(ColliderProxy a, ColliderProxy other, ECollisionEvent type);
+
     public class CollisionSystem : ICollisionSystem {
         public uint[] _collisionMask = new uint[32];
 
         public List<BoundsQuadTree> boundsTrees = new List<BoundsQuadTree>();
         public LFloat worldSize = 150.ToLFloat();
         public LFloat minNodeSize = 1.ToLFloat();
-        public LFloat loosenessval = new LFloat(true,1250);
+        public LFloat loosenessval = new LFloat(true, 1250);
         public LVector3 pos;
 
         private Dictionary<uint, ColliderProxy> id2Proxy = new Dictionary<uint, ColliderProxy>();
@@ -21,21 +23,24 @@ namespace Lockstep.Collision2D {
         public const int LayerCount = 32;
         private List<ColliderProxy> tempLst = new List<ColliderProxy>();
 
+        public FuncGlobalOnTriggerEvent funcGlobalOnTriggerEvent;
+
         public ColliderProxy GetCollider(uint id){
             return id2Proxy.TryGetValue(id, out var proxy) ? proxy : null;
         }
 
 
-        int[] allTypes => new int[] {0, 1, 2};
-
+        public int[] AllTypes;
         public int[][] InterestingMasks;
-        
-        public void DoStart(int[][] interestingMasks){
+
+        public void DoStart(int[][] interestingMasks,int [] allTypes){
             this.InterestingMasks = interestingMasks;
+            this.AllTypes = allTypes;
             //init _collisionMask//TODO read from file
             for (int i = 0; i < _collisionMask.Length; i++) {
                 _collisionMask[i] = (uint) (~(1 << i));
             }
+
             // Initial size (metres), initial centre position, minimum node size (metres), looseness
             foreach (var type in allTypes) {
                 var boundsTree = new BoundsQuadTree(worldSize, pos, minNodeSize, loosenessval);
@@ -144,6 +149,8 @@ namespace Lockstep.Collision2D {
         }
 
         public void NotifyCollisionEvent(ColliderProxy a, ColliderProxy b, ECollisionEvent type){
+            funcGlobalOnTriggerEvent?.Invoke(a, b, type);
+
             if (!a.IsStatic) {
                 a.OnTriggerEvent?.Invoke(b, type);
                 //TriggerEvent(a, b, type);

@@ -34,6 +34,8 @@ namespace Lockstep.Collision2D {
             new int[]{},
             new int[]{0,1}
         };
+
+        private int[] allTypes = new int[] {0, 1, 2};
         private void Start(){
             // Initial size (metres), initial centre position, minimum node size (metres), looseness
             collisionSystem = new CollisionSystem() {
@@ -42,7 +44,7 @@ namespace Lockstep.Collision2D {
                 minNodeSize = minNodeSize.ToLFloat(),
                 loosenessval = loosenessval.ToLFloat()
             };
-            collisionSystem.DoStart(InterestingMasks);
+            collisionSystem.DoStart(InterestingMasks,allTypes);
             //init prefab 
             const int size = 4;
 
