@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Lockstep.Collision;
+using Lockstep.Collision2D;
 using Lockstep.Math;
 using UnityEngine;
 using UnityEngine.Profiling;

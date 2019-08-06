@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Lockstep.Collision2D;
 using Lockstep.Math;
 using UnityEngine;
 using UnityEngine.Profiling;

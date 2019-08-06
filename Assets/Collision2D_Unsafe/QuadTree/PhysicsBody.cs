@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Xml.Linq;
+using Lockstep.Collision2D;
 using Lockstep.Math;
 using UnityEngine;
 using Random = UnityEngine.Random;

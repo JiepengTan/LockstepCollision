@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Lockstep.Collision2D;
 using UnityEditor;
 using Lockstep.Math;
 

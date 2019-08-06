@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Lockstep.Collision2D;
 using Lockstep.Math;
 
 namespace Lockstep.UnsafeCollision2D {

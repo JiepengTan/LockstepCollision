@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Lockstep.Collision2D;
 using Lockstep.Math;
 using UnityEngine;
 using Peril.Physics;
