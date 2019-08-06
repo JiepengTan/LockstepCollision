@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using Lockstep.Collision;
 using Lockstep.Math;
 using Lockstep.UnsafeCollision2D;
 using UnityEngine;

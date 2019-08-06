@@ -1,4 +1,5 @@
 
+using Lockstep.Collision2D;
 using Lockstep.UnsafeCollision2D;
 #if UNITY_5_3_OR_NEWER
 using UnityEngine;

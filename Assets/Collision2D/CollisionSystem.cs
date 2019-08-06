@@ -6,7 +6,7 @@ using UnityEngine.Profiling;
 using Random = System.Random;
 
 namespace Lockstep.Collision2D {
-    public delegate void FuncGlobalOnTriggerEvent(ColliderProxy a, ColliderProxy other, ECollisionEvent type);
+    public delegate void FuncGlobalOnTriggerEvent(ColliderProxy a, ColliderProxy b, ECollisionEvent type);
 
     public class CollisionSystem : ICollisionSystem {
         public uint[] _collisionMask = new uint[32];
@@ -17,7 +17,7 @@ namespace Lockstep.Collision2D {
         public LFloat loosenessval = new LFloat(true, 1250);
         public LVector3 pos;
 
-        private Dictionary<uint, ColliderProxy> id2Proxy = new Dictionary<uint, ColliderProxy>();
+        private Dictionary<int, ColliderProxy> id2Proxy = new Dictionary<int, ColliderProxy>();
         private HashSet<long> _curPairs = new HashSet<long>();
         private HashSet<long> _prePairs = new HashSet<long>();
         public const int LayerCount = 32;
@@ -25,7 +25,7 @@ namespace Lockstep.Collision2D {
 
         public FuncGlobalOnTriggerEvent funcGlobalOnTriggerEvent;
 
-        public ColliderProxy GetCollider(uint id){
+        public ColliderProxy GetCollider(int id){
             return id2Proxy.TryGetValue(id, out var proxy) ? proxy : null;
         }
 
@@ -33,7 +33,7 @@ namespace Lockstep.Collision2D {
         public int[] AllTypes;
         public int[][] InterestingMasks;
 
-        public void DoStart(int[][] interestingMasks,int [] allTypes){
+        public void DoStart(int[][] interestingMasks, int[] allTypes){
             this.InterestingMasks = interestingMasks;
             this.AllTypes = allTypes;
             //init _collisionMask//TODO read from file
@@ -59,9 +59,57 @@ namespace Lockstep.Collision2D {
         public void AddCollider(ColliderProxy collider){
             GetBoundTree(collider.LayerType).Add(collider, collider.GetBounds());
             id2Proxy[collider.Id] = collider;
+        }    
+        public void RemoveCollider(ColliderProxy collider){
+            GetBoundTree(collider.LayerType).Remove(collider);
+            id2Proxy.Remove(collider.Id);
+        }   
+        public bool Raycast(int layerType, Ray2D checkRay, out LFloat t,out int id,LFloat maxDistance){
+            return GetBoundTree(layerType).Raycast(checkRay, maxDistance,out t,out id);
         }
+        public bool Raycast(int layerType, Ray2D checkRay, out LFloat t,out int id){
+            return GetBoundTree(layerType).Raycast(checkRay, LFloat.MaxValue,out t,out id);
+        }
+        
+        public static ColliderPrefab CreateColliderPrefab(GameObject fab){
+            Collider unityCollider = null;
+            var colliders = fab.GetComponents<Collider>();
+            foreach (var col in colliders) {
+                if (col.isTrigger) {
+                    unityCollider = col;
+                    break;
+                }
+            }
 
+            if (unityCollider == null) {
+                foreach (var col in colliders) {
+                    unityCollider = col;
+                    break;
+                }
+            }
 
+            if (unityCollider == null) return null;
+            CBaseShape collider = null;
+            if (unityCollider is BoxCollider boxCol) {
+                collider = new COBB(boxCol.size.ToLVector2XZ(), LFloat.zero);
+            }
+
+            if (unityCollider is SphereCollider cirCol) {
+                collider = new CCircle(cirCol.radius.ToLFloat());
+            }
+
+            if (unityCollider is CapsuleCollider capCol) {
+                collider = new CCircle(capCol.radius.ToLFloat());
+            }
+
+            var colFab = new ColliderPrefab();
+            colFab.parts.Add(new ColliderPart() {
+                transform = new CTransform2D(LVector2.zero),
+                collider = collider
+            });
+            return colFab;
+        }
+        
         //public List<>
         public void DoUpdate(){
             tempLst.Clear();
@@ -109,8 +157,8 @@ namespace Lockstep.Collision2D {
 
             //check stay leave event
             foreach (var idPair in _prePairs) {
-                var a = GetCollider((uint) (idPair >> 32));
-                var b = GetCollider((uint) (idPair & 0xffffffff));
+                var a = GetCollider((int) (idPair >> 32));
+                var b = GetCollider((int) (idPair & 0xffffffff));
                 if (a == null || b == null) {
                     continue;
                 }
@@ -165,20 +213,36 @@ namespace Lockstep.Collision2D {
         void TriggerEvent(ColliderProxy a, ColliderProxy other, ECollisionEvent type){
             switch (type) {
                 case ECollisionEvent.Enter: {
-                    a.OnTriggerEnter(other);
+                    a.OnLPTriggerEnter(other);
                     break;
                 }
                 case ECollisionEvent.Stay: {
-                    a.OnTriggerStay(other);
+                    a.OnLPTriggerStay(other);
                     break;
                 }
                 case ECollisionEvent.Exit: {
-                    a.OnTriggerExit(other);
+                    a.OnLPTriggerExit(other);
                     break;
                 }
             }
         }
 
+        public static void TriggerEvent(ILPTriggerEventHandler a, ColliderProxy other, ECollisionEvent type){
+            switch (type) {
+                case ECollisionEvent.Enter: {
+                    a.OnLPTriggerEnter(other);
+                    break;
+                }
+                case ECollisionEvent.Stay: {
+                    a.OnLPTriggerStay(other);
+                    break;
+                }
+                case ECollisionEvent.Exit: {
+                    a.OnLPTriggerExit(other);
+                    break;
+                }
+            }
+        }
         public int ShowTreeId { get; set; }
 
         public void DrawGizmos(){

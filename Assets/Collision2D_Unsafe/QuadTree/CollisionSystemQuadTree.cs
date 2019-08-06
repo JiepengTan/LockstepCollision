@@ -1,3 +1,4 @@
+using Lockstep.Collision2D;
 using UnityEngine.Profiling;
 
 namespace Lockstep.UnsafeCollision2D {

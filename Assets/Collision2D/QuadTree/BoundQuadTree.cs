@@ -189,7 +189,9 @@ namespace Lockstep.Collision2D {
             rootNode.CheckCollision(obj, ref checkBounds);
         }
 
-
+        public bool Raycast(Ray2D checkRay, LFloat maxDistance,out LFloat t,out int id) {
+            return rootNode.CheckCollision(ref checkRay, maxDistance,out t,out id);
+        }
         /// <summary>
         /// Returns an array of objects that intersect with the specified bounds, if any. Otherwise returns an empty array. See also: IsColliding.
         /// </summary>

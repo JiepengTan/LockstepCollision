@@ -5,11 +5,11 @@ using UnityEngine;
 namespace Lockstep.Collision2D {
     public delegate void FuncOnTriggerEvent(ColliderProxy other, ECollisionEvent type);
 
-    public class ColliderProxy {
+    public class ColliderProxy :ILPCollisionEventHandler,ILPTriggerEventHandler{
 #if UNITY_EDITOR
         public Transform UnityTransform;
 #endif
-        public uint Id;
+        public int Id;
         public int LayerType { get; set; }
         public ColliderPrefab Prefab;
         public CTransform2D Transform2D;
@@ -24,7 +24,7 @@ namespace Lockstep.Collision2D {
 
         private BoundsQuadTree _quadTree;
 
-        private static uint autoIncId = 0;
+        private static int autoIncId = 0;
 
         public void Init(ColliderPrefab prefab, LVector2 pos, LFloat y){
             Init(prefab, pos, y, LFloat.zero);
@@ -74,11 +74,21 @@ namespace Lockstep.Collision2D {
             return new LRect(_bound.position + pos, _bound.size);
         }
 
-        public virtual void OnTriggerEnter(ColliderProxy other){ }
-        public virtual void OnTriggerStay(ColliderProxy other){ }
-        public virtual void OnTriggerExit(ColliderProxy other){ }
-        public virtual void OnCollisionEnter(ColliderProxy other){ }
-        public virtual void OnCollisionStay(ColliderProxy other){ }
-        public virtual void OnCollisionExit(ColliderProxy other){ }
+        public virtual void OnLPTriggerEnter(ColliderProxy other){ }
+        public virtual void OnLPTriggerStay(ColliderProxy other){ }
+        public virtual void OnLPTriggerExit(ColliderProxy other){ }
+        public virtual void OnLPCollisionEnter(ColliderProxy other){ }
+        public virtual void OnLPCollisionStay(ColliderProxy other){ }
+        public virtual void OnLPCollisionExit(ColliderProxy other){ }
+    }
+    public interface ILPCollisionEventHandler {
+        void OnLPTriggerEnter(ColliderProxy other);
+        void OnLPTriggerStay(ColliderProxy other);
+        void OnLPTriggerExit(ColliderProxy other);
+    }
+    public interface ILPTriggerEventHandler {
+        void OnLPTriggerEnter(ColliderProxy other);
+        void OnLPTriggerStay(ColliderProxy other);
+        void OnLPTriggerExit(ColliderProxy other);
     }
 }

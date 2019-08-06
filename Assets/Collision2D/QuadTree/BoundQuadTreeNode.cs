@@ -1,11 +1,10 @@
-﻿#define SHOW_TREE_NODES//层级显示所有节点
+﻿#define SHOW_TREE_NODES //层级显示所有节点
 #if SHOW_TREE_NODES && UNITY_EDITOR
 #define SHOW_NODES
 #endif
 
 using System;
 using System.Collections.Generic;
-using Lockstep.Collision;
 using Lockstep.Math;
 using Lockstep.UnsafeCollision2D;
 using UnityEngine;
@@ -17,7 +16,7 @@ using Rect = UnityEngine.Rect;
 namespace Lockstep.Collision2D {
 // A node in a BoundsOctree
 // Copyright 2014 Nition, BSD licence (see LICENCE file). www.momentstudio.co.nz
-    public partial class BoundsQuadTreeNode   {
+    public partial class BoundsQuadTreeNode {
         public BoundsQuadTreeNode parent;
 #if SHOW_NODES
         public Transform monoTrans;
@@ -205,10 +204,10 @@ namespace Lockstep.Collision2D {
             // Check against any objects in this node
             for (int i = 0; i < objects.Count; i++) {
                 var o = objects[i];
-                if (!ReferenceEquals(o.Obj, obj) 
-                    &&BoundsQuadTree.FuncCanCollide(o.Obj, obj)
-                    &&o.Bounds.Overlaps(checkBounds)
-                    ) {
+                if (!ReferenceEquals(o.Obj, obj)
+                    && BoundsQuadTree.FuncCanCollide(o.Obj, obj)
+                    && o.Bounds.Overlaps(checkBounds)
+                ) {
                     BoundsQuadTree.funcOnCollide(obj, o.Obj);
                 }
             }
@@ -221,7 +220,43 @@ namespace Lockstep.Collision2D {
             }
         }
 
- 
+        public bool CheckCollision(ref Ray2D checkRay, LFloat maxDistance, out LFloat t,out int id){
+            t = maxDistance;
+            id = int.MaxValue;
+            LFloat distance;
+            bool hasCollider = false;
+            if (!bounds.IntersectRay(checkRay, out distance) || distance > maxDistance) {
+                return false;
+            }
+
+            // Check against any objects in this node
+            for (int i = 0; i < objects.Count; i++) {
+                if (objects[i].Bounds.IntersectRay(checkRay, out distance)) {
+                    if (distance < t) {
+                        t = distance;
+                        id = objects[i].Obj.Id;
+                        hasCollider = true;
+                        var vv = objects[i].Bounds.IntersectRay(checkRay, out distance);
+                    }
+                }
+            }
+
+            // Check children
+            if (children != null) {
+                for (int i = 0; i < NUM_CHILDREN; i++) {
+                    if (children[i].CheckCollision(ref checkRay, t, out distance,out var tid)) {
+                        if (distance < t) {
+                            t = distance;
+                            id = tid;
+                            hasCollider = true;
+                        }
+                    }
+                }
+            }
+            return hasCollider;
+        }
+
+
         /// <summary>
         /// Returns an array of objects that intersect with the specified bounds, if any. Otherwise returns an empty array. See also: IsColliding.
         /// </summary>
@@ -249,7 +284,7 @@ namespace Lockstep.Collision2D {
             }
         }
 
-  
+
         /// <summary>
         /// Set the 8 children of this octree.
         /// </summary>
@@ -271,7 +306,6 @@ namespace Lockstep.Collision2D {
         public LRect GetBounds(){
             return bounds;
         }
-
 
 
         /// <summary>
@@ -427,7 +461,8 @@ namespace Lockstep.Collision2D {
         }
 
 
-        public static Dictionary<ColliderProxy, BoundsQuadTreeNode> obj2Node = new Dictionary<ColliderProxy, BoundsQuadTreeNode>();
+        public static Dictionary<ColliderProxy, BoundsQuadTreeNode> obj2Node =
+            new Dictionary<ColliderProxy, BoundsQuadTreeNode>();
 
         /// <summary>
         /// Private counterpart to the public Add method.

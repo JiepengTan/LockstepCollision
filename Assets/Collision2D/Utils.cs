@@ -29,7 +29,7 @@ namespace Lockstep.Collision2D {
         public ECollisionEvent Type;
         public bool First;
     }
-    
+
     public  static unsafe partial class Utils {
       
         //TODO

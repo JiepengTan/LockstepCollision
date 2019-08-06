@@ -1,8 +1,9 @@
 using System;
+using Lockstep.Collision2D;
 using Lockstep.Math;
 using UnityEngine;
 
-namespace Lockstep.UnsafeCollision2D {
+namespace Lockstep.Collision2D {
     public struct LRect {
         public LFloat x;
         public LFloat y;
@@ -146,7 +147,9 @@ namespace Lockstep.UnsafeCollision2D {
                 && other.yMax > this.y
                 && other.y < this.yMax;
         }
-
+        public bool IntersectRay(Ray2D other,out LFloat distance){
+            return Utils.TestRayAABB(other.origin, other.direction, min, max,out  distance);
+        }
         /// <summary>
         ///   <para>Returns true if the other rectangle overlaps this one. If allowInverse is present and true, the widths and heights of the LRects are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.</para>
         /// </summary>
