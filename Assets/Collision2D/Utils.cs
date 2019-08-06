@@ -5,57 +5,33 @@ using Lockstep.Math;
 using static Lockstep.Math.LMath;
 using Point2D = Lockstep.Math.LVector2;
 
-namespace Lockstep.UnsafeCollision2D {
-    public unsafe static class Utils {
-        public static bool TestCollision(Circle* a, OBB2D* b){
-            return TestCircleOBB(a->pos, a->radius
-                , b->pos, b->radius, b->size, b->up
-            );
-        }
+namespace Lockstep.Collision2D {
+    public enum ECollisionEvent {
+        Enter,
+        Stay,
+        Exit
+    }
 
-        public static bool TestCollision(AABB2D* a, OBB2D* b){
-            return TestAABBOBB(a->pos, a->radius, a->size
-                , b->pos, b->radius, b->size, b->up
-            );
-        }
+    public enum EShape2D {
+        Segment,
+        Ray,
+        Circle,
+        AABB,
+        OBB,
+        Polygon,
+        EnumCount,
+    }
 
-        public static bool TestCollision(OBB2D* a, OBB2D* b){
-            return TestOBBOBB(a->pos, a->radius, a->size, a->up
-                , b->pos, b->radius, b->size, b->up
-            );
-        }
-
-        //Circle* & Circle
-        public static bool TestCollision(Circle* a, Circle* b){
-            var diff = a->pos - b->pos;
-            var allRadius = a->radius + b->radius;
-            return diff.sqrMagnitude <= allRadius * allRadius;
-        }
-
-        //Circle* & AABB
-        public static bool TestCollision(Circle* a, AABB2D* b){
-            return TestCircleAABB(a->pos, a->radius, b->pos, b->radius, b->size);
-        }
-
-        //AABB & AABB
-        public static bool TestCollision(AABB2D* a, AABB2D* b){
-            return TestAABBAABB(a->pos, a->radius, a->size, b->pos, b->radius, b->size);
-        }
-
-        //AABB & Tile
-        public static bool TestCollision(AABB2D* a, Vector2Int tilePos){
-            return TestAABBAABB(
-                a->pos, a->radius, a->size, //AABB1
-                tilePos.ToLVector2() + LVector2.half, new LFloat(true, 707), LVector2.half //AABB2
-            );
-        }
-
-        public static bool TestCollision(Circle* a, Vector2Int tilePos){
-            return TestCircleAABB(
-                a->pos, a->radius, //Circle1
-                tilePos.ToLVector2() + LVector2.half, new LFloat(true, 707), LVector2.half //AABB2
-            );
-        }
+    public struct CollisionResult {
+        public bool Collides;
+        public LVector3 Normal;
+        public LFloat Penetration;
+        public ECollisionEvent Type;
+        public bool First;
+    }
+    
+    public  static unsafe partial class Utils {
+      
         //TODO
         public static bool TestPolygonPolygon(LVector2* _points, int vertexCount, LVector2* _points2, int vertexCount2){
             return false;

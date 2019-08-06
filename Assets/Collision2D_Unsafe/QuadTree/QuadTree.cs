@@ -5,22 +5,6 @@ using Lockstep.Math;
 using UnityEngine;
 
 namespace Lockstep.UnsafeCollision2D {
-    public enum ECollisionEvent {
-        Enter,
-        Stay,
-        Exit
-    }
-
-    public enum EShape2D {
-        Segment,
-        Ray,
-        Circle,
-        AABB,
-        OBB,
-        Polygon,
-        EnumCount,
-    }
-
 
     [StructLayout(LayoutKind.Sequential, Pack = NativeHelper.STRUCT_PACK)]
     public unsafe struct PointerFilter {
@@ -31,14 +15,6 @@ namespace Lockstep.UnsafeCollision2D {
         }
     }
 
-
-    public struct CollisionResult {
-        public bool Collides;
-        public LVector3 Normal;
-        public LFloat Penetration;
-        public ECollisionEvent Type;
-        public bool First;
-    }
 
     public unsafe interface ICollisionBody {
         int RefId { get; set; }

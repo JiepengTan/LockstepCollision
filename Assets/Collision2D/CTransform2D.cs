@@ -1,5 +1,5 @@
+using System.Runtime.InteropServices;
 using Lockstep.Math;
-using Lockstep.UnsafeCollision2D;
 
 namespace Lockstep.Collision2D {
     public class CTransform2D {
@@ -26,5 +26,12 @@ namespace Lockstep.Collision2D {
         public static Transform2D operator +(CTransform2D a, CTransform2D b){
             return new Transform2D {pos = a.pos + b.pos, y = a.y + b.y, deg = a.deg + b.deg};
         }
+    }
+    
+    [StructLayout(LayoutKind.Sequential, Pack = NativeHelper.STRUCT_PACK)]
+    public unsafe struct Transform2D  {
+        public LVector2 pos;
+        public LFloat y;
+        public LFloat deg;
     }
 }

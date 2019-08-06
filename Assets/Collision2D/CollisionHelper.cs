@@ -1,4 +1,3 @@
-using Lockstep.UnsafeCollision2D;
 
 namespace Lockstep.Collision2D {
     public partial class CollisionHelper {
